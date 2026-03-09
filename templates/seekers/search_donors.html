@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% block title %}Search Donors — BloodConnect{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+    <div class="dashboard-header">
+        <div>
+            <h1>Find Blood Donors</h1>
+            <p>Search available donors by blood group and RH factor</p>
+        </div>
+        <a href="/seekers/request/" class="btn-primary-dashboard">
+            <i class="fas fa-plus"></i> Create Request
+        </a>
+    </div>
+
+    <!-- Search Filters -->
+    <div class="search-filters-card">
+        <form method="get" class="filters-form">
+            <div class="filter-group">
+                <label>Blood Group</label>
+                <div class="blood-group-select">
+                    {% for bg in blood_groups %}
+                    <label class="bg-radio">
+                        <input type="radio" name="blood_group" value="{{ bg }}"
+                               {% if blood_group == bg %}checked{% endif %}>
+                        <span>{{ bg }}</span>
+                    </label>
+                    {% endfor %}
+                    <label class="bg-radio">
+                        <input type="radio" name="blood_group" value=""
+                               {% if not blood_group %}checked{% endif %}>
+                        <span>All</span>
+                    </label>
+                </div>
+            </div>
+            <div class="filter-group">
+                <label>RH Factor</label>
+                <div class="rh-select">
+                    {% for val, label in rh_choices %}
+                    <label class="bg-radio">
+                        <input type="radio" name="rh_factor" value="{{ val }}"
+                               {% if rh_factor == val %}checked{% endif %}>
+                        <span>{{ label }}</span>
+                    </label>
+                    {% endfor %}
+                    <label class="bg-radio">
+                        <input type="radio" name="rh_factor" value=""
+                               {% if not rh_factor %}checked{% endif %}>
+                        <span>All</span>
+                    </label>
+                </div>
+            </div>
+            <button type="submit" class="btn-search">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </form>
+    </div>
+
+    <!-- Donors Map -->
+    <div class="dashboard-card" style="margin-bottom: 24px;">
+        <div class="card-header">
+            <h3><i class="fas fa-map-marked-alt"></i> Donors on Map</h3>
+        </div>
+        <div class="card-body no-pad">
+            <div id="donorsMap" class="dashboard-map"></div>
+        </div>
+    </div>
+
+    <!-- Results -->
+    <div class="dashboard-card">
+        <div class="card-header">
+            <h3><i class="fas fa-users"></i> Available Donors</h3>
+            <span class="badge-count">{{ donors|length }}</span>
+        </div>
+        <div class="card-body">
+            {% if donors %}
+            <div class="donors-results-grid">
+                {% for donor in donors %}
+                <div class="donor-result-card">
+                    <div class="donor-result-header">
+                        <div class="donor-avatar">{{ donor.user.name|first|upper }}</div>
+                        <div>
+                            <strong>{{ donor.user.name }}</strong>
+                            <span class="donor-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                {{ donor.user.address|truncatechars:40 }}
+                            </span>
+                        </div>
+                        <span class="blood-group-badge" style="margin-left: auto;">{{ donor.get_full_blood_group }}</span>
+                    </div>
+                    <div class="donor-result-meta">
+                        {% if donor.willing_to_travel %}
+                        <span class="meta-tag"><i class="fas fa-car"></i> Willing to travel</span>
+                        {% endif %}
+                        <span class="meta-tag">
+                            <i class="fas fa-calendar-check"></i>
+                            Last donated: {{ donor.last_blood_donation_date|default:"New donor" }}
+                        </span>
+                    </div>
+                    <div class="donor-result-actions">
+                        <a href="tel:{{ donor.user.phone_number }}" class="btn-call">
+                            <i class="fas fa-phone"></i> {{ donor.user.phone_number }}
+                        </a>
+                        <a href="/seekers/request/?prefill={{ donor.blood_group }}" class="btn-details">
+                            Request
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-search"></i>
+                <p>No donors found for the selected filters. Try a different blood group or <a href="/seekers/request/">create a request</a>.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const map = initMap('donorsMap');
+    const hospitalIcon = createHospitalIcon();
+
+    fetch('/api/hospitals/')
+        .then(r => r.json())
+        .then(data => data.hospitals.forEach(h => {
+            if (h.lat && h.lng)
+                L.marker([h.lat, h.lng], {icon: hospitalIcon})
+                    .addTo(map).bindPopup(`<strong>${h.name}</strong>`);
+        }));
+
+    const bg = '{{ blood_group }}';
+    const rh = '{{ rh_factor }}';
+    const url = '/api/donors/' + (bg ? `?blood_group=${bg}&rh_factor=${rh}` : '');
+
+    fetch(url)
+        .then(r => r.json())
+        .then(data => data.donors.forEach(d => {
+            if (d.lat && d.lng) {
+                L.circleMarker([d.lat, d.lng], {
+                    radius: 8,
+                    color: '#d62828',
+                    fillColor: '#d62828',
+                    fillOpacity: 0.6,
+                }).addTo(map).bindPopup(`<strong>${d.blood_group}</strong> Donor<br>${d.area}`);
+            }
+        }));
+});
+</script>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Find Hospitals — BloodConnect{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+    <div class="dashboard-header">
+        <div>
+            <h1>Partner Hospitals</h1>
+            <p>Verified hospitals with blood bank facilities</p>
+        </div>
+    </div>
+
+    <!-- Map -->
+    <div class="dashboard-card" style="margin-bottom: 32px;">
+        <div class="card-header">
+            <h3><i class="fas fa-map-marked-alt"></i> Hospital Locations</h3>
+        </div>
+        <div class="card-body no-pad">
+            <div id="allHospitalsMap" style="height: 400px; border-radius: 0 0 16px 16px;"></div>
+        </div>
+    </div>
+
+    <!-- Hospital Grid -->
+    <div class="hospitals-grid">
+        {% for hospital in hospitals %}
+        <div class="hospital-card">
+            <div class="hospital-card-header">
+                <div class="hospital-avatar">{{ hospital.hospital_name|first|upper }}</div>
+                <div>
+                    <h4>{{ hospital.hospital_name }}</h4>
+                    <span class="hospital-address">
+                        <i class="fas fa-map-marker-alt"></i> {{ hospital.address|truncatechars:60 }}
+                    </span>
+                </div>
+            </div>
+            {% if hospital.blood_bank_available %}
+            <div class="hospital-tag blood-bank-tag"><i class="fas fa-tint"></i> Blood Bank Available</div>
+            {% endif %}
+            <div class="hospital-card-footer">
+                <a href="tel:{{ hospital.contact_number }}" class="btn-call">
+                    <i class="fas fa-phone"></i> {{ hospital.contact_number }}
+                </a>
+                <a href="/hospitals/{{ hospital.id }}/" class="btn-details">View Details</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state" style="grid-column: 1/-1">
+            <i class="fas fa-hospital"></i>
+            <p>No verified hospitals yet.</p>
+            {% if not request.user.is_authenticated %}
+            <a href="/users/register/?role=hospital" class="btn-empty-action">Register Your Hospital</a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const map = initMap('allHospitalsMap');
+    const icon = createHospitalIcon();
+    fetch('/api/hospitals/')
+        .then(r => r.json())
+        .then(data => data.hospitals.forEach(h => {
+            if (h.lat && h.lng)
+                L.marker([h.lat, h.lng], {icon})
+                    .addTo(map)
+                    .bindPopup(`
+                        <strong>${h.name}</strong><br>
+                        ${h.address}<br>
+                        ${h.blood_bank ? '<span style="color:#34c1c6">Blood Bank</span>' : ''}
+                        <br><a href="tel:${h.phone}">${h.phone}</a>
+                    `);
+        }));
+});
+</script>
+{% endblock %}

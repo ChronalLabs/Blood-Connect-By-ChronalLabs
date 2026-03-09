@@ -1,0 +1,51 @@
+{% extends "base/base.html" %}
+{% block title %}Find Donors{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <h4 class="fw-bold mb-4">Find Blood Donors</h4>
+    <div class="bc-card mb-4">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small fw-medium">Blood Group</label>
+                {{ form.blood_group }}
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-medium">RH Factor</label>
+                {{ form.rh_factor }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-medium">City</label>
+                {{ form.city }}
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-blood w-100">Search</button>
+            </div>
+        </form>
+    </div>
+    <div class="row g-3">
+        {% for donor in donors %}
+        <div class="col-md-6 col-lg-4">
+            <div class="donor-card">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="donor-avatar"><i class="bi bi-person-fill"></i></div>
+                    <div>
+                        <h6 class="fw-bold mb-0">{{ donor.user.get_full_name|default:"Anonymous" }}</h6>
+                        <small class="text-muted">{{ donor.user.city|default:"" }}</small>
+                    </div>
+                    <div class="blood-type-badge ms-auto">{{ donor.blood_type }}</div>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <span class="info-chip"><i class="bi bi-telephone me-1"></i>{{ donor.user.phone_number }}</span>
+                    <span class="availability-chip avail-{{ donor.availability_status }}">{{ donor.get_availability_status_display }}</span>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-search fs-2 text-muted mb-3 d-block"></i>
+            <p class="text-muted">No donors found. Try adjusting your filters.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

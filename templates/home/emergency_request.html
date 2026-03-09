@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Emergency Blood Request — BloodConnect{% endblock %}
+
+{% block content %}
+<div class="emergency-form-page">
+    <div class="emergency-header">
+        <span class="pulse-dot"></span>
+        <h1>EMERGENCY REQUEST</h1>
+        <p style="color: var(--text-muted);">This will immediately alert all matching donors in the area</p>
+    </div>
+
+    <div class="form-page-card" style="max-width: 100%;">
+        <form method="post" class="profile-form">
+            {% csrf_token %}
+            <div class="form-section">
+                <h3 class="form-section-title"><i class="fas fa-tint"></i> Blood Needed</h3>
+                <div class="form-row three-col">
+                    <div class="form-group">
+                        <label class="form-label">Blood Group *</label>
+                        {{ form.blood_group }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">RH Factor *</label>
+                        {{ form.rh_factor }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Units Required *</label>
+                        {{ form.units_required }}
+                    </div>
+                </div>
+            </div>
+            <div class="form-section">
+                <h3 class="form-section-title"><i class="fas fa-hospital"></i> Location</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Hospital Name *</label>
+                        {{ form.hospital_name }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Patient Name</label>
+                        {{ form.patient_name }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Hospital Address</label>
+                    {{ form.hospital_address }}
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn-emergency" style="border: none; cursor: pointer; font-family: var(--font-body); font-size: 1rem;">
+                    <i class="fas fa-exclamation-triangle"></i> Send Emergency Alert
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

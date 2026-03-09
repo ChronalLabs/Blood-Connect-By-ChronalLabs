@@ -1,0 +1,38 @@
+{% extends "base/base.html" %}
+{% block title %}About{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 text-center">
+            <h2 class="fw-bold mb-3">About BloodConnect</h2>
+            <p class="lead text-muted mb-5">We are on a mission to eliminate blood shortages by connecting donors, seekers and hospitals in real time.</p>
+        </div>
+    </div>
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="how-card text-center">
+                <div class="how-icon"><i class="bi bi-heart-fill"></i></div>
+                <h5 class="fw-bold mt-3">Our Mission</h5>
+                <p class="text-muted small">To ensure that no life is lost due to unavailability of blood by building a robust, real-time blood donation network.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="how-card text-center">
+                <div class="how-icon" style="background:rgba(52,193,198,0.1);color:var(--teal)"><i class="bi bi-people-fill"></i></div>
+                <h5 class="fw-bold mt-3">Community</h5>
+                <p class="text-muted small">We unite thousands of volunteer donors across India with hospitals and patients in critical need.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="how-card text-center">
+                <div class="how-icon" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="bi bi-shield-fill-check"></i></div>
+                <h5 class="fw-bold mt-3">Trust & Safety</h5>
+                <p class="text-muted small">All hospitals are verified. Donor medical info is secured. Your data is private and protected.</p>
+            </div>
+        </div>
+    </div>
+    <div class="text-center">
+        <a href="{% url 'register' %}" class="btn btn-blood btn-lg px-5">Join BloodConnect Today</a>
+    </div>
+</div>
+{% endblock %}

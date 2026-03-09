@@ -1,0 +1,384 @@
+{% extends "base/base.html" %}
+{% block title %}Hospitals{% endblock %}
+
+{% block extra_css %}
+<style>
+.map-search-bar { position: relative; }
+.map-search-inner {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg-card, #1e2130);
+    border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 13px;
+    padding: 6px 6px 6px 16px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.map-search-inner:focus-within {
+    border-color: rgba(214,40,40,0.5);
+    box-shadow: 0 0 0 3px rgba(214,40,40,0.1);
+}
+.map-search-icon { color: #34c1c6; font-size: 17px; flex-shrink: 0; }
+.map-search-inner input {
+    flex: 1; background: none; border: none; outline: none;
+    color: #f1f1f1; font-size: 14px; font-family: inherit; padding: 6px 0;
+}
+.map-search-inner input::placeholder { color: rgba(255,255,255,0.3); }
+.map-search-btn {
+    background: linear-gradient(135deg, #d62828, #ff4d4d);
+    color: white; border: none; border-radius: 9px;
+    padding: 8px 18px; font-size: 13px; font-weight: 600;
+    cursor: pointer; white-space: nowrap; font-family: inherit;
+    transition: all 0.2s;
+}
+.map-search-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(214,40,40,0.4); }
+.map-clear-btn {
+    width: 32px; height: 32px; background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+    color: rgba(255,255,255,0.4); display: flex; align-items: center;
+    justify-content: center; cursor: pointer; font-size: 12px;
+    transition: all 0.2s; flex-shrink: 0;
+}
+.map-clear-btn:hover { background: rgba(214,40,40,0.12); color: #ff6b6b; }
+.map-autocomplete {
+    position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+    background: #1e2130; border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; overflow: hidden; z-index: 600;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5); display: none;
+}
+.map-autocomplete.open { display: block; animation: dropIn 0.18s ease; }
+@keyframes dropIn { from{opacity:0;transform:translateY(-5px)} to{opacity:1;transform:translateY(0)} }
+.autocomplete-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 16px; cursor: pointer;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: background 0.15s;
+}
+.autocomplete-item:last-child { border-bottom: none; }
+.autocomplete-item:hover, .autocomplete-item.focused { background: rgba(214,40,40,0.07); }
+.ac-icon {
+    width: 32px; height: 32px; background: rgba(52,193,198,0.1);
+    border-radius: 8px; display: flex; align-items: center;
+    justify-content: center; color: #34c1c6; font-size: 14px; flex-shrink: 0;
+}
+.ac-name { font-size: 13.5px; font-weight: 600; color: #f1f1f1; }
+.ac-sub { font-size: 11px; color: rgba(255,255,255,0.4); }
+.ac-badge { font-size: 10px; color: #34c1c6; margin-left: auto; white-space: nowrap; }
+.map-status-msg {
+    padding: 8px 14px; border-radius: 9px; font-size: 13px; font-weight: 500; margin-top: 8px;
+}
+.map-status-msg.found { background: rgba(52,193,198,0.1); border: 1px solid rgba(52,193,198,0.25); color: #34c1c6; }
+.map-status-msg.notfound { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25); color: #f59e0b; }
+.map-status-msg.geocoded { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.25); color: #22c55e; }
+.map-legend {
+    position: absolute; bottom: 16px; left: 12px;
+    background: rgba(15,17,23,0.88); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
+    padding: 8px 13px; z-index: 999;
+    display: flex; flex-direction: column; gap: 6px;
+}
+.map-legend-item { display: flex; align-items: center; gap: 7px; font-size: 11.5px; color: rgba(255,255,255,0.7); }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+@keyframes markerPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(214,40,40,0.7); }
+    70%  { box-shadow: 0 0 0 16px rgba(214,40,40,0); }
+    100% { box-shadow: 0 0 0 0 rgba(214,40,40,0); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+        <div>
+            <h4 class="fw-bold mb-1">Verified Hospitals</h4>
+            <p class="text-muted mb-0">{{ hospitals|length }} hospitals on the network</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- List -->
+        <div class="col-lg-5" style="max-height:680px;overflow-y:auto">
+            {% for hospital in hospitals %}
+            <div class="hospital-card mb-3"
+                 onclick="focusHospital('{{ hospital.hospital_name|escapejs }}')"
+                 style="cursor:pointer"
+                 title="Show on map">
+                <div class="d-flex gap-3 align-items-start">
+                    <div class="hospital-icon">
+                        {% if hospital.logo %}
+                            <img src="{{ hospital.logo.url }}" alt="">
+                        {% else %}
+                            <i class="bi bi-hospital-fill"></i>
+                        {% endif %}
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h6 class="fw-bold mb-1">{{ hospital.hospital_name }}</h6>
+                            {% if hospital.verified %}<i class="bi bi-patch-check-fill text-teal"></i>{% endif %}
+                        </div>
+                        <p class="text-muted small mb-1">
+                            <i class="bi bi-geo-alt me-1"></i>{{ hospital.city }}, {{ hospital.state }}
+                        </p>
+                        <p class="text-muted small mb-2">
+                            <i class="bi bi-telephone me-1"></i>{{ hospital.contact_number }}
+                        </p>
+                        <div class="d-flex gap-2 flex-wrap">
+                            {% if hospital.blood_bank_available %}
+                            <span class="badge bg-success-soft text-success">Blood Bank</span>
+                            {% endif %}
+                            {% if hospital.has_24hr_service %}
+                            <span class="badge bg-info-soft text-info">24x7</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-2 d-flex gap-2">
+                    <a href="{% url 'hospital_detail' hospital.pk %}" class="btn btn-xs btn-outline-blood" onclick="event.stopPropagation()">View Details</a>
+                    <button class="btn btn-xs btn-ghost" onclick="event.stopPropagation();focusHospital('{{ hospital.hospital_name|escapejs }}')">
+                        <i class="bi bi-geo-alt me-1"></i>Show on Map
+                    </button>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-muted">No verified hospitals found.</p>
+            {% endfor %}
+        </div>
+
+        <!-- Map column -->
+        <div class="col-lg-7">
+            <div class="sticky-top" style="top:80px">
+
+                <!-- Search bar -->
+                <div class="map-search-bar mb-2">
+                    <div class="map-search-inner">
+                        <div class="map-search-icon"><i class="bi bi-hospital-fill"></i></div>
+                        <input
+                            type="text"
+                            id="hospital-search-input"
+                            placeholder="Search hospital by name or city..."
+                            autocomplete="off"
+                            oninput="onHospitalSearchInput(this.value)"
+                            onkeydown="handleSearchKey(event)"
+                        />
+                        <button class="map-search-btn" onclick="searchHospitalOnMap()">
+                            <i class="bi bi-search me-1"></i>Find
+                        </button>
+                        <button class="map-clear-btn" onclick="clearSearch()" title="Clear">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    <div class="map-autocomplete" id="map-autocomplete"></div>
+                    <div id="map-status" class="map-status-msg" style="display:none"></div>
+                </div>
+
+                <!-- Map container -->
+                <div class="map-container rounded-4 overflow-hidden" style="position:relative">
+                    <div id="hospital-map" style="height:590px;"></div>
+                    <div class="map-legend">
+                        <div class="map-legend-item"><div class="legend-dot" style="background:#34c1c6"></div>Hospital</div>
+                        <div class="map-legend-item"><div class="legend-dot" style="background:#d62828"></div>Searched</div>
+                        <div class="map-legend-item"><div class="legend-dot" style="background:#22c55e"></div>You</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================================
+//  HOSPITAL LIST MAP — with search input
+// ============================================================
+
+const map = L.map('hospital-map').setView([20.5937, 78.9629], 5);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors', maxZoom: 18
+}).addTo(map);
+
+const hospitalIcon = L.divIcon({
+    html: `<div class="map-marker hospital-marker"><i class="bi bi-hospital-fill"></i></div>`,
+    className: '', iconSize:[36,36], iconAnchor:[18,36], popupAnchor:[0,-36]
+});
+const searchedIcon = L.divIcon({
+    html: `<div class="map-marker" style="background:#d62828;width:42px;height:42px;animation:markerPulse 1.5s ease 4"><i class="bi bi-hospital-fill" style="font-size:18px"></i></div>`,
+    className: '', iconSize:[42,42], iconAnchor:[21,42], popupAnchor:[0,-42]
+});
+
+// All hospital data from server
+const hospitalData = {{ hospitals_json|safe }};
+
+// Build marker registry
+const markerMap = {};
+hospitalData.forEach(h => {
+    if (h.lat && h.lng) {
+        const marker = L.marker([h.lat, h.lng], { icon: hospitalIcon })
+            .addTo(map)
+            .bindPopup(buildPopup(h));
+        markerMap[h.name.toLowerCase()] = { marker, data: h };
+    }
+});
+
+function buildPopup(h) {
+    return `<div class="map-popup" style="min-width:180px">
+        <strong>${h.name}</strong><br>
+        <small style="color:#8b8fa8"><i class="bi bi-geo-alt"></i> ${h.address}</small><br>
+        <small style="color:#8b8fa8"><i class="bi bi-telephone"></i> ${h.contact}</small>
+        ${h.blood_bank ? '<br><span style="background:rgba(34,197,94,0.15);color:#22c55e;padding:2px 8px;border-radius:8px;font-size:11px;display:inline-block;margin-top:4px">Blood Bank ✓</span>' : ''}
+    </div>`;
+}
+
+// Geolocation
+if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+        map.setView([pos.coords.latitude, pos.coords.longitude], 11);
+        L.circleMarker([pos.coords.latitude, pos.coords.longitude], {
+            radius: 9, fillColor: '#22c55e', color: '#fff', weight: 2, fillOpacity: 0.95
+        }).addTo(map).bindPopup('📍 Your Location');
+    });
+}
+
+// Focus a hospital by name (called from list cards too)
+let searchMarker = null;
+let acFocusIdx = -1;
+
+function focusHospital(name) {
+    const key = name.toLowerCase();
+    const entry = markerMap[key] ||
+        Object.values(markerMap).find(({data}) => data.name.toLowerCase().includes(key));
+
+    if (entry) {
+        const {marker, data} = entry;
+        map.setView([data.lat, data.lng], 15);
+        marker.setIcon(searchedIcon);
+        marker.openPopup();
+        setTimeout(() => marker.setIcon(hospitalIcon), 5000);
+        showStatus(`✓ ${data.name} — ${data.address}`, 'found');
+        document.getElementById('hospital-search-input').value = data.name;
+        document.getElementById('map-autocomplete').classList.remove('open');
+    }
+}
+
+function onHospitalSearchInput(val) {
+    const ac = document.getElementById('map-autocomplete');
+    document.getElementById('map-status').style.display = 'none';
+    if (!val.trim()) { ac.classList.remove('open'); return; }
+
+    const q = val.toLowerCase();
+    const matches = Object.values(markerMap)
+        .filter(({data}) => data.name.toLowerCase().includes(q) || (data.address||'').toLowerCase().includes(q))
+        .slice(0, 7);
+
+    if (!matches.length) {
+        ac.innerHTML = `<div style="padding:12px 16px;color:rgba(255,255,255,0.4);font-size:13px;text-align:center">
+            <i class="bi bi-search me-2"></i>No hospitals found for "${val}"
+        </div>`;
+        ac.classList.add('open');
+        return;
+    }
+
+    ac.innerHTML = matches.map(({data}) => `
+        <div class="autocomplete-item" data-name="${data.name}"
+             onmousedown="selectHospital('${data.name.replace(/'/g,"\'")}')">
+            <div class="ac-icon"><i class="bi bi-hospital-fill"></i></div>
+            <div>
+                <div class="ac-name">${highlight(data.name, val)}</div>
+                <div class="ac-sub">${data.address}</div>
+            </div>
+            ${data.verified ? '<div class="ac-badge"><i class="bi bi-patch-check-fill"></i> Verified</div>' : ''}
+        </div>
+    `).join('');
+    ac.classList.add('open');
+    acFocusIdx = -1;
+}
+
+function highlight(text, q) {
+    const i = text.toLowerCase().indexOf(q.toLowerCase());
+    if (i === -1) return text;
+    return text.slice(0,i) +
+        `<span style="color:#d62828;font-weight:800">${text.slice(i,i+q.length)}</span>` +
+        text.slice(i+q.length);
+}
+
+function selectHospital(name) {
+    document.getElementById('hospital-search-input').value = name;
+    document.getElementById('map-autocomplete').classList.remove('open');
+    focusHospital(name);
+}
+
+function searchHospitalOnMap() {
+    const val = document.getElementById('hospital-search-input').value.trim();
+    if (!val) return;
+    document.getElementById('map-autocomplete').classList.remove('open');
+
+    // Try local first
+    const q = val.toLowerCase();
+    const match = Object.values(markerMap).find(({data}) =>
+        data.name.toLowerCase().includes(q) || (data.address||'').toLowerCase().includes(q)
+    );
+    if (match) { focusHospital(val); return; }
+
+    // Geocode fallback
+    showStatus('Searching for "' + val + '"...', 'found');
+    fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val+' hospital')}&format=json&limit=1`, {
+        headers: {'Accept-Language': 'en'}
+    })
+    .then(r => r.json())
+    .then(results => {
+        if (!results.length) { showStatus('No results found for "'+val+'"', 'notfound'); return; }
+        const r = results[0];
+        const lat = parseFloat(r.lat), lng = parseFloat(r.lon);
+        const label = r.display_name.split(',').slice(0,3).join(', ');
+        if (searchMarker) map.removeLayer(searchMarker);
+        searchMarker = L.marker([lat, lng], {icon: searchedIcon})
+            .addTo(map)
+            .bindPopup(`<div class="map-popup">
+                <strong>${label}</strong><br>
+                <small style="color:#f59e0b">⚠ Not registered on BloodConnect yet</small>
+            </div>`)
+            .openPopup();
+        map.setView([lat, lng], 15);
+        showStatus('📍 Showing: ' + label, 'geocoded');
+    })
+    .catch(() => showStatus('Search failed. Check your connection.', 'notfound'));
+}
+
+function clearSearch() {
+    document.getElementById('hospital-search-input').value = '';
+    document.getElementById('map-autocomplete').classList.remove('open');
+    document.getElementById('map-status').style.display = 'none';
+    if (searchMarker) { map.removeLayer(searchMarker); searchMarker = null; }
+}
+
+function handleSearchKey(e) {
+    const items = document.querySelectorAll('.autocomplete-item');
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        acFocusIdx = Math.min(acFocusIdx+1, items.length-1);
+        items.forEach((el,i) => el.classList.toggle('focused', i===acFocusIdx));
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        acFocusIdx = Math.max(acFocusIdx-1, 0);
+        items.forEach((el,i) => el.classList.toggle('focused', i===acFocusIdx));
+    } else if (e.key === 'Enter') {
+        if (acFocusIdx >= 0 && items[acFocusIdx]) selectHospital(items[acFocusIdx].dataset.name);
+        else searchHospitalOnMap();
+    } else if (e.key === 'Escape') {
+        document.getElementById('map-autocomplete').classList.remove('open');
+    }
+}
+
+function showStatus(msg, type) {
+    const el = document.getElementById('map-status');
+    el.textContent = msg;
+    el.className = 'map-status-msg ' + type;
+    el.style.display = 'block';
+}
+
+document.addEventListener('click', e => {
+    if (!e.target.closest('.map-search-bar'))
+        document.getElementById('map-autocomplete').classList.remove('open');
+});
+</script>
+{% endblock %}

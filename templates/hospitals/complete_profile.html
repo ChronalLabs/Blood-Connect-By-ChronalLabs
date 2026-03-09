@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}Hospital Profile — BloodConnect{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+    <div class="dashboard-header">
+        <div><h1>Hospital Profile</h1></div>
+    </div>
+    <div class="form-page-card">
+        <form method="post" enctype="multipart/form-data" class="profile-form">
+            {% csrf_token %}
+            <div class="form-section">
+                <h3 class="form-section-title"><i class="fas fa-hospital"></i> Hospital Details</h3>
+                <div class="form-group">
+                    <label class="form-label">Hospital Name *</label>
+                    {{ form.hospital_name }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Address *</label>
+                    {{ form.address }}
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Contact Number *</label>
+                        {{ form.contact_number }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Registration Number</label>
+                        {{ form.registration_number }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Website</label>
+                    {{ form.website }}
+                </div>
+                <div class="form-check" style="margin-top: 12px;">
+                    {{ form.blood_bank_available }}
+                    <label>Blood Bank Available at this hospital</label>
+                </div>
+            </div>
+            <div class="form-section">
+                <h3 class="form-section-title"><i class="fas fa-user-shield"></i> Authorized Employee</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Employee Name</label>
+                        {{ form.employee_name }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Employee Contact</label>
+                        {{ form.employee_contact }}
+                    </div>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn-auth-submit" style="max-width: 300px;">
+                    <i class="fas fa-save"></i> Save Hospital Profile
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

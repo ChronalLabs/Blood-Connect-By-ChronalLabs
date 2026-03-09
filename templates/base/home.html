@@ -1,0 +1,691 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-bg-pattern"></div>
+    <div class="container position-relative">
+        <div class="row align-items-center min-vh-75 py-5">
+            <div class="col-lg-6">
+                <div class="hero-badge mb-3">
+                    <i class="bi bi-droplet-fill me-2"></i>
+                    Emergency Blood Network
+                </div>
+                <h1 class="hero-title">
+                    Every Drop<br>
+                    <span class="text-blood">Saves a Life</span>
+                </h1>
+                <p class="hero-subtitle">
+                    BloodConnect bridges the gap between blood donors, seekers, and hospitals.
+                    Register today and be someone's lifesaver in their most critical moment.
+                </p>
+                <div class="d-flex gap-3 flex-wrap mt-4">
+                    <a href="{% url 'register' %}" class="btn btn-blood btn-lg px-4">
+                        <i class="bi bi-heart-fill me-2"></i>Donate Blood
+                    </a>
+                    <a href="{% url 'create_request' %}" class="btn btn-outline-light btn-lg px-4">
+                        <i class="bi bi-search me-2"></i>Need Blood?
+                    </a>
+                </div>
+                <div class="hero-search-card mt-4">
+                    <h6 class="mb-3 fw-semibold">Quick Donor Search</h6>
+                    <form action="{% url 'search_donors' %}" method="get" class="d-flex gap-2 flex-wrap">
+                        <select name="blood_group" class="form-select form-select-sm" style="max-width:100px">
+                            <option value="">Group</option>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="AB">AB</option>
+                            <option value="O">O</option>
+                        </select>
+                        <select name="rh_factor" class="form-select form-select-sm" style="max-width:100px">
+                            <option value="">RH</option>
+                            <option value="+">Positive</option>
+                            <option value="-">Negative</option>
+                        </select>
+                        <input type="text" name="city" placeholder="City..." class="form-control form-control-sm" style="max-width:140px">
+                        <button class="btn btn-blood btn-sm" type="submit"><i class="bi bi-search"></i></button>
+                    </form>
+                </div>
+            </div>
+            <div class="col-lg-6 d-none d-lg-block">
+                <div class="hero-visual">
+                    <div class="blood-drop-animation">
+                        <div class="drop drop-1"><i class="bi bi-droplet-fill"></i></div>
+                        <div class="drop drop-2"><i class="bi bi-droplet-fill"></i></div>
+                        <div class="drop drop-3"><i class="bi bi-droplet-fill"></i></div>
+                    </div>
+                    <div class="hero-stats-float">
+                        <div class="stat-pill">
+                            <i class="bi bi-people-fill text-blood me-2"></i>
+                            <strong>{{ stats.donors }}+</strong> Donors
+                        </div>
+                        <div class="stat-pill stat-pill-2">
+                            <i class="bi bi-hospital-fill text-teal me-2"></i>
+                            <strong>{{ stats.hospitals }}+</strong> Hospitals
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="hero-wave">
+        <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path d="M0,60 C200,120 400,0 600,60 C800,120 1000,0 1200,60 L1200,120 L0,120 Z" fill="var(--bg-primary)"/>
+        </svg>
+    </div>
+</section>
+
+<!-- Stats -->
+<section class="stats-section py-4">
+    <div class="container">
+        <div class="row g-3 text-center">
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="bi bi-heart-fill"></i></div>
+                    <div class="stat-number">{{ stats.donors }}+</div>
+                    <div class="stat-label">Registered Donors</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:rgba(52,193,198,0.15);color:var(--teal)"><i class="bi bi-hospital-fill"></i></div>
+                    <div class="stat-number">{{ stats.hospitals }}+</div>
+                    <div class="stat-label">Partner Hospitals</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:rgba(255,165,0,0.15);color:#f59e0b"><i class="bi bi-lightning-fill"></i></div>
+                    <div class="stat-number">{{ stats.requests_fulfilled }}+</div>
+                    <div class="stat-label">Requests Fulfilled</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:rgba(34,197,94,0.15);color:#22c55e"><i class="bi bi-shield-fill-check"></i></div>
+                    <div class="stat-number">{{ stats.lives_saved }}+</div>
+                    <div class="stat-label">Lives Saved</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Emergency Requests -->
+{% if recent_requests %}
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="pulse-dot"></div>
+            <h2 class="section-title mb-0">Live Emergency Requests</h2>
+            <a href="{% url 'request_list' %}" class="btn btn-sm btn-outline-blood ms-auto">View All</a>
+        </div>
+        <div class="row g-3">
+            {% for req in recent_requests %}
+            <div class="col-md-6 col-lg-4">
+                <div class="request-card urgency-{{ req.urgency_level }}">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="blood-type-badge">{{ req.blood_type }}</div>
+                        <span class="urgency-badge urgency-{{ req.urgency_level }}">{{ req.get_urgency_level_display }}</span>
+                    </div>
+                    <h6 class="fw-semibold mb-1">{{ req.patient_name }}</h6>
+                    <p class="text-muted small mb-2"><i class="bi bi-hospital me-1"></i>{{ req.hospital_name }}</p>
+                    <p class="text-muted small mb-3"><i class="bi bi-geo-alt me-1"></i>{{ req.city|default:"Location not specified" }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="small text-muted"><i class="bi bi-droplet me-1"></i>{{ req.units_remaining }} units needed</span>
+                        {% if user.is_authenticated and user.role == 'donor' %}
+                        <a href="{% url 'respond_to_request' req.id %}" class="btn btn-blood btn-xs">Respond</a>
+                        {% else %}
+                        <a href="{% url 'request_detail' req.id %}" class="btn btn-outline-blood btn-xs">Details</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- MAP SECTION -->
+<section class="py-5 bg-section">
+    <div class="container">
+        <div class="text-center mb-4">
+            <h2 class="section-title">Hospitals Near You</h2>
+            <p class="section-subtitle">Search a hospital by name and instantly see it on the map</p>
+        </div>
+
+        <!-- Hospital Search Input -->
+        <div class="map-search-bar mb-3">
+            <div class="map-search-inner">
+                <div class="map-search-icon"><i class="bi bi-hospital-fill"></i></div>
+                <input
+                    type="text"
+                    id="hospital-search-input"
+                    placeholder="Type a hospital name, e.g. Apollo Mumbai..."
+                    autocomplete="off"
+                    oninput="onHospitalSearchInput(this.value)"
+                    onkeydown="if(event.key==='Enter') searchHospitalOnMap()"
+                />
+                <button class="map-search-btn" onclick="searchHospitalOnMap()">
+                    <i class="bi bi-search me-1"></i> Find on Map
+                </button>
+                <button class="map-clear-btn" id="clear-btn" onclick="clearHospitalSearch()" title="Clear">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <!-- Autocomplete dropdown -->
+            <div class="map-autocomplete" id="map-autocomplete"></div>
+        </div>
+
+        <!-- Status message -->
+        <div id="map-status" class="map-status-msg" style="display:none"></div>
+
+        <!-- Map -->
+        <div class="map-container rounded-4 overflow-hidden" style="position:relative">
+            <div id="main-map" style="height:480px;"></div>
+            <!-- Floating legend -->
+            <div class="map-legend">
+                <div class="map-legend-item"><div class="legend-dot" style="background:#34c1c6"></div>Hospital</div>
+                <div class="map-legend-item"><div class="legend-dot" style="background:#d62828"></div>You</div>
+                <div class="map-legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Request</div>
+            </div>
+        </div>
+
+        <!-- Matched hospital info card -->
+        <div id="hospital-info-card" class="hospital-found-card mt-3" style="display:none"></div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="section-title">How BloodConnect Works</h2>
+            <p class="section-subtitle">Simple steps to save a life or find help</p>
+        </div>
+        <div class="row g-4 justify-content-center">
+            <div class="col-md-4">
+                <div class="how-card text-center">
+                    <div class="how-step">01</div>
+                    <div class="how-icon"><i class="bi bi-person-plus-fill"></i></div>
+                    <h5 class="fw-bold mt-3">Register</h5>
+                    <p class="text-muted small">Sign up as a Donor, Seeker or Hospital with your medical details.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="how-card text-center">
+                    <div class="how-step">02</div>
+                    <div class="how-icon" style="background:rgba(52,193,198,0.1);color:var(--teal)"><i class="bi bi-search-heart"></i></div>
+                    <h5 class="fw-bold mt-3">Connect</h5>
+                    <p class="text-muted small">Search for compatible donors or post an emergency blood request instantly.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="how-card text-center">
+                    <div class="how-step">03</div>
+                    <div class="how-icon" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="bi bi-shield-fill-check"></i></div>
+                    <h5 class="fw-bold mt-3">Save Lives</h5>
+                    <p class="text-muted small">Meet at the hospital, donate blood, and be someone's hero today.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section py-5">
+    <div class="container text-center">
+        <h2 class="text-white fw-bold mb-3">Ready to Make a Difference?</h2>
+        <p class="text-white-50 mb-4">Join thousands of donors and hospitals in our life-saving network.</p>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <a href="{% url 'register' %}" class="btn btn-light btn-lg text-blood fw-semibold px-5">
+                <i class="bi bi-heart-fill me-2"></i>Join BloodConnect
+            </a>
+            <a href="{% url 'contact' %}" class="btn btn-outline-light btn-lg px-5">Learn More</a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ---- Map Search Bar ---- */
+.map-search-bar {
+    position: relative;
+    max-width: 700px;
+    margin: 0 auto;
+}
+.map-search-inner {
+    display: flex;
+    align-items: center;
+    background: var(--bg-card, #1e2130);
+    border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 6px 6px 6px 16px;
+    gap: 10px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.map-search-inner:focus-within {
+    border-color: rgba(214,40,40,0.5);
+    box-shadow: 0 0 0 3px rgba(214,40,40,0.1);
+}
+.map-search-icon { color: #34c1c6; font-size: 18px; flex-shrink: 0; }
+.map-search-inner input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: #f1f1f1;
+    font-size: 14.5px;
+    font-family: inherit;
+    padding: 6px 0;
+}
+.map-search-inner input::placeholder { color: rgba(255,255,255,0.3); }
+.map-search-btn {
+    background: linear-gradient(135deg, #d62828, #ff4d4d);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 9px 20px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+.map-search-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(214,40,40,0.4); }
+.map-clear-btn {
+    width: 34px; height: 34px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    color: rgba(255,255,255,0.4);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 13px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+.map-clear-btn:hover { background: rgba(214,40,40,0.15); color: #ff6b6b; border-color: rgba(214,40,40,0.3); }
+
+/* Autocomplete dropdown */
+.map-autocomplete {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0; right: 0;
+    background: #1e2130;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    z-index: 500;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    display: none;
+}
+.map-autocomplete.open { display: block; animation: dropIn 0.18s ease; }
+@keyframes dropIn { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+.autocomplete-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: background 0.15s;
+}
+.autocomplete-item:last-child { border-bottom: none; }
+.autocomplete-item:hover, .autocomplete-item.focused { background: rgba(214,40,40,0.08); }
+.autocomplete-icon {
+    width: 34px; height: 34px;
+    background: rgba(52,193,198,0.1);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #34c1c6; font-size: 15px;
+    flex-shrink: 0;
+}
+.autocomplete-name { font-size: 13.5px; font-weight: 600; color: #f1f1f1; }
+.autocomplete-sub { font-size: 11px; color: rgba(255,255,255,0.4); }
+.autocomplete-verified { font-size: 10px; color: #34c1c6; margin-left: auto; }
+.autocomplete-no-result { padding: 14px 16px; color: rgba(255,255,255,0.4); font-size: 13px; text-align: center; }
+
+/* Status message */
+.map-status-msg {
+    max-width: 700px;
+    margin: 0 auto 10px;
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+}
+.map-status-msg.found {
+    background: rgba(52,193,198,0.1);
+    border: 1px solid rgba(52,193,198,0.25);
+    color: #34c1c6;
+}
+.map-status-msg.notfound {
+    background: rgba(245,158,11,0.1);
+    border: 1px solid rgba(245,158,11,0.25);
+    color: #f59e0b;
+}
+.map-status-msg.geocoded {
+    background: rgba(34,197,94,0.1);
+    border: 1px solid rgba(34,197,94,0.25);
+    color: #22c55e;
+}
+
+/* Map legend */
+.map-legend {
+    position: absolute;
+    bottom: 20px; left: 14px;
+    background: rgba(15,17,23,0.88);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 10px 14px;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+.map-legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: rgba(255,255,255,0.75); }
+.legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+/* Found hospital card */
+.hospital-found-card {
+    max-width: 700px;
+    margin: 0 auto;
+    background: #1e2130;
+    border: 1px solid rgba(52,193,198,0.3);
+    border-radius: 14px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    animation: dropIn 0.25s ease;
+}
+.found-icon {
+    width: 48px; height: 48px;
+    background: rgba(52,193,198,0.1);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    color: #34c1c6; font-size: 22px;
+    flex-shrink: 0;
+}
+.found-name { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+.found-sub { font-size: 12px; color: rgba(255,255,255,0.5); }
+.found-close { margin-left: auto; cursor: pointer; color: rgba(255,255,255,0.3); font-size: 16px; transition: color 0.2s; }
+.found-close:hover { color: #ff6b6b; }
+
+/* Search pulse on marker */
+@keyframes markerPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(214,40,40,0.7); }
+    70%  { box-shadow: 0 0 0 16px rgba(214,40,40,0); }
+    100% { box-shadow: 0 0 0 0 rgba(214,40,40,0); }
+}
+.marker-pulse { animation: markerPulse 1.5s ease 3; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================================
+//  HOME PAGE MAP — with hospital search
+// ============================================================
+
+const map = L.map('main-map').setView([20.5937, 78.9629], 5);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
+    maxZoom: 18
+}).addTo(map);
+
+// Icons
+const hospitalIcon = L.divIcon({
+    html: `<div class="map-marker hospital-marker"><i class="bi bi-hospital-fill"></i></div>`,
+    className: '', iconSize:[36,36], iconAnchor:[18,36], popupAnchor:[0,-36]
+});
+const searchedIcon = L.divIcon({
+    html: `<div class="map-marker" style="background:#d62828;animation:markerPulse 1.5s ease 3"><i class="bi bi-hospital-fill"></i></div>`,
+    className: '', iconSize:[40,40], iconAnchor:[20,40], popupAnchor:[0,-40]
+});
+const youIcon = L.divIcon({
+    html: `<div style="width:14px;height:14px;background:#d62828;border:3px solid #fff;border-radius:50%;box-shadow:0 0 10px rgba(214,40,40,0.6)"></div>`,
+    className: '', iconSize:[14,14], iconAnchor:[7,7]
+});
+
+// Build hospitals data from Django context
+const hospitalData = [
+    {% for h in hospitals %}
+    {% if h.latitude and h.longitude %}
+    {
+        name: "{{ h.hospital_name|escapejs }}",
+        lat: {{ h.latitude }},
+        lng: {{ h.longitude }},
+        address: "{{ h.address|escapejs }}",
+        contact: "{{ h.contact_number|escapejs }}",
+        city: "{{ h.city|escapejs }}",
+        state: "{{ h.state|escapejs }}",
+        blood_bank: {{ h.blood_bank_available|yesno:"true,false" }},
+        verified: {{ h.verified|yesno:"true,false" }},
+    },
+    {% endif %}
+    {% endfor %}
+];
+
+// Place all markers and keep references
+const markerMap = {};  // name (lowercase) -> {marker, data}
+
+hospitalData.forEach(h => {
+    const marker = L.marker([h.lat, h.lng], { icon: hospitalIcon })
+        .addTo(map)
+        .bindPopup(buildPopup(h));
+    markerMap[h.name.toLowerCase()] = { marker, data: h };
+});
+
+function buildPopup(h) {
+    return `<div class="map-popup" style="min-width:180px">
+        <strong style="font-size:14px">${h.name}</strong><br>
+        <small style="color:#8b8fa8"><i class="bi bi-geo-alt"></i> ${h.address}</small><br>
+        <small style="color:#8b8fa8"><i class="bi bi-telephone"></i> ${h.contact}</small><br>
+        <small style="color:#8b8fa8"><i class="bi bi-geo"></i> ${h.city}, ${h.state}</small>
+        ${h.blood_bank ? '<br><span style="background:rgba(34,197,94,0.15);color:#22c55e;padding:2px 8px;border-radius:8px;font-size:11px;margin-top:4px;display:inline-block">Blood Bank ✓</span>' : ''}
+        ${h.verified ? '<span style="background:rgba(52,193,198,0.15);color:#34c1c6;padding:2px 8px;border-radius:8px;font-size:11px;margin-top:4px;display:inline-block;margin-left:4px">Verified ✓</span>' : ''}
+    </div>`;
+}
+
+// Geolocation
+if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+        const { latitude: lat, longitude: lng } = pos.coords;
+        map.setView([lat, lng], 12);
+        L.marker([lat, lng], { icon: youIcon }).addTo(map).bindPopup('📍 You are here');
+    });
+}
+
+// ---- Search logic ----
+let searchMarker = null;
+let acFocusIdx = -1;
+
+function onHospitalSearchInput(val) {
+    const ac = document.getElementById('map-autocomplete');
+    const status = document.getElementById('map-status');
+    status.style.display = 'none';
+
+    if (!val.trim()) {
+        ac.classList.remove('open');
+        document.getElementById('hospital-info-card').style.display = 'none';
+        return;
+    }
+
+    const q = val.toLowerCase().trim();
+    const matches = Object.values(markerMap)
+        .filter(({data}) => data.name.toLowerCase().includes(q) || data.city.toLowerCase().includes(q))
+        .slice(0, 6);
+
+    if (!matches.length) {
+        ac.innerHTML = `<div class="autocomplete-no-result"><i class="bi bi-search me-2"></i>No hospitals found for "${val}"</div>`;
+        ac.classList.add('open');
+        return;
+    }
+
+    ac.innerHTML = matches.map(({data}, i) => `
+        <div class="autocomplete-item" data-name="${data.name}" onmousedown="selectHospital('${data.name.replace(/'/g,"\'")}')">
+            <div class="autocomplete-icon"><i class="bi bi-hospital-fill"></i></div>
+            <div>
+                <div class="autocomplete-name">${highlightMatch(data.name, val)}</div>
+                <div class="autocomplete-sub">${data.city}, ${data.state} · ${data.contact}</div>
+            </div>
+            ${data.verified ? '<div class="autocomplete-verified"><i class="bi bi-patch-check-fill me-1"></i>Verified</div>' : ''}
+        </div>
+    `).join('');
+    ac.classList.add('open');
+    acFocusIdx = -1;
+}
+
+function highlightMatch(text, query) {
+    const idx = text.toLowerCase().indexOf(query.toLowerCase());
+    if (idx === -1) return text;
+    return text.slice(0, idx) +
+        `<span style="color:#d62828;font-weight:800">${text.slice(idx, idx + query.length)}</span>` +
+        text.slice(idx + query.length);
+}
+
+function searchHospitalOnMap() {
+    const val = document.getElementById('hospital-search-input').value.trim();
+    if (!val) return;
+    document.getElementById('map-autocomplete').classList.remove('open');
+
+    // Try exact / partial match in known hospitals
+    const q = val.toLowerCase();
+    const match = Object.values(markerMap).find(({data}) =>
+        data.name.toLowerCase().includes(q) || data.city.toLowerCase().includes(q)
+    );
+
+    if (match) {
+        focusHospital(match.data.name);
+        return;
+    }
+
+    // No local match → geocode via Nominatim
+    showStatus('Searching for "' + val + '"...', 'found');
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val + ' hospital india')}&format=json&limit=1&addressdetails=1`;
+    fetch(url, { headers: { 'Accept-Language': 'en' } })
+        .then(r => r.json())
+        .then(results => {
+            if (!results.length) {
+                showStatus('⚠ No hospital found for "' + val + '". Try a different name or city.', 'notfound');
+                return;
+            }
+            const r = results[0];
+            const lat = parseFloat(r.lat);
+            const lng = parseFloat(r.lon);
+            const displayName = r.display_name.split(',').slice(0,3).join(', ');
+
+            if (searchMarker) map.removeLayer(searchMarker);
+            searchMarker = L.marker([lat, lng], { icon: searchedIcon })
+                .addTo(map)
+                .bindPopup(`<div class="map-popup">
+                    <strong>${displayName}</strong><br>
+                    <small style="color:#8b8fa8">Found via search</small><br>
+                    <small style="color:#f59e0b"><i class="bi bi-exclamation-circle"></i> Not yet registered on BloodConnect</small>
+                </div>`)
+                .openPopup();
+
+            map.setView([lat, lng], 15);
+            showStatus('📍 Showing location for "' + displayName + '"', 'geocoded');
+            showInfoCard(displayName, r.address?.city || r.address?.state || '', r.address?.postcode || '', false);
+        })
+        .catch(() => showStatus('Could not connect to search service. Check your internet.', 'notfound'));
+}
+
+function selectHospital(name) {
+    document.getElementById('hospital-search-input').value = name;
+    document.getElementById('map-autocomplete').classList.remove('open');
+    focusHospital(name);
+}
+
+function focusHospital(name) {
+    const entry = markerMap[name.toLowerCase()] ||
+        Object.values(markerMap).find(({data}) => data.name.toLowerCase().includes(name.toLowerCase()));
+
+    if (!entry) {
+        showStatus('Hospital "' + name + '" not found on map.', 'notfound');
+        return;
+    }
+
+    const {marker, data} = entry;
+    map.setView([data.lat, data.lng], 15);
+
+    // Replace icon with pulsing version briefly
+    marker.setIcon(searchedIcon);
+    marker.openPopup();
+    setTimeout(() => marker.setIcon(hospitalIcon), 5000);
+
+    showStatus(`✓ Found: ${data.name} — ${data.city}, ${data.state}`, 'found');
+    showInfoCard(data.name, data.city + ', ' + data.state, data.contact, data.verified, data.blood_bank);
+}
+
+function showStatus(msg, type) {
+    const el = document.getElementById('map-status');
+    el.textContent = msg;
+    el.className = 'map-status-msg ' + type;
+    el.style.display = 'block';
+}
+
+function showInfoCard(name, sub, contact, verified, bloodBank) {
+    const el = document.getElementById('hospital-info-card');
+    el.style.display = 'flex';
+    el.innerHTML = `
+        <div class="found-icon"><i class="bi bi-hospital-fill"></i></div>
+        <div>
+            <div class="found-name">${name}
+                ${verified ? '<span style="background:rgba(52,193,198,0.15);color:#34c1c6;font-size:11px;padding:2px 8px;border-radius:8px;margin-left:6px"><i class="bi bi-patch-check-fill me-1"></i>Verified</span>' : ''}
+                ${bloodBank ? '<span style="background:rgba(34,197,94,0.12);color:#22c55e;font-size:11px;padding:2px 8px;border-radius:8px;margin-left:4px">Blood Bank</span>' : ''}
+            </div>
+            <div class="found-sub">${sub} ${contact ? '· ' + contact : ''}</div>
+        </div>
+        <i class="bi bi-x-lg found-close" onclick="clearHospitalSearch()"></i>
+    `;
+}
+
+function clearHospitalSearch() {
+    document.getElementById('hospital-search-input').value = '';
+    document.getElementById('map-autocomplete').classList.remove('open');
+    document.getElementById('map-status').style.display = 'none';
+    document.getElementById('hospital-info-card').style.display = 'none';
+    if (searchMarker) { map.removeLayer(searchMarker); searchMarker = null; }
+}
+
+// Keyboard navigation on autocomplete
+document.getElementById('hospital-search-input').addEventListener('keydown', function(e) {
+    const items = document.querySelectorAll('.autocomplete-item');
+    if (!items.length) return;
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        acFocusIdx = Math.min(acFocusIdx + 1, items.length - 1);
+        items.forEach((el,i) => el.classList.toggle('focused', i === acFocusIdx));
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        acFocusIdx = Math.max(acFocusIdx - 1, 0);
+        items.forEach((el,i) => el.classList.toggle('focused', i === acFocusIdx));
+    } else if (e.key === 'Enter') {
+        if (acFocusIdx >= 0 && items[acFocusIdx]) {
+            selectHospital(items[acFocusIdx].dataset.name);
+        } else {
+            searchHospitalOnMap();
+        }
+    } else if (e.key === 'Escape') {
+        document.getElementById('map-autocomplete').classList.remove('open');
+    }
+});
+
+// Close autocomplete when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.map-search-bar')) {
+        document.getElementById('map-autocomplete').classList.remove('open');
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "base/base.html" %}
+{% block title %}Contact{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold mb-2">Contact Us</h2>
+                <p class="text-muted">Have questions or need help? We're here 24x7 for blood emergencies.</p>
+            </div>
+            <div class="bc-card">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-medium">Your Name *</label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-medium">Email</label>
+                            <input type="email" name="email" class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-medium">Phone Number</label>
+                            <input type="tel" name="phone" class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-medium">Message *</label>
+                            <textarea name="message" class="form-control" rows="5" required></textarea>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-blood w-100">
+                                <i class="bi bi-send-fill me-2"></i>Send Message
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="row g-3 mt-3">
+                <div class="col-md-4 text-center">
+                    <div class="bc-card p-3">
+                        <i class="bi bi-telephone-fill text-blood fs-3 mb-2"></i>
+                        <div class="fw-semibold">Emergency</div>
+                        <div class="text-muted small">1800-BLOOD-00</div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="bc-card p-3">
+                        <i class="bi bi-envelope-fill text-blood fs-3 mb-2"></i>
+                        <div class="fw-semibold">Email</div>
+                        <div class="text-muted small">help@bloodconnect.in</div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="bc-card p-3">
+                        <i class="bi bi-clock-fill text-blood fs-3 mb-2"></i>
+                        <div class="fw-semibold">Availability</div>
+                        <div class="text-muted small">24 x 7 x 365</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

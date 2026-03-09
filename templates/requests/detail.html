@@ -1,0 +1,90 @@
+{% extends "base/base.html" %}
+{% block title %}Request Details{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="bc-card">
+                <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="blood-type-badge blood-type-badge-lg">{{ blood_request.blood_type }}</div>
+                        <div>
+                            <h4 class="fw-bold mb-0">{{ blood_request.patient_name }}</h4>
+                            <p class="text-muted mb-0">Age: {{ blood_request.patient_age|default:"N/A" }}</p>
+                        </div>
+                    </div>
+                    <span class="urgency-badge urgency-{{ blood_request.urgency_level }} px-3 py-2">
+                        {{ blood_request.get_urgency_level_display }}
+                    </span>
+                </div>
+                
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="detail-row">
+                            <i class="bi bi-hospital me-2 text-blood"></i>
+                            <div>
+                                <small class="text-muted d-block">Hospital</small>
+                                <strong>{{ blood_request.hospital_name }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-row">
+                            <i class="bi bi-geo-alt me-2 text-blood"></i>
+                            <div>
+                                <small class="text-muted d-block">Location</small>
+                                <strong>{{ blood_request.city|default:"Not specified" }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-row">
+                            <i class="bi bi-droplet me-2 text-blood"></i>
+                            <div>
+                                <small class="text-muted d-block">Units Required</small>
+                                <strong>{{ blood_request.units_required }} units ({{ blood_request.units_remaining }} remaining)</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-row">
+                            <i class="bi bi-telephone me-2 text-blood"></i>
+                            <div>
+                                <small class="text-muted d-block">Contact</small>
+                                <strong>{{ blood_request.requester.phone_number }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if blood_request.additional_notes %}
+                <div class="alert-info rounded p-3 mb-4">
+                    <strong>Notes:</strong> {{ blood_request.additional_notes }}
+                </div>
+                {% endif %}
+                
+                {% if user.is_authenticated and user.role == 'donor' %}
+                <div class="text-center">
+                    <a href="{% url 'respond_to_request' blood_request.id %}" class="btn btn-blood btn-lg px-5">
+                        <i class="bi bi-heart-fill me-2"></i>I Want to Donate
+                    </a>
+                </div>
+                {% endif %}
+                
+                <!-- Donor Responses -->
+                {% if responses %}
+                <hr class="my-4">
+                <h6 class="fw-bold mb-3">Donor Responses ({{ responses|length }})</h6>
+                {% for resp in responses %}
+                <div class="response-item">
+                    <i class="bi bi-person-check-fill text-blood me-2"></i>
+                    <span>{{ resp.donor.get_full_name|default:resp.donor.username }}</span>
+                    <span class="badge ms-2">{{ resp.get_status_display }}</span>
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

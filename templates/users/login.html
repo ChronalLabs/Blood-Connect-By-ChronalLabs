@@ -1,0 +1,50 @@
+{% extends "base/base.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<section class="auth-section">
+    <div class="container">
+        <div class="row justify-content-center align-items-center min-vh-85">
+            <div class="col-md-5 col-lg-4">
+                <div class="auth-card">
+                    <div class="text-center mb-4">
+                        <div class="auth-logo"><i class="bi bi-droplet-fill"></i></div>
+                        <h3 class="fw-bold mt-3">Welcome Back</h3>
+                        <p class="text-muted small">Login to your BloodConnect account</p>
+                    </div>
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {% for field in form %}
+                        <div class="mb-3">
+                            <label class="form-label fw-medium small">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="text-danger small mt-1">{{ field.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        <button type="submit" class="btn btn-blood w-100 mt-2">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                        </button>
+                    </form>
+                    <div class="text-center mt-4">
+                        <p class="text-muted small">Don't have an account? 
+                            <a href="{% url 'register' %}" class="text-blood fw-semibold">Register here</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 d-none d-lg-block">
+                <div class="auth-visual">
+                    <h2 class="text-white fw-bold mb-3">Be a Hero.<br>Donate Blood.</h2>
+                    <p class="text-white-50">One donation can save up to 3 lives. Join our network of donors across India.</p>
+                    <div class="auth-stats mt-4">
+                        <div class="auth-stat"><strong>4.5M+</strong><br><small>Donations</small></div>
+                        <div class="auth-stat"><strong>100+</strong><br><small>Hospitals</small></div>
+                        <div class="auth-stat"><strong>24/7</strong><br><small>Support</small></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

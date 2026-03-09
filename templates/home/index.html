@@ -1,0 +1,262 @@
+{% extends 'base.html' %}
+{% block title %}BloodConnect — Connect Donors, Seekers & Hospitals{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-bg">
+        <div class="hero-particle" style="--x:10%;--y:20%;--s:80px;--d:3s"></div>
+        <div class="hero-particle" style="--x:80%;--y:15%;--s:50px;--d:4s"></div>
+        <div class="hero-particle" style="--x:60%;--y:70%;--s:120px;--d:5s"></div>
+        <div class="hero-particle" style="--x:30%;--y:80%;--s:60px;--d:2.5s"></div>
+    </div>
+    <div class="hero-content">
+        <div class="hero-badge">
+            <span class="pulse-dot"></span>
+            Emergency Response Platform
+        </div>
+        <h1 class="hero-title">
+            Every Drop<br>
+            <span class="hero-accent">Saves A Life</span>
+        </h1>
+        <p class="hero-subtitle">
+            Connect with blood donors, seekers, and hospitals instantly.
+            BloodConnect bridges the gap in medical emergencies across India.
+        </p>
+        <div class="hero-actions">
+            <a href="/requests/emergency/" class="btn-emergency">
+                <i class="fas fa-heartbeat"></i>
+                Emergency Request
+            </a>
+            <a href="/seekers/search/" class="btn-hero-secondary">
+                <i class="fas fa-search"></i>
+                Find Donors
+            </a>
+        </div>
+
+        <!-- Quick Blood Group Search -->
+        <div class="hero-search">
+            <p class="search-label">Quick Search by Blood Group</p>
+            <div class="blood-group-grid">
+                {% for bg in blood_groups %}
+                <a href="/seekers/search/?blood_group={{ bg|slice:':2' }}&rh_factor={{ bg|slice:'2:' }}"
+                   class="blood-badge {% if '-' in bg %}negative{% else %}positive{% endif %}">
+                    {{ bg }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="hero-visual">
+        <div class="hero-stats-card">
+            <div class="stat-item">
+                <div class="stat-icon donors-icon"><i class="fas fa-tint"></i></div>
+                <div class="stat-info">
+                    <span class="stat-num" data-count="12000">0</span>
+                    <span class="stat-label">Donors Registered</span>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon hospitals-icon"><i class="fas fa-hospital"></i></div>
+                <div class="stat-info">
+                    <span class="stat-num" data-count="450">0</span>
+                    <span class="stat-label">Partner Hospitals</span>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon lives-icon"><i class="fas fa-heart"></i></div>
+                <div class="stat-info">
+                    <span class="stat-num" data-count="8200">0</span>
+                    <span class="stat-label">Lives Saved</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Emergency Requests Strip -->
+{% if recent_requests %}
+<section class="emergency-strip">
+    <div class="strip-header">
+        <span class="pulse-dot red"></span>
+        <strong>LIVE EMERGENCY REQUESTS</strong>
+    </div>
+    <div class="requests-ticker">
+        {% for req in recent_requests %}
+        <div class="ticker-item urgency-{{ req.get_urgency_display_class }}">
+            <span class="blood-tag">{{ req.get_full_blood_group }}</span>
+            <span>{{ req.hospital_name }}</span>
+            <span class="ticker-units">{{ req.units_required }} unit{{ req.units_required|pluralize }}</span>
+            {% if request.user.is_authenticated and request.user.role == 'donor' %}
+            <a href="/donors/accept/{{ req.id }}/" class="btn-accept-sm">Accept</a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- How It Works -->
+<section class="how-it-works">
+    <div class="section-header">
+        <h2>How BloodConnect Works</h2>
+        <p>Simple, fast, life-saving in three steps</p>
+    </div>
+    <div class="steps-grid">
+        <div class="step-card" style="--delay: 0s">
+            <div class="step-num">01</div>
+            <div class="step-icon"><i class="fas fa-user-plus"></i></div>
+            <h3>Register</h3>
+            <p>Sign up as a Donor, Seeker, or Hospital. Complete your profile with blood group and location.</p>
+        </div>
+        <div class="step-card" style="--delay: 0.15s">
+            <div class="step-num">02</div>
+            <div class="step-icon"><i class="fas fa-search-location"></i></div>
+            <h3>Connect</h3>
+            <p>Search for compatible donors nearby or post an emergency blood request instantly.</p>
+        </div>
+        <div class="step-card" style="--delay: 0.3s">
+            <div class="step-num">03</div>
+            <div class="step-icon"><i class="fas fa-heart"></i></div>
+            <h3>Save Lives</h3>
+            <p>Donors respond, hospitals confirm availability, and blood reaches patients in need.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Nearby Hospitals Map -->
+<section class="map-section">
+    <div class="section-header">
+        <h2>Hospitals Near You</h2>
+        <p>Find verified hospitals with blood banks on the map</p>
+    </div>
+    <div class="map-wrapper">
+        <div id="hospitalsMap" class="main-map"></div>
+        <div class="map-legend">
+            <div class="legend-item"><span class="legend-dot hospital"></span> Verified Hospital</div>
+            <div class="legend-item"><span class="legend-dot blood-bank"></span> Has Blood Bank</div>
+        </div>
+    </div>
+</section>
+
+<!-- Join CTA -->
+<section class="join-cta">
+    <div class="cta-content">
+        <h2>Be Someone's Reason to Live</h2>
+        <p>Join thousands of donors who have already saved lives. Registration takes less than 2 minutes.</p>
+        <div class="cta-buttons">
+            <a href="/users/register/?role=donor" class="btn-cta-primary">
+                <i class="fas fa-tint"></i> Register as Donor
+            </a>
+            <a href="/users/register/?role=seeker" class="btn-cta-secondary">
+                <i class="fas fa-hand-holding-heart"></i> I Need Blood
+            </a>
+            <a href="/users/register/?role=hospital" class="btn-cta-outline">
+                <i class="fas fa-hospital"></i> Register Hospital
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Hospitals List Preview -->
+{% if hospitals %}
+<section class="hospitals-preview">
+    <div class="section-header">
+        <h2>Partner Hospitals</h2>
+        <a href="/hospitals/list/" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
+    </div>
+    <div class="hospitals-grid">
+        {% for hospital in hospitals %}
+        <div class="hospital-card">
+            <div class="hospital-card-header">
+                <div class="hospital-avatar">{{ hospital.hospital_name|first|upper }}</div>
+                <div>
+                    <h4>{{ hospital.hospital_name }}</h4>
+                    <span class="hospital-address"><i class="fas fa-map-marker-alt"></i> {{ hospital.address|truncatechars:60 }}</span>
+                </div>
+            </div>
+            {% if hospital.blood_bank_available %}
+            <div class="hospital-tag blood-bank-tag"><i class="fas fa-tint"></i> Blood Bank Available</div>
+            {% endif %}
+            <div class="hospital-card-footer">
+                <a href="tel:{{ hospital.contact_number }}" class="btn-call"><i class="fas fa-phone"></i> {{ hospital.contact_number }}</a>
+                <a href="/hospitals/{{ hospital.id }}/" class="btn-details">Details</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Initialize home page map
+document.addEventListener('DOMContentLoaded', function() {
+    initHomeMap();
+    animateCounters();
+});
+
+function initHomeMap() {
+    const map = L.map('hospitalsMap').setView([20.5937, 78.9629], 5);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Custom hospital icon
+    const hospitalIcon = L.divIcon({
+        html: '<div class="map-pin hospital-pin"><i class="fas fa-hospital"></i></div>',
+        className: '',
+        iconSize: [36, 36],
+        iconAnchor: [18, 36],
+    });
+
+    // Fetch hospitals from API
+    fetch('/api/hospitals/')
+        .then(r => r.json())
+        .then(data => {
+            data.hospitals.forEach(h => {
+                if (h.lat && h.lng) {
+                    L.marker([h.lat, h.lng], {icon: hospitalIcon})
+                        .addTo(map)
+                        .bindPopup(`
+                            <div class="popup-content">
+                                <strong>${h.name}</strong><br>
+                                <small>${h.address}</small><br>
+                                ${h.blood_bank ? '<span class="popup-tag">Blood Bank</span>' : ''}
+                                <br><a href="tel:${h.phone}">${h.phone}</a>
+                            </div>
+                        `);
+                }
+            });
+        });
+
+    // Try user location
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+            map.setView([pos.coords.latitude, pos.coords.longitude], 12);
+            L.circleMarker([pos.coords.latitude, pos.coords.longitude], {
+                radius: 8, color: '#d62828', fillColor: '#d62828', fillOpacity: 0.7
+            }).addTo(map).bindPopup('You are here');
+        });
+    }
+}
+
+function animateCounters() {
+    document.querySelectorAll('.stat-num[data-count]').forEach(el => {
+        const target = parseInt(el.dataset.count);
+        let current = 0;
+        const step = target / 60;
+        const timer = setInterval(() => {
+            current = Math.min(current + step, target);
+            el.textContent = Math.floor(current).toLocaleString('+');
+            if (current >= target) clearInterval(timer);
+        }, 30);
+    });
+}
+</script>
+{% endblock %}

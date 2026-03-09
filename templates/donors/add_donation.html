@@ -1,0 +1,26 @@
+{% extends "base/base.html" %}
+{% block title %}Record Donation{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="bc-card">
+                <h5 class="fw-bold mb-4"><i class="bi bi-droplet-fill text-blood me-2"></i>Record Blood Donation</h5>
+                <form method="post">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-medium">{{ field.label }}</label>
+                        {{ field }}
+                    </div>
+                    {% endfor %}
+                    <div class="d-flex gap-2 mt-3">
+                        <button type="submit" class="btn btn-blood px-4">Record Donation</button>
+                        <a href="{% url 'donor_dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base/base.html" %}
+{% block title %}Create Blood Request{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="bc-card">
+                <div class="mb-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="auth-logo auth-logo-sm"><i class="bi bi-droplet-fill"></i></div>
+                        <div>
+                            <h4 class="fw-bold mb-0">Emergency Blood Request</h4>
+                            <p class="text-muted small mb-0">Fill in the details to find matching donors</p>
+                        </div>
+                    </div>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        {% for field in form %}
+                        <div class="col-md-6">
+                            <label class="form-label small fw-medium">{{ field.label }}
+                                {% if field.field.required %}<span class="text-blood">*</span>{% endif %}
+                            </label>
+                            {{ field }}
+                            {% if field.errors %}<div class="text-danger small">{{ field.errors.0 }}</div>{% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-blood px-4">
+                            <i class="bi bi-send-fill me-2"></i>Submit Request
+                        </button>
+                        <a href="{% url 'seeker_dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

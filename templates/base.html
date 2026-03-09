@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BloodConnect — Save Lives{% endblock %}</title>
+    <meta name="description" content="BloodConnect - Connecting blood donors, seekers and hospitals during emergencies">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Leaflet Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/forms.css">
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body data-role="{{ request.user.role|default:'guest' }}">
+
+    <!-- Navbar -->
+    <nav class="navbar" id="mainNavbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">
+                <div class="brand-icon">
+                    <svg viewBox="0 0 40 40" fill="none">
+                        <path d="M20 4C20 4 6 14 6 24C6 31.73 12.27 38 20 38C27.73 38 34 31.73 34 24C34 14 20 4 20 4Z" fill="#d62828"/>
+                        <path d="M14 24H26M20 18V30" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <span class="brand-text">Blood<span class="brand-accent">Connect</span></span>
+            </a>
+
+            <!-- Role-aware navigation -->
+            {% if request.user.is_authenticated %}
+                {% if request.user.role == 'donor' %}
+                <ul class="nav-links">
+                    <li><a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="/donors/dashboard/" class="nav-link {% if 'donors' in request.path %}active{% endif %}"><i class="fas fa-tint"></i> Donate</a></li>
+                    <li><a href="/hospitals/list/" class="nav-link {% if 'hospitals' in request.path %}active{% endif %}"><i class="fas fa-hospital"></i> Hospitals</a></li>
+                    <li><a href="/users/profile/" class="nav-link {% if 'profile' in request.path %}active{% endif %}"><i class="fas fa-user"></i> Profile</a></li>
+                </ul>
+                {% elif request.user.role == 'seeker' %}
+                <ul class="nav-links">
+                    <li><a href="/" class="nav-link"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="/seekers/search/" class="nav-link"><i class="fas fa-search"></i> Seek</a></li>
+                    <li><a href="/hospitals/list/" class="nav-link"><i class="fas fa-hospital"></i> Hospitals</a></li>
+                    <li><a href="/users/profile/" class="nav-link"><i class="fas fa-user"></i> Profile</a></li>
+                </ul>
+                {% elif request.user.role == 'hospital' %}
+                <ul class="nav-links">
+                    <li><a href="/" class="nav-link"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="/hospitals/seekers/" class="nav-link"><i class="fas fa-hand-holding-heart"></i> Seekers</a></li>
+                    <li><a href="/hospitals/donors/" class="nav-link"><i class="fas fa-users"></i> Donors</a></li>
+                    <li><a href="/hospitals/dashboard/" class="nav-link"><i class="fas fa-hospital"></i> Hospital Profile</a></li>
+                </ul>
+                {% endif %}
+
+                <div class="nav-actions">
+                    <span class="nav-user">
+                        <div class="user-avatar">{{ request.user.name|first|upper }}</div>
+                        {{ request.user.name|truncatechars:12 }}
+                    </span>
+                    <a href="/users/logout/" class="btn-nav-logout"><i class="fas fa-sign-out-alt"></i></a>
+                </div>
+            {% else %}
+                <ul class="nav-links">
+                    <li><a href="/" class="nav-link">Home</a></li>
+                    <li><a href="/hospitals/list/" class="nav-link">Hospitals</a></li>
+                    <li><a href="/contact/" class="nav-link">Contact</a></li>
+                </ul>
+                <div class="nav-actions">
+                    <a href="/users/login/" class="btn-nav-secondary">Login</a>
+                    <a href="/users/register/" class="btn-nav-primary">Join Now</a>
+                </div>
+            {% endif %}
+
+            <button class="nav-hamburger" id="navHamburger" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+        <div class="flash-message flash-{{ message.tags }}" role="alert">
+            <i class="fas {% if 'success' in message.tags %}fa-check-circle{% elif 'error' in message.tags %}fa-exclamation-circle{% else %}fa-info-circle{% endif %}"></i>
+            {{ message }}
+            <button class="flash-close" onclick="this.parentElement.remove()">&times;</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <svg viewBox="0 0 40 40" fill="none" width="32">
+                        <path d="M20 4C20 4 6 14 6 24C6 31.73 12.27 38 20 38C27.73 38 34 31.73 34 24C34 14 20 4 20 4Z" fill="#d62828"/>
+                    </svg>
+                    <span>BloodConnect</span>
+                </div>
+                <p>Connecting lives through the power of blood donation. Every drop counts.</p>
+                <div class="footer-stats">
+                    <div class="stat"><span>1 donation</span> saves up to 3 lives</div>
+                </div>
+            </div>
+
+            <div class="footer-links">
+                <h4>For Donors</h4>
+                <ul>
+                    <li><a href="/users/register/?role=donor">Register as Donor</a></li>
+                    <li><a href="/donors/dashboard/">Donor Dashboard</a></li>
+                    <li><a href="/donors/add-donation/">Log Donation</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-links">
+                <h4>For Seekers</h4>
+                <ul>
+                    <li><a href="/users/register/?role=seeker">Register as Seeker</a></li>
+                    <li><a href="/seekers/search/">Search Donors</a></li>
+                    <li><a href="/seekers/request/">Create Request</a></li>
+                    <li><a href="/requests/emergency/">Emergency Request</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-links">
+                <h4>Hospitals</h4>
+                <ul>
+                    <li><a href="/users/register/?role=hospital">Register Hospital</a></li>
+                    <li><a href="/hospitals/list/">Find Hospitals</a></li>
+                    <li><a href="/contact/">Contact Us</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 BloodConnect. Built to save lives.</p>
+            <p>Emergency? Call <a href="tel:108">108</a> | Blood Bank Helpline: <a href="tel:1800180999">1800-180-999</a></p>
+        </div>
+    </footer>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Main JS -->
+    <script src="/static/js/main.js"></script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

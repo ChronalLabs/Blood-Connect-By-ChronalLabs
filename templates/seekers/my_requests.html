@@ -1,0 +1,36 @@
+{% extends "base/base.html" %}
+{% block title %}My Requests{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between mb-4">
+        <h4 class="fw-bold">My Blood Requests</h4>
+        <a href="{% url 'create_request' %}" class="btn btn-blood btn-sm">+ New Request</a>
+    </div>
+    {% for req in requests_list %}
+    <div class="bc-card mb-3">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+            <div class="d-flex gap-3">
+                <div class="blood-type-badge">{{ req.blood_type }}</div>
+                <div>
+                    <h6 class="fw-bold mb-1">{{ req.patient_name }}</h6>
+                    <p class="text-muted small mb-1">{{ req.hospital_name }} &bull; {{ req.city }}</p>
+                    <p class="text-muted small mb-0">{{ req.created_at|date:"M d, Y" }}</p>
+                </div>
+            </div>
+            <div class="text-end">
+                <span class="status-badge status-{{ req.status }} mb-2 d-block">{{ req.get_status_display }}</span>
+                {% if req.status == 'open' %}
+                <a href="{% url 'cancel_request' req.id %}" class="btn btn-outline-danger btn-xs"
+                   onclick="return confirm('Cancel this request?')">Cancel</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="text-center py-5">
+        <p class="text-muted">No requests yet.</p>
+        <a href="{% url 'create_request' %}" class="btn btn-blood">Create Request</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

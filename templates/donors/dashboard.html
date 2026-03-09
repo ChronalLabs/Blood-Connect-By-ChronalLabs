@@ -1,0 +1,135 @@
+{% extends "base/base.html" %}
+{% block title %}Donor Dashboard{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="dashboard-header mb-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h4 class="fw-bold mb-1">Welcome, {{ user.first_name }}! <span class="wave">👋</span></h4>
+                <p class="text-muted mb-0">
+                    <span class="badge-blood-type">{{ donor.blood_type }}</span>
+                    <span class="ms-2">{{ donor.get_availability_status_display }}</span>
+                </p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'donor_profile_edit' %}" class="btn btn-outline-blood btn-sm">
+                    <i class="bi bi-pencil me-1"></i>Edit Medical Info
+                </a>
+                <a href="{% url 'add_donation' %}" class="btn btn-blood btn-sm">
+                    <i class="bi bi-plus me-1"></i>Record Donation
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stats Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="mini-stat-card">
+                <div class="mini-stat-icon bg-blood-soft"><i class="bi bi-droplet-fill text-blood"></i></div>
+                <div class="mini-stat-val">{{ donor.total_donations }}</div>
+                <div class="mini-stat-label">Total Donations</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="mini-stat-card">
+                <div class="mini-stat-icon bg-teal-soft"><i class="bi bi-calendar-check text-teal"></i></div>
+                <div class="mini-stat-val">{{ donor.last_blood_donation_date|default:"Never" }}</div>
+                <div class="mini-stat-label">Last Donation</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="mini-stat-card">
+                <div class="mini-stat-icon" style="background:rgba(34,197,94,0.1)"><i class="bi bi-shield-check" style="color:#22c55e"></i></div>
+                <div class="mini-stat-val">{% if donor.can_donate %}Yes{% else %}No{% endif %}</div>
+                <div class="mini-stat-label">Can Donate Now</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="mini-stat-card">
+                <div class="mini-stat-icon" style="background:rgba(245,158,11,0.1)"><i class="bi bi-bell" style="color:#f59e0b"></i></div>
+                <div class="mini-stat-val">{{ open_requests|length }}</div>
+                <div class="mini-stat-label">Open Requests</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <!-- Matching Requests -->
+        <div class="col-lg-8">
+            <div class="bc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold mb-0">
+                        <div class="pulse-dot d-inline-block me-2"></div>
+                        Blood Requests Matching Your Type ({{ donor.blood_type }})
+                    </h6>
+                    <a href="{% url 'request_list' %}" class="btn btn-xs btn-outline-blood">View All</a>
+                </div>
+                {% for req in open_requests %}
+                <div class="request-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="d-flex gap-3 align-items-start">
+                            <div class="blood-type-badge-sm">{{ req.blood_type }}</div>
+                            <div>
+                                <h6 class="mb-0 fw-semibold">{{ req.patient_name }}</h6>
+                                <p class="text-muted small mb-1">{{ req.hospital_name }}</p>
+                                <p class="text-muted small mb-0"><i class="bi bi-geo-alt me-1"></i>{{ req.city }}</p>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="urgency-badge urgency-{{ req.urgency_level }} mb-2 d-block">{{ req.get_urgency_level_display }}</span>
+                            <a href="{% url 'respond_to_request' req.id %}" class="btn btn-blood btn-xs">Respond</a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-check-circle-fill fs-2 text-success mb-2"></i>
+                    <p>No open requests for your blood type right now.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- My Responses -->
+            <div class="bc-card mb-3">
+                <h6 class="fw-bold mb-3">My Responses</h6>
+                {% for resp in my_responses %}
+                <div class="response-item">
+                    <div class="d-flex justify-content-between">
+                        <span class="small">{{ resp.blood_request.patient_name }}</span>
+                        <span class="badge bg-{{ resp.status|slice:':1' }}">{{ resp.get_status_display }}</span>
+                    </div>
+                    <small class="text-muted">{{ resp.blood_request.hospital_name }}</small>
+                </div>
+                {% empty %}
+                <p class="text-muted small text-center py-3">No responses yet</p>
+                {% endfor %}
+            </div>
+            
+            <!-- Recent Donations -->
+            <div class="bc-card">
+                <div class="d-flex justify-content-between mb-3">
+                    <h6 class="fw-bold mb-0">Donation History</h6>
+                    <a href="{% url 'add_donation' %}" class="btn btn-xs btn-blood">+ Add</a>
+                </div>
+                {% for donation in recent_donations %}
+                <div class="donation-item">
+                    <i class="bi bi-droplet-fill text-blood me-2"></i>
+                    <div>
+                        <div class="small fw-medium">{{ donation.donation_date }}</div>
+                        <div class="text-muted x-small">{{ donation.hospital_name }}</div>
+                    </div>
+                    <div class="ms-auto small text-muted">{{ donation.units_donated }}u</div>
+                </div>
+                {% empty %}
+                <p class="text-muted small text-center py-2">No donations recorded yet</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
