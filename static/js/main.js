@@ -104,6 +104,13 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    const aadharInputs = document.querySelectorAll('input[name="aadhar_card_number"]');
+    aadharInputs.forEach(input => {
+        input.addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '').slice(0, 12);
+        });
+    });
+
     console.log('BloodConnect initialized ✓');
 });
 

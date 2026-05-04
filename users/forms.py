@@ -45,7 +45,7 @@ class UserProfileForm(forms.ModelForm):
         model = CustomUser
         fields = ['first_name', 'last_name', 'email', 'phone_number',
                   'secondary_phone', 'address', 'city', 'state', 'pincode',
-                  'profile_picture']
+                  'aadhar_card_number', 'profile_picture']
         widgets = {
             'address': forms.Textarea(attrs={'rows': 3}),
         }
