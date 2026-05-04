@@ -20,7 +20,6 @@ class CustomUser(AbstractUser):
     phone_number = models.CharField(max_length=15, blank=True)
     secondary_phone = models.CharField(max_length=15, blank=True)
     address = models.TextField(blank=True)
-    aadhar_card_number = models.CharField(max_length=12, blank=True)
     profile_picture = models.ImageField(upload_to='profiles/', blank=True, null=True)
     
     # Location

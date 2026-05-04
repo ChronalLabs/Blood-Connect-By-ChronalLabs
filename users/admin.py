@@ -11,7 +11,7 @@ class CustomUserAdmin(UserAdmin):
     fieldsets = UserAdmin.fieldsets + (
         ("BloodConnect Info", {
             "fields": ("role", "phone_number", "secondary_phone", "address",
-                       "city", "state", "pincode", "aadhar_card_number",
+                       "city", "state", "pincode",
                        "latitude", "longitude", "is_verified", "profile_picture")
         }),
     )
