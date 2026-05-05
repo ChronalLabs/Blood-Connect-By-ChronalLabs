@@ -5,6 +5,8 @@ Custom user model with role-based access for Donors, Seekers, and Hospitals
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from .fields import EncryptedCharField
+
 
 class CustomUser(AbstractUser):
     """Extended user model with role and contact information"""
@@ -20,7 +22,7 @@ class CustomUser(AbstractUser):
     phone_number = models.CharField(max_length=15, blank=True)
     secondary_phone = models.CharField(max_length=15, blank=True)
     address = models.TextField(blank=True)
-    aadhar_card_number = models.CharField(max_length=12, blank=True)
+    aadhar_card_number = EncryptedCharField(max_length=12, blank=True)
     profile_picture = models.ImageField(upload_to='profiles/', blank=True, null=True)
     
     # Location
