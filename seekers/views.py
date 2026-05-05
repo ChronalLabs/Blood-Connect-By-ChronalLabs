@@ -25,6 +25,10 @@ def seeker_dashboard(request):
 
 @login_required
 def create_request(request):
+    if request.user.role != "seeker":
+        messages.error(request, "Access denied.")
+        return redirect("home")
+
     if request.method == "POST":
         form = BloodRequestForm(request.POST)
         if form.is_valid():
@@ -40,12 +44,20 @@ def create_request(request):
 
 @login_required
 def my_requests(request):
+    if request.user.role != "seeker":
+        messages.error(request, "Access denied.")
+        return redirect("home")
+
     requests_list = BloodRequest.objects.filter(requester=request.user).order_by("-created_at")
     return render(request, "seekers/my_requests.html", {"requests_list": requests_list})
 
 
 @login_required
 def cancel_request(request, request_id):
+    if request.user.role != "seeker":
+        messages.error(request, "Access denied.")
+        return redirect("home")
+
     blood_request = get_object_or_404(BloodRequest, id=request_id, requester=request.user)
     blood_request.status = "cancelled"
     blood_request.save()
