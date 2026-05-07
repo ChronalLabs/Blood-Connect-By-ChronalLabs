@@ -82,6 +82,84 @@
     70%  { box-shadow: 0 0 0 16px rgba(214,40,40,0); }
     100% { box-shadow: 0 0 0 0 rgba(214,40,40,0); }
 }
+
+/* ---- EMPTY STATE STYLING ---- */
+.empty-state-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    text-align: center;
+    min-height: 400px;
+    background: linear-gradient(135deg, rgba(214,40,40,0.02) 0%, rgba(52,193,198,0.02) 100%);
+    border: 2px dashed rgba(214,40,40,0.2);
+    border-radius: 16px;
+    margin-top: 2rem;
+}
+
+.empty-state-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.8;
+}
+
+.empty-state-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state-subtitle {
+    font-size: 0.95rem;
+    color: #a0aec0;
+    margin-bottom: 2rem;
+    max-width: 400px;
+    line-height: 1.6;
+}
+
+.empty-state-cta {
+    display: inline-flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.empty-state-cta a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.empty-state-cta a.btn-primary {
+    background: #d62828;
+    color: white;
+}
+
+.empty-state-cta a.btn-primary:hover {
+    background: #ff4d4d;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(214,40,40,0.3);
+}
+
+.empty-state-cta a.btn-secondary {
+    background: rgba(52,193,198,0.1);
+    color: #34c1c6;
+    border: 1px solid rgba(52,193,198,0.3);
+}
+
+.empty-state-cta a.btn-secondary:hover {
+    background: rgba(52,193,198,0.2);
+    border-color: #34c1c6;
+    transform: translateY(-2px);
+}
 </style>
 {% endblock %}
 
@@ -95,7 +173,7 @@
     </div>
 
     <div class="row g-4">
-        <!-- List -->
+        <!-- List Column -->
         <div class="col-lg-5" style="max-height:680px;overflow-y:auto">
             {% for hospital in hospitals %}
             <div class="hospital-card mb-3"
@@ -139,15 +217,30 @@
                 </div>
             </div>
             {% empty %}
-            <p class="text-muted">No verified hospitals found.</p>
+            <!-- IMPROVED EMPTY STATE -->
+            <div class="empty-state-container">
+                <div class="empty-state-icon">🏥</div>
+                <h5 class="empty-state-title">No Hospitals Yet</h5>
+                <p class="empty-state-subtitle">
+                    Be the first to register your hospital on BloodConnect. Help connect lifesaving blood donations with patients in need.
+                </p>
+                <div class="empty-state-cta">
+                    <a href="{% url 'register' %}" class="btn-primary">
+                        <i class="bi bi-plus-circle"></i> Register Hospital
+                    </a>
+                    <a href="{% url 'home' %}" class="btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Back Home
+                    </a>
+                </div>
+            </div>
             {% endfor %}
         </div>
 
-        <!-- Map column -->
+        <!-- Map Column -->
         <div class="col-lg-7">
             <div class="sticky-top" style="top:80px">
 
-                <!-- Search bar -->
+                <!-- Search Bar -->
                 <div class="map-search-bar mb-2">
                     <div class="map-search-inner">
                         <div class="map-search-icon"><i class="bi bi-hospital-fill"></i></div>
@@ -170,7 +263,7 @@
                     <div id="map-status" class="map-status-msg" style="display:none"></div>
                 </div>
 
-                <!-- Map container -->
+                <!-- Map Container -->
                 <div class="map-container rounded-4 overflow-hidden" style="position:relative">
                     <div id="hospital-map" style="height:590px;"></div>
                     <div class="map-legend">
@@ -187,51 +280,41 @@
 
 {% block extra_js %}
 <script>
-// ============================================================
-//  HOSPITAL LIST MAP — with search input
-// ============================================================
-
-const map = L.map('hospital-map').setView([20.5937, 78.9629], 5);
+var map = L.map('hospital-map').setView([20.5937, 78.9629], 5);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors', maxZoom: 18
 }).addTo(map);
 
-const hospitalIcon = L.divIcon({
-    html: `<div class="map-marker hospital-marker"><i class="bi bi-hospital-fill"></i></div>`,
+var hospitalIcon = L.divIcon({
+    html: '<div class="map-marker hospital-marker"><i class="bi bi-hospital-fill"></i></div>',
     className: '', iconSize:[36,36], iconAnchor:[18,36], popupAnchor:[0,-36]
 });
-const searchedIcon = L.divIcon({
-    html: `<div class="map-marker" style="background:#d62828;width:42px;height:42px;animation:markerPulse 1.5s ease 4"><i class="bi bi-hospital-fill" style="font-size:18px"></i></div>`,
+var searchedIcon = L.divIcon({
+    html: '<div class="map-marker" style="background:#d62828;width:42px;height:42px;animation:markerPulse 1.5s ease 4"><i class="bi bi-hospital-fill" style="font-size:18px"></i></div>',
     className: '', iconSize:[42,42], iconAnchor:[21,42], popupAnchor:[0,-42]
 });
 
-// All hospital data from server
-const hospitalData = {{ hospitals_json|safe }};
+var hospitalData = {{ hospitals_json|safe }};
+var markerMap = {};
+var searchMarker = null;
+var acFocusIdx = -1;
 
-// Build marker registry
-const markerMap = {};
-hospitalData.forEach(h => {
+hospitalData.forEach(function(h) {
     if (h.lat && h.lng) {
-        const marker = L.marker([h.lat, h.lng], { icon: hospitalIcon })
+        var marker = L.marker([h.lat, h.lng], { icon: hospitalIcon })
             .addTo(map)
             .bindPopup(buildPopup(h));
-        markerMap[h.name.toLowerCase()] = { marker, data: h };
+        markerMap[h.name.toLowerCase()] = { marker: marker, data: h };
     }
 });
 
 function buildPopup(h) {
-    return `<div class="map-popup" style="min-width:180px">
-        <strong>${h.name}</strong><br>
-        <small style="color:#8b8fa8"><i class="bi bi-geo-alt"></i> ${h.address}</small><br>
-        <small style="color:#8b8fa8"><i class="bi bi-telephone"></i> ${h.contact}</small>
-        ${h.blood_bank ? '<br><span style="background:rgba(34,197,94,0.15);color:#22c55e;padding:2px 8px;border-radius:8px;font-size:11px;display:inline-block;margin-top:4px">Blood Bank ✓</span>' : ''}
-    </div>`;
+    return '<div class="map-popup" style="min-width:180px"><strong>' + h.name + '</strong><br><small style="color:#8b8fa8"><i class="bi bi-geo-alt"></i> ' + h.address + '</small><br><small style="color:#8b8fa8"><i class="bi bi-telephone"></i> ' + h.contact + '</small>' + (h.blood_bank ? '<br><span style="background:rgba(34,197,94,0.15);color:#22c55e;padding:2px 8px;border-radius:8px;font-size:11px;display:inline-block;margin-top:4px">Blood Bank ✓</span>' : '') + '</div>';
 }
 
-// Geolocation
 if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(pos => {
+    navigator.geolocation.getCurrentPosition(function(pos) {
         map.setView([pos.coords.latitude, pos.coords.longitude], 11);
         L.circleMarker([pos.coords.latitude, pos.coords.longitude], {
             radius: 9, fillColor: '#22c55e', color: '#fff', weight: 2, fillOpacity: 0.95
@@ -239,66 +322,52 @@ if (navigator.geolocation) {
     });
 }
 
-// Focus a hospital by name (called from list cards too)
-let searchMarker = null;
-let acFocusIdx = -1;
-
 function focusHospital(name) {
-    const key = name.toLowerCase();
-    const entry = markerMap[key] ||
-        Object.values(markerMap).find(({data}) => data.name.toLowerCase().includes(key));
+    var key = name.toLowerCase();
+    var entry = markerMap[key] ||
+        Object.values(markerMap).find(function(item) { return item.data.name.toLowerCase().includes(key); });
 
     if (entry) {
-        const {marker, data} = entry;
+        var marker = entry.marker;
+        var data = entry.data;
         map.setView([data.lat, data.lng], 15);
         marker.setIcon(searchedIcon);
         marker.openPopup();
-        setTimeout(() => marker.setIcon(hospitalIcon), 5000);
-        showStatus(`✓ ${data.name} — ${data.address}`, 'found');
+        setTimeout(function() { marker.setIcon(hospitalIcon); }, 5000);
+        showStatus('✓ ' + data.name + ' — ' + data.address, 'found');
         document.getElementById('hospital-search-input').value = data.name;
         document.getElementById('map-autocomplete').classList.remove('open');
     }
 }
 
 function onHospitalSearchInput(val) {
-    const ac = document.getElementById('map-autocomplete');
+    var ac = document.getElementById('map-autocomplete');
     document.getElementById('map-status').style.display = 'none';
     if (!val.trim()) { ac.classList.remove('open'); return; }
 
-    const q = val.toLowerCase();
-    const matches = Object.values(markerMap)
-        .filter(({data}) => data.name.toLowerCase().includes(q) || (data.address||'').toLowerCase().includes(q))
+    var q = val.toLowerCase();
+    var matches = Object.values(markerMap)
+        .filter(function(item) { return item.data.name.toLowerCase().includes(q) || (item.data.address || '').toLowerCase().includes(q); })
         .slice(0, 7);
 
     if (!matches.length) {
-        ac.innerHTML = `<div style="padding:12px 16px;color:rgba(255,255,255,0.4);font-size:13px;text-align:center">
-            <i class="bi bi-search me-2"></i>No hospitals found for "${val}"
-        </div>`;
+        ac.innerHTML = '<div style="padding:12px 16px;color:rgba(255,255,255,0.4);font-size:13px;text-align:center"><i class="bi bi-search me-2"></i>No hospitals found for "' + val + '"</div>';
         ac.classList.add('open');
         return;
     }
 
-    ac.innerHTML = matches.map(({data}) => `
-        <div class="autocomplete-item" data-name="${data.name}"
-             onmousedown="selectHospital('${data.name.replace(/'/g,"\'")}')">
-            <div class="ac-icon"><i class="bi bi-hospital-fill"></i></div>
-            <div>
-                <div class="ac-name">${highlight(data.name, val)}</div>
-                <div class="ac-sub">${data.address}</div>
-            </div>
-            ${data.verified ? '<div class="ac-badge"><i class="bi bi-patch-check-fill"></i> Verified</div>' : ''}
-        </div>
-    `).join('');
+    ac.innerHTML = matches.map(function(item) {
+        var data = item.data;
+        return '<div class="autocomplete-item" data-name="' + data.name + '" onmousedown="selectHospital(\'' + data.name.replace(/'/g, "\\'") + '\')"><div class="ac-icon"><i class="bi bi-hospital-fill"></i></div><div><div class="ac-name">' + highlight(data.name, val) + '</div><div class="ac-sub">' + data.address + '</div></div>' + (data.verified ? '<div class="ac-badge"><i class="bi bi-patch-check-fill"></i> Verified</div>' : '') + '</div>';
+    }).join('');
     ac.classList.add('open');
     acFocusIdx = -1;
 }
 
 function highlight(text, q) {
-    const i = text.toLowerCase().indexOf(q.toLowerCase());
+    var i = text.toLowerCase().indexOf(q.toLowerCase());
     if (i === -1) return text;
-    return text.slice(0,i) +
-        `<span style="color:#d62828;font-weight:800">${text.slice(i,i+q.length)}</span>` +
-        text.slice(i+q.length);
+    return text.slice(0, i) + '<span style="color:#d62828;font-weight:800">' + text.slice(i, i + q.length) + '</span>' + text.slice(i + q.length);
 }
 
 function selectHospital(name) {
@@ -308,40 +377,36 @@ function selectHospital(name) {
 }
 
 function searchHospitalOnMap() {
-    const val = document.getElementById('hospital-search-input').value.trim();
+    var val = document.getElementById('hospital-search-input').value.trim();
     if (!val) return;
     document.getElementById('map-autocomplete').classList.remove('open');
 
-    // Try local first
-    const q = val.toLowerCase();
-    const match = Object.values(markerMap).find(({data}) =>
-        data.name.toLowerCase().includes(q) || (data.address||'').toLowerCase().includes(q)
-    );
+    var q = val.toLowerCase();
+    var match = Object.values(markerMap).find(function(item) {
+        return item.data.name.toLowerCase().includes(q) || (item.data.address || '').toLowerCase().includes(q);
+    });
     if (match) { focusHospital(val); return; }
 
-    // Geocode fallback
     showStatus('Searching for "' + val + '"...', 'found');
-    fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val+' hospital')}&format=json&limit=1`, {
+    fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(val + ' hospital') + '&format=json&limit=1', {
         headers: {'Accept-Language': 'en'}
     })
-    .then(r => r.json())
-    .then(results => {
-        if (!results.length) { showStatus('No results found for "'+val+'"', 'notfound'); return; }
-        const r = results[0];
-        const lat = parseFloat(r.lat), lng = parseFloat(r.lon);
-        const label = r.display_name.split(',').slice(0,3).join(', ');
+    .then(function(r) { return r.json(); })
+    .then(function(results) {
+        if (!results.length) { showStatus('No results found for "' + val + '"', 'notfound'); return; }
+        var r = results[0];
+        var lat = parseFloat(r.lat);
+        var lng = parseFloat(r.lon);
+        var label = r.display_name.split(',').slice(0, 3).join(', ');
         if (searchMarker) map.removeLayer(searchMarker);
         searchMarker = L.marker([lat, lng], {icon: searchedIcon})
             .addTo(map)
-            .bindPopup(`<div class="map-popup">
-                <strong>${label}</strong><br>
-                <small style="color:#f59e0b">⚠ Not registered on BloodConnect yet</small>
-            </div>`)
+            .bindPopup('<div class="map-popup"><strong>' + label + '</strong><br><small style="color:#f59e0b">⚠ Not registered on BloodConnect yet</small></div>')
             .openPopup();
         map.setView([lat, lng], 15);
         showStatus('📍 Showing: ' + label, 'geocoded');
     })
-    .catch(() => showStatus('Search failed. Check your connection.', 'notfound'));
+    .catch(function() { showStatus('Search failed. Check your connection.', 'notfound'); });
 }
 
 function clearSearch() {
@@ -352,15 +417,15 @@ function clearSearch() {
 }
 
 function handleSearchKey(e) {
-    const items = document.querySelectorAll('.autocomplete-item');
+    var items = document.querySelectorAll('.autocomplete-item');
     if (e.key === 'ArrowDown') {
         e.preventDefault();
-        acFocusIdx = Math.min(acFocusIdx+1, items.length-1);
-        items.forEach((el,i) => el.classList.toggle('focused', i===acFocusIdx));
+        acFocusIdx = Math.min(acFocusIdx + 1, items.length - 1);
+        items.forEach(function(el, i) { el.classList.toggle('focused', i === acFocusIdx); });
     } else if (e.key === 'ArrowUp') {
         e.preventDefault();
-        acFocusIdx = Math.max(acFocusIdx-1, 0);
-        items.forEach((el,i) => el.classList.toggle('focused', i===acFocusIdx));
+        acFocusIdx = Math.max(acFocusIdx - 1, 0);
+        items.forEach(function(el, i) { el.classList.toggle('focused', i === acFocusIdx); });
     } else if (e.key === 'Enter') {
         if (acFocusIdx >= 0 && items[acFocusIdx]) selectHospital(items[acFocusIdx].dataset.name);
         else searchHospitalOnMap();
@@ -370,13 +435,13 @@ function handleSearchKey(e) {
 }
 
 function showStatus(msg, type) {
-    const el = document.getElementById('map-status');
+    var el = document.getElementById('map-status');
     el.textContent = msg;
     el.className = 'map-status-msg ' + type;
     el.style.display = 'block';
 }
 
-document.addEventListener('click', e => {
+document.addEventListener('click', function(e) {
     if (!e.target.closest('.map-search-bar'))
         document.getElementById('map-autocomplete').classList.remove('open');
 });
