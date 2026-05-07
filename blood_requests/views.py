@@ -28,9 +28,11 @@ def request_list(request):
 def request_detail(request, pk):
     blood_request = get_object_or_404(BloodRequest, pk=pk)
     responses = blood_request.donor_responses.all().select_related("donor")
+    ranked_donors = blood_request.get_ranked_donors(radius_km=50)
     return render(request, "requests/detail.html", {
         "blood_request": blood_request,
         "responses": responses,
+        "ranked_donors": ranked_donors,
     })
 
 

@@ -59,6 +59,30 @@ class BloodRequest(models.Model):
     def units_remaining(self):
         return self.units_required - self.units_fulfilled
 
+    def get_compatible_donors(self):
+        """Return available DonorProfile queryset filtered by blood compatibility."""
+        from donors.models import DonorProfile
+        from utils.blood_compatibility import get_compatible_donor_types
+        compatible_types = get_compatible_donor_types(self.blood_group, self.rh_factor)
+        from django.db.models import Q
+        query = Q()
+        for bg, rh in compatible_types:
+            query |= Q(blood_group=bg, rh_factor=rh)
+        return DonorProfile.objects.filter(query, availability_status='available').select_related('user')
+
+    def get_ranked_donors(self, radius_km=50):
+        """Return ranked donor list with compatibility + proximity scores."""
+        from utils.blood_compatibility import rank_donors
+        donors = self.get_compatible_donors()
+        # Exclude donors in 90-day cooldown
+        donors = [d for d in donors if d.can_donate()]
+        return rank_donors(
+            donors,
+            self.blood_group, self.rh_factor,
+            self.latitude, self.longitude,
+            radius_km=radius_km
+        )
+
 
 class DonorResponse(models.Model):
     STATUS_CHOICES = [

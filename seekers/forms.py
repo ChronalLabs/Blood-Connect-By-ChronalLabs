@@ -26,6 +26,11 @@ class DonorSearchForm(forms.Form):
     blood_group = forms.ChoiceField(choices=BLOOD_GROUP_CHOICES, required=False)
     rh_factor = forms.ChoiceField(choices=RH_CHOICES, required=False)
     city = forms.CharField(max_length=100, required=False, widget=forms.TextInput(attrs={"placeholder": "Enter city"}))
+    radius_km = forms.IntegerField(
+        required=False, min_value=1, max_value=500,
+        initial=50,
+        widget=forms.NumberInput(attrs={"placeholder": "Radius (km)"})
+    )
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

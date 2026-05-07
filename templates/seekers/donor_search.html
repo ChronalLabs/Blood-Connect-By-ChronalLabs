@@ -9,19 +9,67 @@
                 <label class="form-label small fw-medium">Blood Group</label>
                 {{ form.blood_group }}
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label small fw-medium">RH Factor</label>
                 {{ form.rh_factor }}
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label class="form-label small fw-medium">City</label>
                 {{ form.city }}
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-medium">Radius (km)</label>
+                {{ form.radius_km }}
             </div>
             <div class="col-md-2">
                 <button class="btn btn-blood w-100">Search</button>
             </div>
         </form>
     </div>
+
+    {% if ranked_donors is not None %}
+    <!-- Compatibility-ranked results -->
+    <div class="row g-3">
+        {% for entry in ranked_donors %}
+        <div class="col-md-6 col-lg-4">
+            <div class="donor-card">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="donor-avatar"><i class="bi bi-person-fill"></i></div>
+                    <div>
+                        <h6 class="fw-bold mb-0">{{ entry.donor.user.get_full_name|default:"Anonymous" }}</h6>
+                        <small class="text-muted">{{ entry.donor.user.city|default:"" }}</small>
+                    </div>
+                    <div class="blood-type-badge ms-auto">{{ entry.donor.blood_type }}</div>
+                </div>
+                <div class="d-flex gap-2 flex-wrap mb-2">
+                    <span class="info-chip"><i class="bi bi-telephone me-1"></i>{{ entry.donor.user.phone_number }}</span>
+                    <span class="availability-chip avail-{{ entry.donor.availability_status }}">{{ entry.donor.get_availability_status_display }}</span>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    {% if entry.compatibility_score == 100 %}
+                    <span class="badge bg-success">🟢 {{ entry.compatibility_score }}% match</span>
+                    {% elif entry.compatibility_score >= 80 %}
+                    <span class="badge bg-warning text-dark">🟡 {{ entry.compatibility_score }}% match</span>
+                    {% else %}
+                    <span class="badge bg-secondary">⚪ {{ entry.compatibility_score }}% match</span>
+                    {% endif %}
+                    {% if entry.distance_km is not None %}
+                    <span class="info-chip"><i class="bi bi-geo-alt me-1"></i>{{ entry.distance_km }} km</span>
+                    {% endif %}
+                    <span class="info-chip">Score: {{ entry.final_score }}/100</span>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-search fs-2 text-muted mb-3 d-block"></i>
+            <p class="text-muted">No compatible donors found. Try increasing the radius or adjusting filters.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <!-- Unfiltered / city-only results -->
     <div class="row g-3">
         {% for donor in donors %}
         <div class="col-md-6 col-lg-4">
@@ -47,5 +95,7 @@
         </div>
         {% endfor %}
     </div>
+    {% endif %}
+
 </div>
 {% endblock %}
