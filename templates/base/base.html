@@ -126,5 +126,36 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="{% static 'js/bloodconnect.js' %}"></script>
 {% block extra_js %}{% endblock %}
+<!-- Scroll to Top Button -->
+<button id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" 
+  style="opacity:0;visibility:hidden;position:fixed;bottom:2rem;right:2rem;z-index:999;
+  background:#e53e3e;color:white;border:none;border-radius:50%;
+  width:45px;height:45px;font-size:1.2rem;cursor:pointer;
+  box-shadow:0 4px 15px rgba(229,62,62,0.4);transition:all 0.3s;">
+  ↑
+</button>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const btn = document.getElementById('scrollTopBtn');
+
+  function toggleScrollBtn() {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+    if (scrollTop > 150) {   // lowered threshold (more reliable)
+      btn.style.opacity = "1";
+      btn.style.visibility = "visible";
+    } else {
+      btn.style.opacity = "0";
+      btn.style.visibility = "hidden";
+    }
+  }
+
+  window.addEventListener('scroll', toggleScrollBtn);
+
+});
+</script>
+
 </body>
 </html>
