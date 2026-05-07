@@ -18,11 +18,13 @@ def donor_dashboard(request):
     except DonorProfile.DoesNotExist:
         return redirect("donor_setup")
     
-    open_requests = BloodRequest.objects.filter(
-        blood_group=profile.blood_group,
-        rh_factor=profile.rh_factor,
-        status="open"
-    ).order_by("-created_at")[:10]
+    from utils.blood_compatibility import get_compatible_donor_types
+    from django.db.models import Q
+    compatible_types = get_compatible_donor_types(profile.blood_group, profile.rh_factor)
+    compat_query = Q()
+    for bg, rh in compatible_types:
+        compat_query |= Q(blood_group=bg, rh_factor=rh)
+    open_requests = BloodRequest.objects.filter(compat_query, status="open").order_by("-created_at")[:10]
     
     my_responses = DonorResponse.objects.filter(donor=request.user).select_related("blood_request")[:10]
     recent_donations = profile.donation_history.all()[:5]
@@ -121,13 +123,19 @@ def search_donors(request):
         availability_status="available"
     ).select_related("user")
     
-    if blood_group:
-        donors = donors.filter(blood_group=blood_group)
-    if rh_factor:
-        donors = donors.filter(rh_factor=rh_factor)
     if city:
         donors = donors.filter(user__city__icontains=city)
-    
+    if blood_group and rh_factor:
+        from utils.blood_compatibility import get_compatible_donor_types
+        from django.db.models import Q
+        compatible_types = get_compatible_donor_types(blood_group, rh_factor)
+        query = Q()
+        for bg, rh in compatible_types:
+            query |= Q(blood_group=bg, rh_factor=rh)
+        donors = donors.filter(query)
+    elif blood_group:
+        donors = donors.filter(blood_group=blood_group)
+
     return render(request, "donors/search.html", {
         "donors": donors,
         "blood_group": blood_group,

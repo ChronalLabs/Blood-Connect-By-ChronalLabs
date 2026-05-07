@@ -71,6 +71,42 @@
                 </div>
                 {% endif %}
                 
+                <!-- Ranked Compatible Donors -->
+                <hr class="my-4">
+                <h6 class="fw-bold mb-3">Compatible Donors{% if ranked_donors %} ({{ ranked_donors|length }}){% endif %}</h6>
+                {% if ranked_donors %}
+                {% for entry in ranked_donors %}
+                <div class="bc-card mb-2 p-3">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="blood-type-badge">{{ entry.donor.blood_type }}</div>
+                            <div>
+                                <strong>{{ entry.donor.user.get_full_name|default:entry.donor.user.username }}</strong>
+                                {% if entry.distance_km is not None %}
+                                <small class="text-muted d-block">{{ entry.distance_km }} km away</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            {% if entry.compatibility_score == 100 %}
+                            <span class="badge bg-success">🟢 {{ entry.compatibility_score }}% match</span>
+                            {% elif entry.compatibility_score >= 80 %}
+                            <span class="badge bg-warning text-dark">🟡 {{ entry.compatibility_score }}% match</span>
+                            {% else %}
+                            <span class="badge bg-secondary">⚪ {{ entry.compatibility_score }}% match</span>
+                            {% endif %}
+                            <small class="text-muted d-block">Score: {{ entry.final_score }}/100</small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="text-center text-muted py-3">
+                    <i class="bi bi-person-x fs-3 d-block mb-2"></i>
+                    No compatible donors found within 50 km.
+                </div>
+                {% endif %}
+
                 <!-- Donor Responses -->
                 {% if responses %}
                 <hr class="my-4">
