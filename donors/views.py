@@ -7,6 +7,13 @@ from .forms import DonorProfileForm, DonationHistoryForm
 from blood_requests.models import BloodRequest, DonorResponse
 
 
+def _blood_type_query(blood_types):
+    query = Q()
+    for bg, rh in blood_types:
+        query |= Q(blood_group=bg, rh_factor=rh)
+    return query
+
+
 @login_required
 def donor_dashboard(request):
     if request.user.role != "donor":
@@ -18,13 +25,12 @@ def donor_dashboard(request):
     except DonorProfile.DoesNotExist:
         return redirect("donor_setup")
     
-    from utils.blood_compatibility import get_compatible_donor_types
-    from django.db.models import Q
-    compatible_types = get_compatible_donor_types(profile.blood_group, profile.rh_factor)
-    compat_query = Q()
-    for bg, rh in compatible_types:
-        compat_query |= Q(blood_group=bg, rh_factor=rh)
-    open_requests = BloodRequest.objects.filter(compat_query, status="open").order_by("-created_at")[:10]
+    from utils.blood_compatibility import get_compatible_recipient_types
+    compatible_types = get_compatible_recipient_types(profile.blood_group, profile.rh_factor)
+    open_requests = BloodRequest.objects.filter(
+        _blood_type_query(compatible_types),
+        status="open",
+    ).order_by("-created_at")[:10]
     
     my_responses = DonorResponse.objects.filter(donor=request.user).select_related("blood_request")[:10]
     recent_donations = profile.donation_history.all()[:5]
@@ -96,8 +102,36 @@ def add_donation(request):
 
 @login_required
 def respond_to_request(request, request_id):
+    if request.user.role != "donor":
+        messages.error(request, "Only donors can respond to blood requests.")
+        return redirect("home")
+
     blood_request = get_object_or_404(BloodRequest, id=request_id)
     donor_profile = get_object_or_404(DonorProfile, user=request.user)
+
+    if blood_request.status != "open" or blood_request.units_remaining <= 0:
+        messages.error(request, "This blood request is no longer open for donor responses.")
+        return redirect("donor_dashboard")
+
+    if donor_profile.availability_status != "available":
+        messages.error(request, "Please mark yourself available before responding to a request.")
+        return redirect("donor_dashboard")
+
+    if not donor_profile.can_donate():
+        messages.error(request, "You are still in the 90-day donation cooldown period.")
+        return redirect("donor_dashboard")
+
+    from utils.blood_compatibility import get_donation_priority
+    is_compatible = get_donation_priority(
+        donor_profile.blood_group,
+        donor_profile.rh_factor,
+        blood_request.blood_group,
+        blood_request.rh_factor,
+    ) > 0
+
+    if not is_compatible:
+        messages.error(request, "Your blood type is not compatible with this request.")
+        return redirect("donor_dashboard")
     
     response, created = DonorResponse.objects.get_or_create(
         blood_request=blood_request,

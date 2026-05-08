@@ -31,6 +31,12 @@ def get_compatible_donor_types(patient_blood_group, patient_rh):
     return [donor for donor, recipients in DONATION_MATRIX.items() if patient in recipients]
 
 
+def get_compatible_recipient_types(donor_blood_group, donor_rh):
+    """Return list of (blood_group, rh_factor) tuples this donor can donate to."""
+    donor = (donor_blood_group, donor_rh)
+    return DONATION_MATRIX.get(donor, [])
+
+
 def get_donation_priority(donor_blood_group, donor_rh, patient_blood_group, patient_rh):
     """
     Return compatibility score (0-100).
