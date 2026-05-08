@@ -6,6 +6,7 @@ from .forms import BloodRequestForm, DonorSearchForm
 from donors.models import DonorProfile
 from hospitals.models import HospitalProfile
 from blood_requests.models import BloodRequest
+from blood_requests.services import notify_compatible_donors
 
 
 @login_required
@@ -35,7 +36,12 @@ def create_request(request):
             blood_request = form.save(commit=False)
             blood_request.requester = request.user
             blood_request.save()
-            messages.success(request, "Blood request submitted! Nearby donors will be notified.")
+            notifications = notify_compatible_donors(blood_request)
+            sent_count = sum(1 for notification in notifications if notification.status == "sent")
+            messages.success(
+                request,
+                f"Blood request submitted! {sent_count} compatible donor(s) notified.",
+            )
             return redirect("seeker_dashboard")
     else:
         form = BloodRequestForm()

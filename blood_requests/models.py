@@ -102,3 +102,37 @@ class DonorResponse(models.Model):
     
     def __str__(self):
         return f"{self.donor.username} -> {self.blood_request}"
+
+
+class DonorNotification(models.Model):
+    STATUS_CHOICES = [
+        ('sent', 'Sent'),
+        ('skipped', 'Skipped'),
+        ('failed', 'Failed'),
+    ]
+    CHANNEL_CHOICES = [
+        ('email', 'Email'),
+    ]
+
+    blood_request = models.ForeignKey(
+        BloodRequest,
+        on_delete=models.CASCADE,
+        related_name='donor_notifications',
+    )
+    donor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='blood_request_notifications',
+    )
+    channel = models.CharField(max_length=20, choices=CHANNEL_CHOICES, default='email')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    error_message = models.TextField(blank=True)
+    sent_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('blood_request', 'donor', 'channel')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.donor.username} notified for {self.blood_request} ({self.status})"
