@@ -3,13 +3,20 @@ Tests for blood compatibility engine — 64 donor×recipient combinations.
 Run with: python manage.py test blood_requests.tests.test_compatibility
 """
 from django.test import TestCase
+from django.urls import reverse
 from utils.blood_compatibility import (
     get_compatible_donor_types,
+    get_compatible_recipient_types,
     get_donation_priority,
     rank_donors,
     DONATION_MATRIX,
 )
 from unittest.mock import MagicMock
+from datetime import date, timedelta
+
+from blood_requests.models import BloodRequest, DonorResponse
+from donors.models import DonorProfile
+from users.models import CustomUser
 
 
 ALL_TYPES = [('O','-'), ('O','+'), ('A','-'), ('A','+'), ('B','-'), ('B','+'), ('AB','-'), ('AB','+')]
@@ -114,6 +121,25 @@ class GetCompatibleDonorTypesTests(TestCase):
         self.assertNotIn(('B', '-'), types)
 
 
+class GetCompatibleRecipientTypesTests(TestCase):
+
+    def test_o_negative_donor_can_fulfill_all_8_request_types(self):
+        types = get_compatible_recipient_types('O', '-')
+        self.assertEqual(types, DONATION_MATRIX[('O', '-')])
+        self.assertEqual(len(types), 8)
+
+    def test_ab_positive_donor_can_only_fulfill_ab_positive_requests(self):
+        types = get_compatible_recipient_types('AB', '+')
+        self.assertEqual(types, [('AB', '+')])
+
+    def test_each_donor_type_matches_donation_matrix(self):
+        for donor_type, recipient_types in DONATION_MATRIX.items():
+            self.assertEqual(
+                get_compatible_recipient_types(*donor_type),
+                recipient_types,
+            )
+
+
 class RankDonorsTests(TestCase):
 
     def test_ranked_highest_score_first(self):
@@ -152,3 +178,107 @@ class RankDonorsTests(TestCase):
         result = rank_donors([near, far_but_valid], 'A', '+', patient_lat=19.0, patient_lon=72.8, radius_km=50)
         self.assertEqual(len(result), 2)
         self.assertGreater(result[0]['final_score'], result[1]['final_score'])
+
+
+class DonorRequestMatchingTests(TestCase):
+
+    def setUp(self):
+        self.seeker = CustomUser.objects.create_user(
+            username='seeker',
+            password='password123',
+            role='seeker',
+        )
+
+    def _create_donor(self, blood_group, rh_factor, **profile_kwargs):
+        user = CustomUser.objects.create_user(
+            username=f'donor_{blood_group}{rh_factor}'.replace('+', 'pos').replace('-', 'neg'),
+            password='password123',
+            role='donor',
+        )
+        profile = DonorProfile.objects.create(
+            user=user,
+            blood_group=blood_group,
+            rh_factor=rh_factor,
+            age=30,
+            availability_status='available',
+            **profile_kwargs,
+        )
+        return user, profile
+
+    def _create_request(self, blood_group, rh_factor, **request_kwargs):
+        return BloodRequest.objects.create(
+            requester=self.seeker,
+            patient_name=f'{blood_group}{rh_factor} Patient',
+            blood_group=blood_group,
+            rh_factor=rh_factor,
+            units_required=1,
+            hospital_name='City Hospital',
+            hospital_address='Main Road',
+            status='open',
+            **request_kwargs,
+        )
+
+    def test_o_negative_donor_dashboard_shows_all_compatible_requests(self):
+        donor_user, _ = self._create_donor('O', '-')
+        compatible_request = self._create_request('AB', '+')
+        exact_request = self._create_request('O', '-')
+
+        self.client.force_login(donor_user)
+        response = self.client.get(reverse('donor_dashboard'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertCountEqual(
+            list(response.context['open_requests']),
+            [compatible_request, exact_request],
+        )
+
+    def test_ab_positive_donor_dashboard_hides_incompatible_requests(self):
+        donor_user, _ = self._create_donor('AB', '+')
+        compatible_request = self._create_request('AB', '+')
+        self._create_request('A', '+')
+
+        self.client.force_login(donor_user)
+        response = self.client.get(reverse('donor_dashboard'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(list(response.context['open_requests']), [compatible_request])
+
+    def test_direct_response_rejects_incompatible_blood_type(self):
+        donor_user, _ = self._create_donor('AB', '+')
+        incompatible_request = self._create_request('O', '-')
+
+        self.client.force_login(donor_user)
+        response = self.client.get(reverse('respond_to_request', args=[incompatible_request.id]))
+
+        self.assertRedirects(response, reverse('donor_dashboard'))
+        self.assertFalse(DonorResponse.objects.exists())
+
+    def test_direct_response_rejects_donor_in_cooldown(self):
+        donor_user, _ = self._create_donor(
+            'O',
+            '-',
+            last_blood_donation_date=date.today() - timedelta(days=30),
+        )
+        compatible_request = self._create_request('A', '+')
+
+        self.client.force_login(donor_user)
+        response = self.client.get(reverse('respond_to_request', args=[compatible_request.id]))
+
+        self.assertRedirects(response, reverse('donor_dashboard'))
+        self.assertFalse(DonorResponse.objects.exists())
+
+    def test_direct_response_creates_response_for_eligible_compatible_donor(self):
+        donor_user, _ = self._create_donor('O', '-')
+        compatible_request = self._create_request('A', '+')
+
+        self.client.force_login(donor_user)
+        response = self.client.get(reverse('respond_to_request', args=[compatible_request.id]))
+
+        self.assertRedirects(response, reverse('donor_dashboard'))
+        self.assertTrue(
+            DonorResponse.objects.filter(
+                donor=donor_user,
+                blood_request=compatible_request,
+                status='interested',
+            ).exists()
+        )
