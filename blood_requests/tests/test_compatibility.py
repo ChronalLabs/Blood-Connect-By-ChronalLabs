@@ -14,7 +14,11 @@ from utils.blood_compatibility import (
 from unittest.mock import MagicMock
 from datetime import date, timedelta
 
-from blood_requests.models import BloodRequest, DonorResponse
+from django.core import mail
+from django.test import override_settings
+
+from blood_requests.models import BloodRequest, DonorNotification, DonorResponse
+from blood_requests.services import notify_compatible_donors
 from donors.models import DonorProfile
 from users.models import CustomUser
 
@@ -282,3 +286,140 @@ class DonorRequestMatchingTests(TestCase):
                 status='interested',
             ).exists()
         )
+
+
+@override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+class DonorNotificationTests(TestCase):
+
+    def setUp(self):
+        self.seeker = CustomUser.objects.create_user(
+            username='notification_seeker',
+            password='password123',
+            role='seeker',
+        )
+
+    def _create_donor(
+        self,
+        username,
+        blood_group,
+        rh_factor,
+        email='donor@example.com',
+        availability_status='available',
+        last_blood_donation_date=None,
+        city='Mumbai',
+    ):
+        user = CustomUser.objects.create_user(
+            username=username,
+            password='password123',
+            role='donor',
+            email=email,
+            city=city,
+        )
+        profile = DonorProfile.objects.create(
+            user=user,
+            blood_group=blood_group,
+            rh_factor=rh_factor,
+            age=30,
+            availability_status=availability_status,
+            last_blood_donation_date=last_blood_donation_date,
+        )
+        return user, profile
+
+    def _create_request(self, blood_group='A', rh_factor='+', **request_kwargs):
+        return BloodRequest.objects.create(
+            requester=self.seeker,
+            patient_name='Notification Patient',
+            blood_group=blood_group,
+            rh_factor=rh_factor,
+            units_required=1,
+            hospital_name='City Hospital',
+            hospital_address='Main Road',
+            hospital_contact='9999999999',
+            city='Mumbai',
+            status='open',
+            **request_kwargs,
+        )
+
+    def test_notifies_only_eligible_compatible_donors(self):
+        eligible_user, _ = self._create_donor('eligible_o_neg', 'O', '-', email='eligible@example.com')
+        self._create_donor('incompatible_b_pos', 'B', '+', email='incompatible@example.com')
+        self._create_donor('unavailable_o_pos', 'O', '+', email='unavailable@example.com', availability_status='unavailable')
+        self._create_donor(
+            'cooldown_a_pos',
+            'A',
+            '+',
+            email='cooldown@example.com',
+            last_blood_donation_date=date.today() - timedelta(days=30),
+        )
+        blood_request = self._create_request('A', '+')
+
+        notifications = notify_compatible_donors(blood_request)
+
+        self.assertEqual(len(notifications), 1)
+        self.assertEqual(notifications[0].donor, eligible_user)
+        self.assertEqual(notifications[0].status, 'sent')
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('A+', mail.outbox[0].subject)
+
+    def test_does_not_send_duplicate_notifications_for_same_request(self):
+        donor_user, _ = self._create_donor('duplicate_o_neg', 'O', '-', email='duplicate@example.com')
+        blood_request = self._create_request('A', '+')
+
+        first_notifications = notify_compatible_donors(blood_request)
+        second_notifications = notify_compatible_donors(blood_request)
+
+        self.assertEqual(len(first_notifications), 1)
+        self.assertEqual(second_notifications, [])
+        self.assertEqual(DonorNotification.objects.filter(donor=donor_user, blood_request=blood_request).count(), 1)
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_skips_email_when_donor_has_no_email_address(self):
+        donor_user, _ = self._create_donor('no_email_o_neg', 'O', '-', email='')
+        blood_request = self._create_request('A', '+')
+
+        notifications = notify_compatible_donors(blood_request)
+
+        self.assertEqual(len(notifications), 1)
+        self.assertEqual(notifications[0].donor, donor_user)
+        self.assertEqual(notifications[0].status, 'skipped')
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_prefers_same_city_donors_before_other_compatible_donors(self):
+        same_city_user, _ = self._create_donor('same_city_o_neg', 'O', '-', email='same@example.com', city='Mumbai')
+        self._create_donor('other_city_a_pos', 'A', '+', email='other@example.com', city='Delhi')
+        blood_request = self._create_request('A', '+', city='Mumbai')
+
+        notifications = notify_compatible_donors(blood_request)
+
+        self.assertEqual(notifications[0].donor, same_city_user)
+        self.assertEqual(mail.outbox[0].to, ['same@example.com'])
+
+    def test_create_request_triggers_donor_notifications(self):
+        donor_user, _ = self._create_donor('flow_o_neg', 'O', '-', email='flow@example.com')
+        self.client.force_login(self.seeker)
+
+        response = self.client.post(reverse('create_request'), {
+            'patient_name': 'Flow Patient',
+            'patient_age': 35,
+            'blood_group': 'A',
+            'rh_factor': '+',
+            'units_required': 1,
+            'hospital_name': 'City Hospital',
+            'hospital_address': 'Main Road',
+            'hospital_contact': '9999999999',
+            'urgency_level': 'urgent',
+            'city': 'Mumbai',
+            'additional_notes': '',
+            'required_by': '',
+        })
+
+        blood_request = BloodRequest.objects.get(patient_name='Flow Patient')
+        self.assertRedirects(response, reverse('seeker_dashboard'))
+        self.assertTrue(
+            DonorNotification.objects.filter(
+                donor=donor_user,
+                blood_request=blood_request,
+                status='sent',
+            ).exists()
+        )
+        self.assertEqual(len(mail.outbox), 1)
