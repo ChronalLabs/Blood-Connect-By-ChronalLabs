@@ -59,6 +59,30 @@ class BloodRequest(models.Model):
     def units_remaining(self):
         return self.units_required - self.units_fulfilled
 
+    def get_compatible_donors(self):
+        """Return available DonorProfile queryset filtered by blood compatibility."""
+        from donors.models import DonorProfile
+        from utils.blood_compatibility import get_compatible_donor_types
+        compatible_types = get_compatible_donor_types(self.blood_group, self.rh_factor)
+        from django.db.models import Q
+        query = Q()
+        for bg, rh in compatible_types:
+            query |= Q(blood_group=bg, rh_factor=rh)
+        return DonorProfile.objects.filter(query, availability_status='available').select_related('user')
+
+    def get_ranked_donors(self, radius_km=50):
+        """Return ranked donor list with compatibility + proximity scores."""
+        from utils.blood_compatibility import rank_donors
+        donors = self.get_compatible_donors()
+        # Exclude donors in 90-day cooldown
+        donors = [d for d in donors if d.can_donate()]
+        return rank_donors(
+            donors,
+            self.blood_group, self.rh_factor,
+            self.latitude, self.longitude,
+            radius_km=radius_km
+        )
+
 
 class DonorResponse(models.Model):
     STATUS_CHOICES = [
@@ -78,3 +102,37 @@ class DonorResponse(models.Model):
     
     def __str__(self):
         return f"{self.donor.username} -> {self.blood_request}"
+
+
+class DonorNotification(models.Model):
+    STATUS_CHOICES = [
+        ('sent', 'Sent'),
+        ('skipped', 'Skipped'),
+        ('failed', 'Failed'),
+    ]
+    CHANNEL_CHOICES = [
+        ('email', 'Email'),
+    ]
+
+    blood_request = models.ForeignKey(
+        BloodRequest,
+        on_delete=models.CASCADE,
+        related_name='donor_notifications',
+    )
+    donor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='blood_request_notifications',
+    )
+    channel = models.CharField(max_length=20, choices=CHANNEL_CHOICES, default='email')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    error_message = models.TextField(blank=True)
+    sent_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('blood_request', 'donor', 'channel')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.donor.username} notified for {self.blood_request} ({self.status})"

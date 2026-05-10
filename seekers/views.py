@@ -6,6 +6,7 @@ from .forms import BloodRequestForm, DonorSearchForm
 from donors.models import DonorProfile
 from hospitals.models import HospitalProfile
 from blood_requests.models import BloodRequest
+from blood_requests.services import notify_compatible_donors
 
 
 @login_required
@@ -35,7 +36,12 @@ def create_request(request):
             blood_request = form.save(commit=False)
             blood_request.requester = request.user
             blood_request.save()
-            messages.success(request, "Blood request submitted! Nearby donors will be notified.")
+            notifications = notify_compatible_donors(blood_request)
+            sent_count = sum(1 for notification in notifications if notification.status == "sent")
+            messages.success(
+                request,
+                f"Blood request submitted! {sent_count} compatible donor(s) notified.",
+            )
             return redirect("seeker_dashboard")
     else:
         form = BloodRequestForm()
@@ -66,16 +72,35 @@ def cancel_request(request, request_id):
 
 
 def donor_search(request):
-    """Search for blood donors"""
+    """Search for blood donors using blood compatibility matrix"""
     form = DonorSearchForm(request.GET or None)
     donors = DonorProfile.objects.filter(availability_status="available").select_related("user")
-    
+    ranked_donors = None
+
     if form.is_valid():
-        if form.cleaned_data.get("blood_group"):
-            donors = donors.filter(blood_group=form.cleaned_data["blood_group"])
-        if form.cleaned_data.get("rh_factor"):
-            donors = donors.filter(rh_factor=form.cleaned_data["rh_factor"])
-        if form.cleaned_data.get("city"):
-            donors = donors.filter(user__city__icontains=form.cleaned_data["city"])
-    
-    return render(request, "seekers/donor_search.html", {"form": form, "donors": donors})
+        blood_group = form.cleaned_data.get("blood_group")
+        rh_factor = form.cleaned_data.get("rh_factor")
+        city = form.cleaned_data.get("city")
+        radius_km = form.cleaned_data.get("radius_km") or 50
+
+        if city:
+            donors = donors.filter(user__city__icontains=city)
+
+        if blood_group and rh_factor:
+            from utils.blood_compatibility import get_compatible_donor_types, rank_donors
+            from django.db.models import Q
+            compatible_types = get_compatible_donor_types(blood_group, rh_factor)
+            query = Q()
+            for bg, rh in compatible_types:
+                query |= Q(blood_group=bg, rh_factor=rh)
+            donors = donors.filter(query)
+            eligible = [d for d in donors if d.can_donate()]
+            ranked_donors = rank_donors(eligible, blood_group, rh_factor, radius_km=radius_km)
+        elif blood_group:
+            donors = donors.filter(blood_group=blood_group)
+
+    return render(request, "seekers/donor_search.html", {
+        "form": form,
+        "donors": donors if ranked_donors is None else None,
+        "ranked_donors": ranked_donors,
+    })
