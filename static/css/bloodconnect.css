@@ -875,3 +875,9 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; line-height: 1.2; }
   .bc-card { padding: 16px; }
   .role-cards { justify-content: center; }
 }
+
+.nav-link.active {
+    color: #e53e3e !important;
+    font-weight: 700;
+    border-bottom: 2px solid #e53e3e;
+}
