@@ -60,7 +60,7 @@ img { max-width: 100%; height: auto; }
 .navbar {
     position: fixed;
     top: 0; left: 0; right: 0;
-    z-index: 1000;
+    z-index: 1050;
     background: rgba(15,17,23,0.9);
     backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border);

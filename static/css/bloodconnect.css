@@ -47,7 +47,7 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; line-height: 1.2; }
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
   padding: 14px 0;
-  z-index: 1000;
+  z-index: 1050;
 }
 
 .brand-icon {
