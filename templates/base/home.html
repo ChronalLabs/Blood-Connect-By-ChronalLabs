@@ -468,7 +468,7 @@ const hospitalData = [
         city: "{{ h.city|escapejs }}",
         state: "{{ h.state|escapejs }}",
         blood_bank: {{ h.blood_bank_available|yesno:"true,false" }},
-        verified: {{ h.verified|yesno:"true,false" }},
+        verified: {{ h.verified|yesno:"true,false" }}
     },
     {% endif %}
     {% endfor %}
