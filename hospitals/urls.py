@@ -1,11 +1,21 @@
 from django.urls import path
-from . import views
+
+from .views import (
+    add_employee,
+    hospital_dashboard,
+    hospital_detail,
+    hospital_list,
+    hospital_profile_edit,
+    update_blood_stock,
+)
+
+app_name = "hospitals"
 
 urlpatterns = [
-    path("dashboard/", views.hospital_dashboard, name="hospital_dashboard"),
-    path("edit/", views.hospital_profile_edit, name="hospital_profile_edit"),
-    path("blood-stock/", views.update_blood_stock, name="update_blood_stock"),
-    path("employee/add/", views.add_employee, name="add_employee"),
-    path("list/", views.hospital_list, name="hospital_list"),
-    path("<int:pk>/", views.hospital_detail, name="hospital_detail"),
+    path("dashboard/", hospital_dashboard, name="dashboard"),
+    path("edit/", hospital_profile_edit, name="edit_profile"),
+    path("blood-stock/", update_blood_stock, name="blood_stock"),
+    path("employee/add/", add_employee, name="add_employee"),
+    path("list/", hospital_list, name="list"),
+    path("<int:pk>/", hospital_detail, name="detail"),
 ]
