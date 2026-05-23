@@ -1,0 +1,360 @@
+{% extends "base/base.html" %}
+{% block title %}{{ hospital.hospital_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.map-search-bar { position: relative; }
+.map-search-inner {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg-card, #1e2130);
+    border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 11px;
+    padding: 5px 5px 5px 13px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.map-search-inner:focus-within {
+    border-color: rgba(214,40,40,0.5);
+    box-shadow: 0 0 0 3px rgba(214,40,40,0.1);
+}
+.map-search-inner input {
+    flex: 1; background: none; border: none; outline: none;
+    color: #f1f1f1; font-size: 13.5px; font-family: inherit; padding: 5px 0;
+}
+.map-search-inner input::placeholder { color: rgba(255,255,255,0.3); }
+.map-search-btn {
+    background: linear-gradient(135deg, #d62828, #ff4d4d);
+    color: white; border: none; border-radius: 8px;
+    padding: 7px 14px; font-size: 12.5px; font-weight: 600;
+    cursor: pointer; font-family: inherit; transition: all 0.2s;
+}
+.map-search-btn:hover { transform: translateY(-1px); }
+.map-clear-btn {
+    width: 30px; height: 30px; background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 7px;
+    color: rgba(255,255,255,0.35); display: flex; align-items: center;
+    justify-content: center; cursor: pointer; font-size: 11px;
+    transition: all 0.2s; flex-shrink: 0;
+}
+.map-clear-btn:hover { background: rgba(214,40,40,0.12); color: #ff6b6b; }
+.map-autocomplete {
+    position: absolute; top: calc(100% + 5px); left: 0; right: 0;
+    background: #1e2130; border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 11px; overflow: hidden; z-index: 600;
+    box-shadow: 0 10px 32px rgba(0,0,0,0.5); display: none;
+}
+.map-autocomplete.open { display: block; animation: dropIn 0.15s ease; }
+@keyframes dropIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+.ac-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; cursor: pointer;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: background 0.15s; font-size: 13px;
+}
+.ac-item:last-child { border-bottom: none; }
+.ac-item:hover { background: rgba(214,40,40,0.07); }
+.ac-icon {
+    width: 28px; height: 28px; background: rgba(52,193,198,0.1);
+    border-radius: 7px; display: flex; align-items: center;
+    justify-content: center; color: #34c1c6; font-size: 13px; flex-shrink: 0;
+}
+.map-status-mini {
+    font-size: 12px; padding: 6px 12px; border-radius: 8px; margin-top: 6px;
+}
+.map-status-mini.found { background: rgba(52,193,198,0.1); color: #34c1c6; border: 1px solid rgba(52,193,198,0.2); }
+.map-status-mini.notfound { background: rgba(245,158,11,0.1); color: #f59e0b; border: 1px solid rgba(245,158,11,0.2); }
+.map-status-mini.geocoded { background: rgba(34,197,94,0.1); color: #22c55e; border: 1px solid rgba(34,197,94,0.2); }
+.map-legend {
+    position: absolute; bottom: 12px; left: 10px;
+    background: rgba(15,17,23,0.88); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 9px;
+    padding: 7px 11px; z-index: 999;
+}
+.map-legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: rgba(255,255,255,0.7); margin-bottom: 4px; }
+.map-legend-item:last-child { margin-bottom: 0; }
+.legend-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+@keyframes markerPulse {
+    0%{box-shadow:0 0 0 0 rgba(214,40,40,0.7)} 70%{box-shadow:0 0 0 14px rgba(214,40,40,0)} 100%{box-shadow:0 0 0 0 rgba(214,40,40,0)}
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row g-4">
+        <!-- Hospital Info -->
+        <div class="col-lg-8">
+            <div class="bc-card mb-4">
+                <div class="d-flex gap-4 align-items-start">
+                    <div class="hospital-icon hospital-icon-lg"><i class="bi bi-hospital-fill"></i></div>
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <h4 class="fw-bold mb-0">{{ hospital.hospital_name }}</h4>
+                            {% if hospital.verified %}
+                            <span class="badge-verified"><i class="bi bi-patch-check-fill"></i> Verified</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-muted mb-1">
+                            <i class="bi bi-geo-alt me-1"></i>{{ hospital.address }}, {{ hospital.city }}, {{ hospital.state }} - {{ hospital.pincode }}
+                        </p>
+                        <p class="mb-1">
+                            <i class="bi bi-telephone me-1 text-blood"></i>
+                            <strong>{{ hospital.contact_number }}</strong>
+                        </p>
+                        {% if hospital.emergency_contact %}
+                        <p class="mb-1">
+                            <i class="bi bi-exclamation-circle me-1 text-blood"></i>
+                            Emergency: <strong>{{ hospital.emergency_contact }}</strong>
+                        </p>
+                        {% endif %}
+                        <div class="d-flex gap-2 mt-2 flex-wrap">
+                            {% if hospital.blood_bank_available %}
+                            <span class="badge bg-success-soft text-success px-3 py-2">Blood Bank Available</span>
+                            {% endif %}
+                            {% if hospital.has_24hr_service %}
+                            <span class="badge bg-info-soft text-info px-3 py-2">24x7 Service</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% if hospital.description %}
+                <hr>
+                <p class="text-muted">{{ hospital.description }}</p>
+                {% endif %}
+            </div>
+
+            {% if blood_stock %}
+            <div class="bc-card">
+                <h6 class="fw-bold mb-3"><i class="bi bi-droplet-fill text-blood me-2"></i>Blood Stock</h6>
+                <div class="row g-2">
+                    {% for blood_type, units in blood_stock.as_dict.items %}
+                    <div class="col-3 col-sm-2">
+                        <div class="blood-stock-cell {% if units == 0 %}stock-empty{% elif units < 5 %}stock-low{% else %}stock-ok{% endif %}">
+                            <div class="stock-type">{{ blood_type }}</div>
+                            <div class="stock-units">{{ units }}</div>
+                            <div class="stock-label">units</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <p class="text-muted small mt-2 mb-0">
+                    <i class="bi bi-clock me-1"></i>Last updated: {{ blood_stock.last_updated|date:"M d, Y H:i" }}
+                </p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Map + Search sidebar -->
+        <div class="col-lg-4">
+            <div class="bc-card mb-3">
+                <h6 class="fw-bold mb-3"><i class="bi bi-map me-2"></i>Location</h6>
+
+                <!-- Search bar -->
+                <div class="map-search-bar mb-2">
+                    <div class="map-search-inner">
+                        <input
+                            type="text"
+                            id="detail-search-input"
+                            placeholder="Search another hospital..."
+                            autocomplete="off"
+                            oninput="onSearchInput(this.value)"
+                            onkeydown="handleKey(event)"
+                        />
+                        <button class="map-search-btn" onclick="doSearch()">
+                            <i class="bi bi-search"></i>
+                        </button>
+                        <button class="map-clear-btn" onclick="clearSearch()">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    <div class="map-autocomplete" id="detail-autocomplete"></div>
+                    <div id="detail-status" class="map-status-mini" style="display:none"></div>
+                </div>
+
+                <!-- Map -->
+                <div style="position:relative">
+                    <div id="detail-map" style="height:300px;border-radius:12px;overflow:hidden;"></div>
+                    <div class="map-legend">
+                        <div class="map-legend-item"><div class="legend-dot" style="background:#34c1c6"></div>This Hospital</div>
+                        <div class="map-legend-item"><div class="legend-dot" style="background:#d62828"></div>Search Result</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bc-card">
+                <h6 class="fw-bold mb-3">Need Blood Here?</h6>
+                <p class="text-muted small">Create an emergency blood request for this hospital</p>
+                {% if user.is_authenticated %}
+                <a href="{% url 'create_request' %}" class="btn btn-blood w-100">
+                    <i class="bi bi-droplet-fill me-2"></i>Request Blood
+                </a>
+                {% else %}
+                <a href="{% url 'login' %}" class="btn btn-blood w-100">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Login to Request
+                </a>
+                {% endif %}
+                <a href="{% url 'hospital_list' %}" class="btn btn-outline-blood w-100 mt-2">
+                    <i class="bi bi-arrow-left me-2"></i>All Hospitals
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if hospital.latitude and hospital.longitude %}
+<script>
+const hospitalLat = {{ hospital.latitude }};
+const hospitalLng = {{ hospital.longitude }};
+const hospitalName = "{{ hospital.hospital_name|escapejs }}";
+
+const map = L.map('detail-map').setView([hospitalLat, hospitalLng], 15);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:18 }).addTo(map);
+
+const hospitalIcon = L.divIcon({
+    html: `<div class="map-marker hospital-marker"><i class="bi bi-hospital-fill"></i></div>`,
+    className: '', iconSize:[36,36], iconAnchor:[18,36], popupAnchor:[0,-36]
+});
+const searchedIcon = L.divIcon({
+    html: `<div class="map-marker" style="background:#d62828;animation:markerPulse 1.5s ease 4"><i class="bi bi-hospital-fill"></i></div>`,
+    className: '', iconSize:[38,38], iconAnchor:[19,38], popupAnchor:[0,-38]
+});
+
+// Main hospital marker
+L.marker([hospitalLat, hospitalLng], { icon: hospitalIcon })
+  .addTo(map)
+  .bindPopup(`<div class="map-popup"><strong>${hospitalName}</strong><br><small>{{ hospital.city }}</small></div>`)
+  .openPopup();
+
+let searchMarker = null;
+
+function onSearchInput(val) {
+    const ac = document.getElementById('detail-autocomplete');
+    document.getElementById('detail-status').style.display = 'none';
+    if (!val.trim()) { ac.classList.remove('open'); return; }
+
+    // Search Nominatim with short delay
+    clearTimeout(window._searchTimer);
+    window._searchTimer = setTimeout(() => {
+        fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val+' hospital')}&format=json&limit=5`, {
+            headers: {'Accept-Language':'en'}
+        })
+        .then(r=>r.json())
+        .then(results => {
+            if (!results.length) {
+                ac.innerHTML = `<div style="padding:12px;color:rgba(255,255,255,0.4);font-size:12px;text-align:center">No results for "${val}"</div>`;
+                ac.classList.add('open'); return;
+            }
+            ac.innerHTML = results.map(r => {
+                const label = r.display_name.split(',').slice(0,3).join(', ');
+                return `<div class="ac-item" data-lat="${r.lat}" data-lng="${r.lon}" data-label="${label.replace(/"/g,"&quot;")}"
+                             onmousedown="selectResult(${r.lat},${r.lon},'${label.replace(/'/g,"\'")}')">
+                    <div class="ac-icon"><i class="bi bi-hospital-fill"></i></div>
+                    <div>
+                        <div style="font-weight:600;font-size:12.5px">${label}</div>
+                    </div>
+                </div>`;
+            }).join('');
+            ac.classList.add('open');
+        }).catch(()=>{});
+    }, 400);
+}
+
+function selectResult(lat, lng, label) {
+    document.getElementById('detail-search-input').value = label;
+    document.getElementById('detail-autocomplete').classList.remove('open');
+    placeSearchMarker(parseFloat(lat), parseFloat(lng), label);
+}
+
+function doSearch() {
+    const val = document.getElementById('detail-search-input').value.trim();
+    if (!val) return;
+    document.getElementById('detail-autocomplete').classList.remove('open');
+    showStatus('Searching...', 'found');
+    fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val+' hospital')}&format=json&limit=1`, {
+        headers: {'Accept-Language':'en'}
+    })
+    .then(r=>r.json())
+    .then(results => {
+        if (!results.length) { showStatus('No results found for "'+val+'"', 'notfound'); return; }
+        const r = results[0];
+        const label = r.display_name.split(',').slice(0,3).join(', ');
+        placeSearchMarker(parseFloat(r.lat), parseFloat(r.lon), label);
+    })
+    .catch(() => showStatus('Search failed. Check connection.', 'notfound'));
+}
+
+function placeSearchMarker(lat, lng, label) {
+    if (searchMarker) map.removeLayer(searchMarker);
+    searchMarker = L.marker([lat, lng], {icon: searchedIcon})
+        .addTo(map)
+        .bindPopup(`<div class="map-popup"><strong>${label}</strong><br><small style="color:#f59e0b">Search result</small></div>`)
+        .openPopup();
+    map.setView([lat, lng], 14);
+    showStatus('📍 ' + label, 'geocoded');
+}
+
+function clearSearch() {
+    document.getElementById('detail-search-input').value = '';
+    document.getElementById('detail-autocomplete').classList.remove('open');
+    document.getElementById('detail-status').style.display = 'none';
+    if (searchMarker) { map.removeLayer(searchMarker); searchMarker = null; }
+    map.setView([hospitalLat, hospitalLng], 15);
+}
+
+function handleKey(e) {
+    if (e.key === 'Enter') doSearch();
+    if (e.key === 'Escape') document.getElementById('detail-autocomplete').classList.remove('open');
+}
+
+function showStatus(msg, type) {
+    const el = document.getElementById('detail-status');
+    el.textContent = msg;
+    el.className = 'map-status-mini ' + type;
+    el.style.display = 'block';
+}
+
+document.addEventListener('click', e => {
+    if (!e.target.closest('.map-search-bar'))
+        document.getElementById('detail-autocomplete').classList.remove('open');
+});
+</script>
+{% else %}
+<script>
+// No coordinates — show a plain search map
+const map = L.map('detail-map').setView([20.5937, 78.9629], 5);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+let searchMarker = null;
+function onSearchInput(val) {
+    clearTimeout(window._t);
+    if (!val.trim()) return;
+    window._t = setTimeout(()=>{
+        const ac = document.getElementById('detail-autocomplete');
+        fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val+' hospital')}&format=json&limit=4`,{headers:{'Accept-Language':'en'}})
+        .then(r=>r.json()).then(res=>{
+            ac.innerHTML = res.map(r=>{
+                const l = r.display_name.split(',').slice(0,3).join(', ');
+                return `<div class="ac-item" onmousedown="selectResult(${r.lat},${r.lon},'${l.replace(/'/g,"\'")}')">
+                    <div class="ac-icon"><i class="bi bi-hospital-fill"></i></div>
+                    <div style="font-size:12.5px;font-weight:600">${l}</div>
+                </div>`;
+            }).join('') || `<div style="padding:12px;color:rgba(255,255,255,0.4);font-size:12px;text-align:center">No results</div>`;
+            ac.classList.add('open');
+        });
+    }, 400);
+}
+function selectResult(lat,lng,label){
+    document.getElementById('detail-search-input').value=label;
+    document.getElementById('detail-autocomplete').classList.remove('open');
+    if(searchMarker) map.removeLayer(searchMarker);
+    const icon=L.divIcon({html:`<div class="map-marker" style="background:#d62828"><i class="bi bi-hospital-fill"></i></div>`,className:'',iconSize:[36,36],iconAnchor:[18,36]});
+    searchMarker=L.marker([lat,lng],{icon}).addTo(map).bindPopup(label).openPopup();
+    map.setView([lat,lng],14);
+}
+function doSearch(){const v=document.getElementById('detail-search-input').value.trim();if(v)onSearchInput(v);}
+function clearSearch(){document.getElementById('detail-search-input').value='';document.getElementById('detail-autocomplete').classList.remove('open');if(searchMarker){map.removeLayer(searchMarker);searchMarker=null;}}
+function handleKey(e){if(e.key==='Enter')doSearch();}
+document.addEventListener('click',e=>{if(!e.target.closest('.map-search-bar'))document.getElementById('detail-autocomplete').classList.remove('open');});
+</script>
+{% endif %}
+{% endblock %}

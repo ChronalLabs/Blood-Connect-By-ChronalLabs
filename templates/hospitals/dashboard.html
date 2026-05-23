@@ -1,0 +1,132 @@
+{% extends "base/base.html" %}
+{% block title %}Hospital Dashboard{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="dashboard-header mb-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h4 class="fw-bold mb-1">{{ hospital.hospital_name }}</h4>
+                <p class="text-muted mb-0">
+                    {% if hospital.verified %}<span class="badge-verified"><i class="bi bi-patch-check-fill me-1"></i>Verified</span>
+                    {% else %}<span class="badge bg-warning text-dark">Pending Verification</span>{% endif %}
+                    &nbsp; {{ hospital.city }}, {{ hospital.state }}
+                </p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'hospital_profile_edit' %}" class="btn btn-outline-blood btn-sm">Edit Profile</a>
+                <a href="{% url 'update_blood_stock' %}" class="btn btn-blood btn-sm">Update Stock</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Blood Stock -->
+    <div class="bc-card mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold mb-0"><i class="bi bi-droplet-fill text-blood me-2"></i>Blood Stock</h6>
+            <a href="{% url 'update_blood_stock' %}" class="btn btn-xs btn-outline-blood">Update</a>
+        </div>
+        <div class="row g-2">
+            {% for blood_type, units in blood_stock.as_dict.items %}
+            <div class="col-6 col-sm-3 col-md-2">
+                <div class="blood-stock-cell {% if units == 0 %}stock-empty{% elif units < 5 %}stock-low{% else %}stock-ok{% endif %}">
+                    <div class="stock-type">{{ blood_type }}</div>
+                    <div class="stock-units">{{ units }}</div>
+                    <div class="stock-label">units</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <!-- Open Requests -->
+        <div class="col-lg-8">
+            <div class="bc-card">
+                <div class="d-flex justify-content-between mb-3">
+                    <h6 class="fw-bold mb-0">
+                        <div class="pulse-dot d-inline-block me-2"></div>Emergency Requests
+                    </h6>
+                    <a href="{% url 'request_list' %}" class="btn btn-xs btn-outline-blood">All Requests</a>
+                </div>
+                {% for req in open_requests %}
+                <div class="request-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="d-flex gap-3">
+                            <div class="blood-type-badge-sm">{{ req.blood_type }}</div>
+                            <div>
+                                <h6 class="mb-0 fw-semibold">{{ req.patient_name }}</h6>
+                                <small class="text-muted">{{ req.hospital_name }} &bull; {{ req.city }}</small>
+                                <div class="mt-1">
+                                    <small class="text-muted"><i class="bi bi-person me-1"></i>
+                                        {{ req.requester.get_full_name|default:req.requester.username }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="urgency-badge urgency-{{ req.urgency_level }}">{{ req.get_urgency_level_display }}</span>
+                            <div class="mt-1 small text-muted">{{ req.units_remaining }} units needed</div>
+                            <a href="{% url 'request_detail' req.id %}" class="btn btn-xs btn-outline-blood mt-1">Details</a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center py-3">No open requests at the moment</p>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Employees -->
+            <div class="bc-card mb-3">
+                <div class="d-flex justify-content-between mb-3">
+                    <h6 class="fw-bold mb-0">Staff</h6>
+                    <a href="{% url 'add_employee' %}" class="btn btn-xs btn-blood">+ Add</a>
+                </div>
+                {% for emp in employees %}
+                <div class="employee-item">
+                    <div class="employee-avatar"><i class="bi bi-person-badge-fill"></i></div>
+                    <div>
+                        <div class="small fw-medium">{{ emp.name }}</div>
+                        <div class="text-muted x-small">{{ emp.get_role_display }}</div>
+                    </div>
+                    {% if emp.verified %}<i class="bi bi-patch-check-fill text-teal ms-auto"></i>{% endif %}
+                </div>
+                {% empty %}
+                <p class="text-muted small text-center py-2">No employees added yet</p>
+                {% endfor %}
+            </div>
+            
+            <div class="bc-card">
+                <h6 class="fw-bold mb-3">Quick Actions</h6>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'update_blood_stock' %}" class="btn btn-blood btn-sm">
+                        <i class="bi bi-droplet me-2"></i>Update Blood Stock
+                    </a>
+                    <a href="{% url 'hospital_profile_edit' %}" class="btn btn-outline-blood btn-sm">
+                        <i class="bi bi-pencil me-2"></i>Edit Hospital Profile
+                    </a>
+                    <a href="{% url 'add_employee' %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-person-plus me-2"></i>Add Staff Member
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Blood stock chart
+const stockData = {{ stock_json|safe }};
+const labels = Object.keys(stockData);
+const data = Object.values(stockData);
+const colors = data.map(v => v === 0 ? '#ef4444' : v < 5 ? '#f59e0b' : '#22c55e');
+
+const canvas = document.createElement('canvas');
+canvas.style.height = '200px';
+// Simple bar visualization - no Chart.js needed
+const container = document.querySelector('.blood-stock-cell');
+</script>
+{% endblock %}

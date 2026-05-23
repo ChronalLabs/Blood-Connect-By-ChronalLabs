@@ -1,0 +1,88 @@
+{% extends "base/base.html" %}
+{% block title %}Blood Requests{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h4 class="fw-bold mb-1">
+                <div class="pulse-dot d-inline-block me-2"></div>Live Blood Requests
+            </h4>
+            <p class="text-muted mb-0">{{ requests_list|length }} open requests</p>
+        </div>
+        {% if user.is_authenticated and user.role == 'seeker' %}
+        <a href="{% url 'create_request' %}" class="btn btn-blood">
+            <i class="bi bi-plus-circle me-2"></i>New Request
+        </a>
+        {% endif %}
+    </div>
+    
+    <!-- Filters -->
+    <div class="bc-card mb-4">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small fw-medium">Blood Group</label>
+                <select name="blood_group" class="form-select">
+                    <option value="">All Groups</option>
+                    <option value="A" {% if blood_group == 'A' %}selected{% endif %}>A</option>
+                    <option value="B" {% if blood_group == 'B' %}selected{% endif %}>B</option>
+                    <option value="AB" {% if blood_group == 'AB' %}selected{% endif %}>AB</option>
+                    <option value="O" {% if blood_group == 'O' %}selected{% endif %}>O</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-medium">RH Factor</label>
+                <select name="rh_factor" class="form-select">
+                    <option value="">All</option>
+                    <option value="+" {% if rh_factor == '+' %}selected{% endif %}>Positive</option>
+                    <option value="-" {% if rh_factor == '-' %}selected{% endif %}>Negative</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-medium">Urgency</label>
+                <select name="urgency" class="form-select">
+                    <option value="">All Urgency</option>
+                    <option value="critical">Critical</option>
+                    <option value="urgent">Urgent</option>
+                    <option value="moderate">Moderate</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-blood w-100">Filter</button>
+            </div>
+        </form>
+    </div>
+    
+    <div class="row g-3">
+        {% for req in requests_list %}
+        <div class="col-md-6 col-lg-4">
+            <div class="request-card urgency-{{ req.urgency_level }}">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="blood-type-badge">{{ req.blood_type }}</div>
+                    <span class="urgency-badge urgency-{{ req.urgency_level }}">{{ req.get_urgency_level_display }}</span>
+                </div>
+                <h6 class="fw-bold mb-1">{{ req.patient_name }}</h6>
+                <p class="text-muted small mb-1"><i class="bi bi-hospital me-1"></i>{{ req.hospital_name }}</p>
+                <p class="text-muted small mb-1"><i class="bi bi-geo-alt me-1"></i>{{ req.city|default:"Location not shared" }}</p>
+                <p class="text-muted small mb-3"><i class="bi bi-clock me-1"></i>{{ req.created_at|timesince }} ago</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="small text-muted">
+                        <i class="bi bi-droplet me-1"></i>{{ req.units_remaining }}/{{ req.units_required }} units needed
+                    </span>
+                    <div class="d-flex gap-1">
+                        <a href="{% url 'request_detail' req.id %}" class="btn btn-xs btn-outline-blood">Details</a>
+                        {% if user.is_authenticated and user.role == 'donor' %}
+                        <a href="{% url 'respond_to_request' req.id %}" class="btn btn-xs btn-blood">Respond</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-check-circle-fill fs-2 text-success mb-3 d-block"></i>
+            <h5 class="text-muted">No open requests at this time</h5>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

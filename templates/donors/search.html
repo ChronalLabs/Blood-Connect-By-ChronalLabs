@@ -1,0 +1,72 @@
+{% extends "base/base.html" %}
+{% block title %}Search Donors{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <h4 class="fw-bold mb-4">Search Blood Donors</h4>
+    <div class="bc-card mb-4">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small fw-medium">Blood Group</label>
+                <select name="blood_group" class="form-select">
+                    <option value="">All Groups</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="AB">AB</option>
+                    <option value="O">O</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-medium">RH Factor</label>
+                <select name="rh_factor" class="form-select">
+                    <option value="">All</option>
+                    <option value="+">Positive</option>
+                    <option value="-">Negative</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-medium">City</label>
+                <input type="text" name="city" value="{{ city }}" class="form-control" placeholder="Enter city...">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-blood w-100">Search</button>
+            </div>
+        </form>
+    </div>
+    
+    {% if blood_group or rh_factor or city %}
+    <p class="text-muted mb-3">Found {{ donors|length }} donor(s)</p>
+    {% endif %}
+    
+    <div class="row g-3">
+        {% for donor in donors %}
+        <div class="col-md-6 col-lg-4">
+            <div class="donor-card">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="donor-avatar">
+                        <i class="bi bi-person-fill"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-0">{{ donor.user.get_full_name|default:donor.user.username }}</h6>
+                        <small class="text-muted">{{ donor.user.city|default:"Location not shared" }}</small>
+                    </div>
+                    <div class="blood-type-badge ms-auto">{{ donor.blood_type }}</div>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <span class="info-chip"><i class="bi bi-telephone me-1"></i>{{ donor.user.phone_number|default:"N/A" }}</span>
+                    <span class="availability-chip avail-{{ donor.availability_status }}">{{ donor.get_availability_status_display }}</span>
+                </div>
+                {% if donor.total_donations > 0 %}
+                <p class="text-muted small mt-2 mb-0"><i class="bi bi-droplet me-1"></i>{{ donor.total_donations }} donations made</p>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-search fs-2 text-muted mb-3 d-block"></i>
+            <h6 class="text-muted">No donors found matching your criteria</h6>
+            <p class="text-muted small">Try adjusting your search filters</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

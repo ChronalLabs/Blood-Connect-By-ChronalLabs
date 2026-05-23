@@ -1,0 +1,91 @@
+{% extends "base/base.html" %}
+{% block title %}Seeker Dashboard{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="dashboard-header mb-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h4 class="fw-bold mb-1">Welcome, {{ user.first_name }}!</h4>
+                <p class="text-muted mb-0">Find blood donors and manage your requests</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'donor_search' %}" class="btn btn-outline-blood btn-sm">
+                    <i class="bi bi-search-heart me-1"></i>Find Donors
+                </a>
+                <a href="{% url 'create_request' %}" class="btn btn-blood btn-sm">
+                    <i class="bi bi-plus me-1"></i>New Request
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="bc-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold mb-0">My Blood Requests</h6>
+                    <a href="{% url 'create_request' %}" class="btn btn-blood btn-xs">+ New Request</a>
+                </div>
+                {% for req in my_requests %}
+                <div class="request-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="d-flex gap-3 align-items-start">
+                            <div class="blood-type-badge-sm">{{ req.blood_type }}</div>
+                            <div>
+                                <h6 class="mb-0 fw-semibold">{{ req.patient_name }}</h6>
+                                <p class="text-muted small mb-1">{{ req.hospital_name }}</p>
+                                <p class="text-muted small mb-0">{{ req.created_at|date:"M d, Y" }}</p>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="status-badge status-{{ req.status }} mb-1 d-block">{{ req.get_status_display }}</span>
+                            <small class="text-muted">{{ req.units_remaining }}/{{ req.units_required }} units needed</small>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-5">
+                    <i class="bi bi-clipboard-x fs-2 text-muted mb-3 d-block"></i>
+                    <h6 class="text-muted">No requests yet</h6>
+                    <a href="{% url 'create_request' %}" class="btn btn-blood btn-sm mt-2">Create First Request</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="bc-card mb-3">
+                <h6 class="fw-bold mb-3">Nearby Hospitals</h6>
+                {% for hospital in hospitals %}
+                <div class="hospital-mini-item">
+                    <div class="hospital-mini-icon"><i class="bi bi-hospital-fill"></i></div>
+                    <div>
+                        <div class="small fw-medium">{{ hospital.hospital_name }}</div>
+                        <div class="text-muted x-small">{{ hospital.city }}</div>
+                    </div>
+                    {% if hospital.blood_bank_available %}
+                    <span class="badge bg-success ms-auto small">Bank</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                <a href="{% url 'hospital_list' %}" class="btn btn-outline-blood w-100 btn-sm mt-2">View All Hospitals</a>
+            </div>
+            
+            <div class="bc-card">
+                <h6 class="fw-bold mb-3">Emergency Actions</h6>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'create_request' %}" class="btn btn-blood">
+                        <i class="bi bi-exclamation-circle me-2"></i>Emergency Request
+                    </a>
+                    <a href="{% url 'donor_search' %}" class="btn btn-outline-blood">
+                        <i class="bi bi-search me-2"></i>Search Donors
+                    </a>
+                    <a href="{% url 'hospital_list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-hospital me-2"></i>Find Hospital
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

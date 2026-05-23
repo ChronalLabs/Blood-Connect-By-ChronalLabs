@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% block title %}Donor Profile — BloodConnect{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+    <div class="dashboard-header">
+        <div>
+            <h1>{% if profile %}Update{% else %}Complete{% endif %} Donor Profile</h1>
+            <p class="dashboard-subtitle">Your medical information helps match you with the right recipients</p>
+        </div>
+    </div>
+
+    <div class="form-page-card">
+        <form method="post" class="profile-form">
+            {% csrf_token %}
+
+            <div class="form-section">
+                <h3 class="form-section-title"><i class="fas fa-tint"></i> Blood Information</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Blood Group *</label>
+                        {{ form.blood_group }}
+                        {% if form.blood_group.errors %}<div class="field-error">{{ form.blood_group.errors }}</div>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">RH Factor *</label>
+                        {{ form.rh_factor }}
+                        {% if form.rh_factor.errors %}<div class="field-error">{{ form.rh_factor.errors }}</div>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Age</label>
+                        {{ form.age }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="form-section-title"><i class="fas fa-file-medical"></i> Medical History</h3>
+                <div class="form-group">
+                    <label class="form-label">Any Known Diseases</label>
+                    {{ form.any_disease }}
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Previous Injuries / Surgeries</label>
+                        {{ form.previous_injury }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Current Health Condition</label>
+                        {{ form.current_health_condition }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="form-section-title"><i class="fas fa-calendar"></i> Donation History</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Last Donation Date</label>
+                        {{ form.last_blood_donation_date }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Donation Hospital</label>
+                        {{ form.last_donation_hospital }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="form-section-title"><i class="fas fa-cog"></i> Preferences</h3>
+                <div class="form-checkboxes">
+                    <div class="form-check">
+                        {{ form.available }}
+                        <label class="form-check-label" for="{{ form.available.id_for_label }}">
+                            I am available to donate blood
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        {{ form.willing_to_travel }}
+                        <label class="form-check-label" for="{{ form.willing_to_travel.id_for_label }}">
+                            I am willing to travel for donation
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-auth-submit" style="max-width: 300px;">
+                    <i class="fas fa-save"></i> Save Donor Profile
+                </button>
+                <a href="/donors/dashboard/" class="btn-secondary-dashboard">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-detect location
+if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+        document.querySelector('[name="latitude"]').value = pos.coords.latitude.toFixed(6);
+        document.querySelector('[name="longitude"]').value = pos.coords.longitude.toFixed(6);
+    });
+}
+</script>
+{% endblock %}

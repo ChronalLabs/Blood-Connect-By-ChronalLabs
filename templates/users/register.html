@@ -1,0 +1,74 @@
+{% extends "base/base.html" %}
+{% block title %}Register{% endblock %}
+{% block content %}
+<section class="auth-section py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-7">
+                <div class="auth-card">
+                    <div class="text-center mb-4">
+                        <div class="auth-logo"><i class="bi bi-person-plus-fill"></i></div>
+                        <h3 class="fw-bold mt-3">Join BloodConnect</h3>
+                        <p class="text-muted small">Create your account to start saving lives</p>
+                    </div>
+                    
+                    <!-- Role Selection -->
+                    <div class="role-selector mb-4">
+                        <label class="form-label fw-semibold">Register As</label>
+                        <div class="role-cards">
+                            <label class="role-card" for="id_role_0">
+                                <input type="radio" name="role" value="donor" id="id_role_0" form="reg-form">
+                                <div class="role-card-inner">
+                                    <i class="bi bi-heart-pulse-fill"></i>
+                                    <span>Blood Donor</span>
+                                </div>
+                            </label>
+                            <label class="role-card" for="id_role_1">
+                                <input type="radio" name="role" value="seeker" id="id_role_1" form="reg-form">
+                                <div class="role-card-inner">
+                                    <i class="bi bi-search-heart"></i>
+                                    <span>Blood Seeker</span>
+                                </div>
+                            </label>
+                            <label class="role-card" for="id_role_2">
+                                <input type="radio" name="role" value="hospital" id="id_role_2" form="reg-form">
+                                <div class="role-card-inner">
+                                    <i class="bi bi-hospital-fill"></i>
+                                    <span>Hospital</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <form method="post" novalidate id="reg-form">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            {% for field in form %}
+                            {% if field.name != 'role' %}
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium small">{{ field.label }}
+                                    {% if field.field.required %}<span class="text-blood">*</span>{% endif %}
+                                </label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="text-danger small">{{ field.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        <button type="submit" class="btn btn-blood w-100 mt-4">
+                            <i class="bi bi-person-check-fill me-2"></i>Create Account
+                        </button>
+                    </form>
+                    <div class="text-center mt-3">
+                        <p class="text-muted small">Already have an account? 
+                            <a href="{% url 'login' %}" class="text-blood fw-semibold">Login here</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

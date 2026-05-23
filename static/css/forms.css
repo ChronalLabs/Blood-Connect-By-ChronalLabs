@@ -1,0 +1,306 @@
+/* ============================================
+   BLOODCONNECT — Extra Styles for Forms & Search
+   ============================================ */
+
+/* Form Page Card */
+.form-page-card {
+    background: var(--dark-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 36px;
+    max-width: 860px;
+}
+
+.form-section {
+    margin-bottom: 36px;
+    padding-bottom: 36px;
+    border-bottom: 1px solid var(--border);
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.form-section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-section-title i { color: var(--red-light); }
+
+.form-row.three-col {
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+.form-hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+}
+
+.form-checkboxes {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-check input[type="checkbox"] {
+    width: 18px !important;
+    height: 18px !important;
+    padding: 0 !important;
+    accent-color: var(--red);
+    flex-shrink: 0;
+}
+
+.form-check-label {
+    color: var(--text);
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.form-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+}
+
+/* Blood Group Radio Selector */
+.search-filters-card {
+    background: var(--dark-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    margin-bottom: 24px;
+}
+
+.filters-form {
+    display: flex;
+    gap: 32px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.filter-group label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.blood-group-select, .rh-select {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.bg-radio {
+    cursor: pointer;
+}
+
+.bg-radio input { display: none; }
+
+.bg-radio span {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    background: var(--dark-3);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.bg-radio input:checked + span,
+.bg-radio:hover span {
+    background: var(--red);
+    color: white;
+    border-color: var(--red);
+}
+
+/* Donors Results Grid */
+.donors-results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 16px;
+}
+
+.donor-result-card {
+    background: var(--dark-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    transition: var(--transition);
+}
+
+.donor-result-card:hover {
+    border-color: rgba(214,40,40,0.3);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.donor-result-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.donor-avatar {
+    width: 44px; height: 44px;
+    background: rgba(214,40,40,0.2);
+    color: var(--red-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.donor-result-header strong {
+    display: block;
+    color: var(--white);
+    font-size: 0.95rem;
+}
+
+.donor-location {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.donor-result-meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+
+.meta-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--dark-4);
+    color: var(--text-muted);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+}
+
+.donor-result-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Hospital Detail */
+.hospital-detail-header {
+    background: var(--dark-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+}
+
+/* Seekers page in hospital */
+.hospital-seekers-page .requests-list {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+/* Seeker complete profile */
+.seeker-profile-form {
+    background: var(--dark-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    max-width: 600px;
+}
+
+/* Donor accept request page */
+.accept-request-card {
+    background: var(--dark-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 40px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.accept-request-card .blood-group-big {
+    font-family: var(--font-display);
+    font-size: 5rem;
+    color: var(--red-light);
+    text-align: center;
+    line-height: 1;
+    margin: 20px 0;
+}
+
+/* Emergency request */
+.emergency-form-page {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 40px 24px;
+}
+
+.emergency-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.emergency-header h1 {
+    font-family: var(--font-display);
+    font-size: 3rem;
+    color: var(--red-light);
+}
+
+.emergency-header .pulse-dot {
+    display: inline-block;
+    margin-right: 8px;
+}
+
+/* Donor add donation */
+.donation-form-card {
+    background: var(--dark-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 36px;
+    max-width: 680px;
+}
+
+/* Hospital donors page */
+.hospital-donors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+}
