@@ -104,8 +104,10 @@
                             About
                         </a>
                     </li>
-                    <li class="nav-item ms-2"><a class="btn btn-outline-light btn-sm px-3"
+                    <li class="nav-item ms-1"><a class="btn btn-outline-light btn-sm px-3"
                             href="{% url 'login' %}">Login</a></li>
+                    <li class="nav-item ms-1"><a class="btn btn-outline-light btn-sm px-3"
+                            href="{% url 'hospital_login' %}">Hospital Login</a></li>
                     <li class="nav-item ms-1"><a class="btn btn-blood btn-sm px-3"
                             href="{% url 'register' %}">Register</a></li>
                     {% endif %}

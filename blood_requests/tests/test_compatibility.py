@@ -325,20 +325,24 @@ class DonorNotificationTests(TestCase):
         )
         return user, profile
 
-    def _create_request(self, blood_group='A', rh_factor='+', **request_kwargs):
-        return BloodRequest.objects.create(
-            requester=self.seeker,
-            patient_name='Notification Patient',
-            blood_group=blood_group,
-            rh_factor=rh_factor,
-            units_required=1,
-            hospital_name='City Hospital',
-            hospital_address='Main Road',
-            hospital_contact='9999999999',
-            city='Mumbai',
-            status='open',
-            **request_kwargs,
-        )
+    def _create_request(self, blood_group='A', rh_factor='+', city='Mumbai', **request_kwargs):
+        request_data = {
+            'requester': self.seeker,
+            'patient_name': 'Notification Patient',
+            'blood_group': blood_group,
+            'rh_factor': rh_factor,
+            'units_required': 1,
+            'hospital_name': 'City Hospital',
+            'hospital_address': 'Main Road',
+            'hospital_contact': '9999999999',
+            'status': 'open',
+        }
+        if 'city' in request_kwargs:
+            request_data['city'] = request_kwargs.pop('city')
+        else:
+            request_data['city'] = city
+        request_data.update(request_kwargs)
+        return BloodRequest.objects.create(**request_data)
 
     def test_notifies_only_eligible_compatible_donors(self):
         eligible_user, _ = self._create_donor('eligible_o_neg', 'O', '-', email='eligible@example.com')

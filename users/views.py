@@ -70,6 +70,30 @@ def user_login(request):
     return render(request, "users/login.html", {"form": form})
 
 
+def hospital_login(request):
+    """Hospital-specific login view"""
+    if request.user.is_authenticated:
+        return redirect("hospital_dashboard" if request.user.role == "hospital" else "dashboard")
+
+    if request.method == "POST":
+        form = CustomLoginForm(data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            if user.role != "hospital":
+                messages.error(request, "Please login using the regular user login or contact support.")
+            else:
+                login(request, user)
+                messages.success(request, f"Welcome back, {user.first_name or user.username}!")
+                next_url = request.GET.get("next", "hospital_dashboard")
+                return redirect(next_url)
+        else:
+            messages.error(request, "Invalid hospital credentials.")
+    else:
+        form = CustomLoginForm()
+
+    return render(request, "users/hospital_login.html", {"form": form})
+
+
 def user_logout(request):
     """Logout view"""
     logout(request)
