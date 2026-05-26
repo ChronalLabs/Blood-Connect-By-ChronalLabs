@@ -69,6 +69,14 @@ python manage.py seed_data
     python manage.py seed_data --clear
     ```
 
+#### 📊 Populated Application Preview
+
+After seeding, the home dashboard and live hospital locator map will look fully active and functional:
+
+| Seeker & Donor Metrics Dashboard | Verified Hospitals & Proximity Map |
+|:---:|:---:|
+| ![Seeker & Donor Metrics](public/screenshots/dashboard.png) | ![Verified Hospitals & Map](public/screenshots/map.jpg) |
+
 ### 6. Collect Static Files
 
 ```bash
