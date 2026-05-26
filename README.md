@@ -54,23 +54,20 @@ python manage.py migrate
 python manage.py createsuperuser
 ```
 
-### 5. Load Sample Data (Optional)
+### 5. Load Sample Data (Seeding)
+
+To populate the application with a high-fidelity, realistic, and fully connected sample dataset (including donors, seekers, verified hospitals, blood stock levels, emergency requests, and dynamic responses) for local testing or demo environments, run:
 
 ```bash
-python manage.py shell
+python manage.py seed_data
 ```
 
-Then paste:
-```python
-from users.models import CustomUser
-from hospitals.models import HospitalProfile, BloodStock
-from donors.models import DonorProfile
-
-# Create a sample hospital
-u = CustomUser.objects.create_user('hospital1', password='pass123', role='hospital', first_name='City', last_name='Hospital')
-h = HospitalProfile.objects.create(user=u, hospital_name='City General Hospital', address='123 Main St', city='Mumbai', state='Maharashtra', pincode='400001', contact_number='9999888777', verified=True, blood_bank_available=True, latitude=19.0760, longitude=72.8777)
-BloodStock.objects.create(hospital=h, a_positive=15, b_positive=8, o_positive=20, ab_positive=5, a_negative=3)
-```
+*   **Secure & Hashed:** All generated accounts are safely hashed and configured with a development password: `demo_password123`.
+*   **Idempotency:** The seeder is completely idempotent. You can run it multiple times without creating duplicate records.
+*   **Safe Clean/Reset:** To wipe only the demo data and return the database to a clean baseline (without touching non-demo or real data), run:
+    ```bash
+    python manage.py seed_data --clear
+    ```
 
 ### 6. Collect Static Files
 

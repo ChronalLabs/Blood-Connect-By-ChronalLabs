@@ -54,3 +54,46 @@ class HospitalRegistrationTests(TestCase):
         }
         form = UserRegistrationForm(data=form_data)
         self.assertTrue(form.is_valid(), form.errors)
+
+
+class SeedDataCommandTests(TestCase):
+    """Verify that seed_data custom management command populates and clears correctly."""
+
+    def test_seed_and_clear_command_lifecycle(self):
+        from django.core.management import call_command
+        from users.models import CustomUser
+        from donors.models import DonorProfile
+        from seekers.models import SeekerProfile
+        from hospitals.models import HospitalProfile, BloodStock
+        from blood_requests.models import BloodRequest
+
+        # 1. Run seed command
+        call_command('seed_data')
+
+        # Check that expected users and objects were created
+        self.assertTrue(CustomUser.objects.filter(username='demo_admin').exists())
+        self.assertTrue(CustomUser.objects.filter(username='demo_hospital_mumbai_1').exists())
+        self.assertTrue(CustomUser.objects.filter(username='demo_donor_mumbai_1').exists())
+        self.assertTrue(CustomUser.objects.filter(username='demo_seeker_mumbai_1').exists())
+
+        # Check profile count
+        self.assertGreater(HospitalProfile.objects.count(), 0)
+        self.assertGreater(DonorProfile.objects.count(), 0)
+        self.assertGreater(SeekerProfile.objects.count(), 0)
+        self.assertGreater(BloodStock.objects.count(), 0)
+        self.assertGreater(BloodRequest.objects.count(), 0)
+
+        # 2. Check Idempotency: Run seed command again and verify counts are stable
+        user_count_before = CustomUser.objects.count()
+        call_command('seed_data')
+        user_count_after = CustomUser.objects.count()
+        self.assertEqual(user_count_before, user_count_after, "Seeding is not idempotent; new users were created!")
+
+        # 3. Clear data using the --clear flag
+        call_command('seed_data', clear=True)
+
+        # Verify all demo users and their profiles are removed
+        self.assertFalse(CustomUser.objects.filter(username__startswith='demo_').exists())
+        self.assertEqual(HospitalProfile.objects.filter(hospital_name__startswith='demo_').count(), 0)
+        self.assertEqual(BloodRequest.objects.filter(requester__username__startswith='demo_').count(), 0)
+
