@@ -641,7 +641,132 @@ img { max-width: 100%; height: auto; }
     from { opacity: 0; transform: translateY(24px); }
     to { opacity: 1; transform: translateY(0); }
 }
+ /* change to be done */
+ /* ============================================================
+   HOW IT WORKS — Step Card Hover & CTA Buttons
+   Add this block after the existing .step-card rules in main.css
+   (after the @keyframes fadeUp block, around line ~370)
+   ============================================================ */
 
+ /* --- Enhanced step card layout to accommodate CTA --- */
+ .step-card {
+     /* Keep all existing properties; add flex column so the button
+       stays pinned to the bottom regardless of content height.     */
+     display: flex;
+     flex-direction: column;
+ }
+
+ /* Push CTA to the bottom of every card */
+ .step-card-body {
+     flex: 1;
+ }
+
+ /* --- Richer hover: red glow pulse on the left border accent --- */
+ .step-card::before {
+     content: '';
+     position: absolute;
+     inset: 0;
+     border-radius: var(--radius-lg);
+     background: radial-gradient(ellipse at 50% 110%,
+             rgba(214, 40, 40, 0.12),
+             transparent 65%);
+     opacity: 0;
+     transition: opacity 0.35s ease;
+     pointer-events: none;
+     z-index: 0;
+ }
+
+ .step-card:hover::before {
+     opacity: 1;
+ }
+
+ /* Ensure existing card children sit above the pseudo-element */
+ .step-card>* {
+     position: relative;
+     z-index: 1;
+ }
+
+ /* Stronger lift + left accent bar on hover */
+ .step-card:hover {
+     transform: translateY(-6px);
+     border-color: rgba(214, 40, 40, 0.45);
+     box-shadow:
+         0 16px 48px rgba(214, 40, 40, 0.14),
+         0 2px 8px rgba(0, 0, 0, 0.4);
+ }
+
+ /* Accent bar slides in from the left on hover */
+ .step-card::after {
+     content: '';
+     position: absolute;
+     top: 20%;
+     left: 0;
+     width: 3px;
+     height: 60%;
+     background: var(--gradient-blood, var(--red));
+     border-radius: 0 3px 3px 0;
+     transform: scaleY(0);
+     transform-origin: center;
+     transition: transform 0.3s ease;
+ }
+
+ .step-card:hover::after {
+     transform: scaleY(1);
+ }
+
+ /* --- Step CTA button --- */
+ .step-cta {
+     display: inline-flex;
+     align-items: center;
+     gap: 8px;
+     margin-top: 28px;
+     padding: 10px 20px;
+     border-radius: var(--radius-sm);
+     font-size: 0.875rem;
+     font-weight: 700;
+     font-family: var(--font-body);
+     color: var(--red-light);
+     background: rgba(214, 40, 40, 0.1);
+     border: 1px solid rgba(214, 40, 40, 0.25);
+     text-decoration: none;
+     transition: var(--transition);
+     width: fit-content;
+
+     /* Arrow nudges right on hover */
+ }
+
+ .step-cta i {
+     font-size: 0.8rem;
+     transition: transform 0.25s ease;
+ }
+
+ .step-cta:hover {
+     background: var(--red);
+     border-color: var(--red);
+     color: white;
+     transform: translateX(2px);
+ }
+
+ .step-cta:hover i {
+     transform: translateX(4px);
+ }
+
+ /* Slight delay so button only "appears" after the card lifts */
+ .step-card .step-cta {
+     opacity: 0.75;
+     transform: translateY(4px);
+     transition:
+         background 0.25s ease,
+         border-color 0.25s ease,
+         color 0.25s ease,
+         opacity 0.3s ease,
+         transform 0.3s ease;
+ }
+
+ .step-card:hover .step-cta {
+     opacity: 1;
+     transform: translateY(0);
+ }
 /* MAP SECTION */
 .map-section {
     max-width: 1280px;

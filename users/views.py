@@ -15,7 +15,7 @@ def register(request):
         return redirect("dashboard")
     
     if request.method == "POST":
-        form = UserRegistrationForm(request.POST)
+        form = UserRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
             user = form.save()
             # Create role-specific profile
@@ -31,12 +31,20 @@ def register(request):
                 from hospitals.models import HospitalProfile, BloodStock
                 hp = HospitalProfile.objects.create(
                     user=user,
-                    hospital_name=f"{user.get_full_name()} Hospital",
-                    address=user.address or "",
-                    city=user.city or "",
-                    state=user.state or "",
-                    pincode=user.pincode or "",
-                    contact_number=user.phone_number or "",
+                    hospital_name=form.cleaned_data.get("hospital_name"),
+                    hospital_type=form.cleaned_data.get("hospital_type"),
+                    registration_number=form.cleaned_data.get("registration_number"),
+                    address=form.cleaned_data.get("address") or "",
+                    city=form.cleaned_data.get("city") or "",
+                    state=form.cleaned_data.get("state") or "",
+                    pincode=form.cleaned_data.get("pincode") or "",
+                    contact_number=form.cleaned_data.get("phone_number") or "",
+                    emergency_contact=form.cleaned_data.get("emergency_contact") or "",
+                    email=form.cleaned_data.get("email") or "",
+                    website=form.cleaned_data.get("website") or "",
+                    verification_document=form.cleaned_data.get("verification_document"),
+                    latitude=form.cleaned_data.get("latitude"),
+                    longitude=form.cleaned_data.get("longitude"),
                 )
                 BloodStock.objects.create(hospital=hp)
             
@@ -59,7 +67,10 @@ def user_login(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            messages.success(request, f"Welcome back, {user.first_name or user.username}!")
+            if user.role == "hospital":
+                messages.info(request, f"Welcome {user.first_name or user.username}! For hospital-specific features, consider using the Hospital Login.")
+            else:
+                messages.success(request, f"Welcome back, {user.first_name or user.username}!")
             next_url = request.GET.get("next", "dashboard")
             return redirect(next_url)
         else:
@@ -68,6 +79,35 @@ def user_login(request):
         form = CustomLoginForm()
     
     return render(request, "users/login.html", {"form": form})
+
+
+def hospital_login(request):
+    """Hospital-specific login view"""
+    if request.user.is_authenticated:
+        if request.user.role == "hospital":
+            return redirect("hospital_dashboard")
+        else:
+            messages.info(request, "You're already logged in. Please use the regular dashboard.")
+            return redirect("dashboard")
+
+    if request.method == "POST":
+        form = CustomLoginForm(data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            if user.role != "hospital":
+                messages.error(request, "This login is for hospital accounts only. Please use the regular login.")
+                return redirect("login")
+            else:
+                login(request, user)
+                messages.success(request, f"Welcome to BloodConnect, {user.hospital_profile.hospital_name}!")
+                next_url = request.GET.get("next", "hospital_dashboard")
+                return redirect(next_url)
+        else:
+            messages.error(request, "Invalid hospital credentials.")
+    else:
+        form = CustomLoginForm()
+
+    return render(request, "users/hospital_login.html", {"form": form})
 
 
 def user_logout(request):
@@ -89,6 +129,15 @@ def dashboard(request):
         return redirect("hospital_dashboard")
     else:
         return redirect("home")
+
+
+@login_required
+def hospital_dashboard_redirect(request):
+    """Hospital-specific dashboard redirect with validation"""
+    if request.user.role != "hospital":
+        messages.warning(request, "Access restricted to hospital users only.")
+        return redirect("dashboard")
+    return redirect("hospital_dashboard")
 
 
 @login_required

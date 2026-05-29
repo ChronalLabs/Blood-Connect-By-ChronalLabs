@@ -1,6 +1,8 @@
 from django import forms
 from .models import DonorProfile, BloodDonationHistory
 
+from bloodconnect.i18n import apply_field_labels
+
 
 class DonorProfileForm(forms.ModelForm):
     class Meta:
@@ -19,6 +21,21 @@ class DonorProfileForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        apply_field_labels(self.fields, {
+            "blood_group": "Blood Group",
+            "rh_factor": "RH",
+            "age": "Age",
+            "weight": "Weight",
+            "any_disease": "Any Disease",
+            "previous_injury": "Previous Injury",
+            "current_health_condition": "Current Health Condition",
+            "medications": "Medications",
+            "last_blood_donation_date": "Last Blood Donation Date",
+            "last_donation_hospital": "Last Donation Hospital",
+            "availability_status": "Availability Status",
+            "willing_to_travel": "Willing to Travel",
+            "max_travel_distance": "Max Travel Distance",
+        })
         for name, field in self.fields.items():
             if not isinstance(field.widget, (forms.CheckboxInput, forms.RadioSelect)):
                 field.widget.attrs.update({"class": "form-control"})
@@ -35,5 +52,11 @@ class DonationHistoryForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        apply_field_labels(self.fields, {
+            "donation_date": "Donation Date",
+            "hospital_name": "Hospital Name",
+            "units_donated": "Units Donated",
+            "notes": "Notes",
+        })
         for field in self.fields.values():
             field.widget.attrs.update({"class": "form-control"})

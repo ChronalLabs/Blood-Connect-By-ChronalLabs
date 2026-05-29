@@ -1,0 +1,24 @@
+# Custom folder to ignore
+fullstack-guardian/
+
+# Virtual Environment
+venv/
+.venv/
+env/
+
+# Python caching
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Database
+db.sqlite3
+
+# Media and uploads
+media/
+hospital_documents/
+hospital_logos/
+profiles/
+
+# Static compilation
+staticfiles/

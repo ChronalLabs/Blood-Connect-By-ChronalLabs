@@ -2,6 +2,8 @@
 
 **BloodConnect** is a production-ready web platform connecting Blood Donors, Seekers, and Hospitals during emergencies.
 
+Want to contribute? Check out our [Contributing Guide](CONTRIBUTING.md) to get started!
+
 ---
 
 ## 📋 Tech Stack
@@ -203,6 +205,12 @@ GOOGLE_SHEETS_CREDENTIALS=https://script.google.com/macros/s/YOUR_ID/exec
 - **Theme**: Dark health-tech
 - **Fonts**: Syne (headings) + Plus Jakarta Sans (body)
 - **Components**: Bootstrap 5 + Custom CSS
+
+---
+
+## 👥 Contributing
+
+We love contributions! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) to learn how to fork the repository, set up local development, run tests, and submit a pull request.
 
 ---
 

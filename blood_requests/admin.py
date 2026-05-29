@@ -5,10 +5,12 @@ from .models import BloodRequest, DonorNotification, DonorResponse
 @admin.register(BloodRequest)
 class BloodRequestAdmin(admin.ModelAdmin):
     list_display = ["patient_name", "blood_group", "rh_factor", "hospital_name",
-                    "urgency_level", "status", "created_at"]
+                    "linked_hospital", "urgency_level", "status", "created_at"]
     list_filter = ["status", "urgency_level", "blood_group", "rh_factor"]
-    search_fields = ["patient_name", "hospital_name", "requester__username"]
+    search_fields = ["patient_name", "hospital_name", "requester__username",
+                     "linked_hospital__hospital_name"]
     readonly_fields = ["created_at", "updated_at"]
+
 
 
 @admin.register(DonorResponse)

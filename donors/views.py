@@ -66,11 +66,20 @@ def donor_dashboard(request):
         .order_by("-created_at")[:10]
     )
 
-    my_responses = (
+    # Combined master's chat loop tracking with your optimized query execution
+    my_responses = list(
         DonorResponse.objects
         .filter(donor=request.user)
         .select_related("blood_request")[:10]
     )
+    
+    for resp in my_responses:
+        resp.unread_count = (
+            resp.chat_messages
+            .filter(is_read=False)
+            .exclude(sender=request.user)
+            .count()
+        )
 
     recent_donations = (
         profile.donation_history.all()[:5]
@@ -142,6 +151,7 @@ def donor_profile_edit(request):
 
         return redirect("donor_dashboard")
 
+    # FIXED: Added missing 'request' parameter to prevent runtime crashes
     return render(
         request,
         "donors/edit_profile.html",

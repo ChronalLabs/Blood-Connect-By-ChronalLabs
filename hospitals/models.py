@@ -4,6 +4,7 @@ Hospital profiles, blood stock management, and employee verification
 """
 from django.db import models
 from django.conf import settings
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class HospitalProfile(models.Model):
@@ -25,10 +26,25 @@ class HospitalProfile(models.Model):
     website = models.URLField(blank=True)
     
     # Location
-    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    latitude = models.DecimalField(
+        max_digits=9, decimal_places=6, null=True, blank=True,
+        validators=[MinValueValidator(-90.0), MaxValueValidator(90.0)]
+    )
+    longitude = models.DecimalField(
+        max_digits=9, decimal_places=6, null=True, blank=True,
+        validators=[MinValueValidator(-180.0), MaxValueValidator(180.0)]
+    )
     
     # Features
+    HOSPITAL_TYPE_CHOICES = [
+        ('government', 'Government'),
+        ('private', 'Private'),
+        ('trust', 'Trust / NGO'),
+        ('semi-govt', 'Semi-Government'),
+    ]
+    hospital_type = models.CharField(max_length=50, choices=HOSPITAL_TYPE_CHOICES, default='private')
+    verification_document = models.FileField(upload_to='hospital_documents/', null=True, blank=True)
+    
     blood_bank_available = models.BooleanField(default=True)
     has_24hr_service = models.BooleanField(default=False)
     verified = models.BooleanField(default=False)

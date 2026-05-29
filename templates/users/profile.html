@@ -1,5 +1,6 @@
 {% extends "base/base.html" %}
-{% block title %}My Profile{% endblock %}
+{% load localization_tags %}
+{% block title %}{% t "My Profile" %}{% endblock %}
 {% block content %}
 <div class="container py-5">
     <div class="row g-4">
@@ -17,16 +18,16 @@
                     <span class="role-tag role-{{ user.role }}">{{ user.get_role_display }}</span>
                 </div>
                 <ul class="profile-nav">
-                    <li><a href="{% url 'profile' %}" class="active"><i class="bi bi-person me-2"></i>Profile</a></li>
-                    <li><a href="{% url 'dashboard' %}"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
-                    {% if user.role == 'donor' %}<li><a href="{% url 'donor_profile_edit' %}"><i class="bi bi-heart-pulse me-2"></i>Medical Info</a></li>{% endif %}
-                    <li><a href="{% url 'logout' %}" class="text-danger"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                    <li><a href="{% url 'profile' %}" class="active"><i class="bi bi-person me-2"></i>{% t "Profile" %}</a></li>
+                    <li><a href="{% url 'dashboard' %}"><i class="bi bi-speedometer2 me-2"></i>{% t "Dashboard" %}</a></li>
+                    {% if user.role == 'donor' %}<li><a href="{% url 'donor_profile_edit' %}"><i class="bi bi-heart-pulse me-2"></i>{% t "Medical Info" %}</a></li>{% endif %}
+                    <li><a href="{% url 'logout' %}" class="text-danger"><i class="bi bi-box-arrow-right me-2"></i>{% t "Logout" %}</a></li>
                 </ul>
             </div>
         </div>
         <div class="col-lg-9">
             <div class="bc-card">
-                <h5 class="fw-bold mb-4">Personal Information</h5>
+                <h5 class="fw-bold mb-4">{% t "Personal Information" %}</h5>
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="row g-3">
@@ -39,7 +40,7 @@
                         {% endfor %}
                     </div>
                     <hr class="my-4">
-                    <h6 class="fw-bold mb-3">Emergency Contact</h6>
+                    <h6 class="fw-bold mb-3">{% t "Emergency Contact" %}</h6>
                     <div class="row g-3">
                         {% for field in ec_form %}
                         <div class="col-md-6">
@@ -49,7 +50,7 @@
                         {% endfor %}
                     </div>
                     <div class="mt-4">
-                        <button type="submit" class="btn btn-blood px-4">Save Changes</button>
+                        <button type="submit" class="btn btn-blood px-4">{% t "Save Changes" %}</button>
                     </div>
                 </form>
             </div>

@@ -27,12 +27,71 @@
         </form>
     </div>
 
+    <div id="compatibility-widget" class="bc-card mb-4 compatibility-widget-card">
+        <div class="d-flex flex-column flex-lg-row gap-3 align-items-start align-items-lg-center justify-content-between">
+            <div class="compatibility-selector">
+                <label class="form-label small fw-medium">Target Blood Type</label>
+                <select id="compatibility-target-type" class="form-select" aria-label="Select target blood type">
+                    <option value="">Select target blood type</option>
+                    <option value="O-">O-</option>
+                    <option value="O+">O+</option>
+                    <option value="A-">A-</option>
+                    <option value="A+">A+</option>
+                    <option value="B-">B-</option>
+                    <option value="B+">B+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="AB+">AB+</option>
+                </select>
+            </div>
+            <div class="compatibility-selector">
+                <label class="form-label small fw-medium">Transfer Type</label>
+                <div class="compatibility-modes">
+                    <label class="compatibility-mode">
+                        <input type="radio" name="compatibility_mode" value="rbc" checked>
+                        RBC
+                    </label>
+                    <label class="compatibility-mode">
+                        <input type="radio" name="compatibility_mode" value="plasma">
+                        Plasma
+                    </label>
+                </div>
+            </div>
+            <div class="d-flex flex-column gap-2 align-items-start compatibility-actions">
+                <div id="compatibility-summary" class="compatibility-summary text-muted" role="status" aria-live="polite">
+                    Select a target blood type to highlight compatible donors instantly.
+                </div>
+                <button id="compatibility-reset" class="btn btn-secondary btn-sm">Reset compatibility</button>
+            </div>
+        </div>
+        <div class="compatibility-matrix-wrap mt-4">
+            <div class="compatibility-matrix-label">Compatibility matrix for selected target:</div>
+            <div class="table-responsive">
+                <table class="table compatibility-matrix-table">
+                    <thead>
+                        <tr>
+                            <th>Donor →</th>
+                            <th>O-</th>
+                            <th>O+</th>
+                            <th>A-</th>
+                            <th>A+</th>
+                            <th>B-</th>
+                            <th>B+</th>
+                            <th>AB-</th>
+                            <th>AB+</th>
+                        </tr>
+                    </thead>
+                    <tbody id="compatibility-matrix-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     {% if ranked_donors is not None %}
     <!-- Compatibility-ranked results -->
     <div class="row g-3">
         {% for entry in ranked_donors %}
         <div class="col-md-6 col-lg-4">
-            <div class="donor-card">
+            <div class="donor-card" data-donor-blood-group="{{ entry.donor.blood_type }}">
                 <div class="d-flex align-items-center gap-3 mb-3">
                     <div class="donor-avatar"><i class="bi bi-person-fill"></i></div>
                     <div>
@@ -73,7 +132,7 @@
     <div class="row g-3">
         {% for donor in donors %}
         <div class="col-md-6 col-lg-4">
-            <div class="donor-card">
+            <div class="donor-card" data-donor-blood-group="{{ donor.blood_type }}">
                 <div class="d-flex align-items-center gap-3 mb-3">
                     <div class="donor-avatar"><i class="bi bi-person-fill"></i></div>
                     <div>
@@ -98,4 +157,7 @@
     {% endif %}
 
 </div>
+
+{% block extra_js %}
+<script src="{% static 'js/compatibility-widget.js' %}" defer></script>
 {% endblock %}

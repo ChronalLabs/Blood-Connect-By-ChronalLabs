@@ -1,21 +1,19 @@
 from django.urls import path
-
-from .views import (
-    add_employee,
-    hospital_dashboard,
-    hospital_detail,
-    hospital_list,
-    hospital_profile_edit,
-    update_blood_stock,
-)
+from . import views  # Changed to module import to support the new master branch views cleanly
 
 app_name = "hospitals"
 
 urlpatterns = [
-    path("dashboard/", hospital_dashboard, name="dashboard"),
-    path("edit/", hospital_profile_edit, name="edit_profile"),
-    path("blood-stock/", update_blood_stock, name="blood_stock"),
-    path("employee/add/", add_employee, name="add_employee"),
-    path("list/", hospital_list, name="list"),
-    path("<int:pk>/", hospital_detail, name="detail"),
+    path("dashboard/", views.hospital_dashboard, name="hospital_dashboard"),
+    path("edit/", views.hospital_profile_edit, name="hospital_profile_edit"),
+    path("blood-stock/", views.update_blood_stock, name="update_blood_stock"),
+    path("employee/add/", views.add_employee, name="add_employee"),
+    path("list/", views.hospital_list, name="hospital_list"),
+    path("<int:pk>/", views.hospital_detail, name="hospital_detail"),
+    
+    # API: returns JSON for a verified hospital — used by create-request auto-fill JS.
+    path("api/<int:pk>/info/", views.hospital_info_api, name="hospital_info_api"),
+    
+    # Fulfill a linked blood request from the hospital's stock inventory.
+    path("requests/<int:request_id>/fulfill/", views.fulfill_request, name="fulfill_request"),
 ]

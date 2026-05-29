@@ -10,6 +10,10 @@
                         <div class="auth-logo"><i class="bi bi-person-plus-fill"></i></div>
                         <h3 class="fw-bold mt-3">Join BloodConnect</h3>
                         <p class="text-muted small">Create your account to start saving lives</p>
+                        <div class="alert alert-info small mt-2">
+                            <i class="bi bi-info-circle me-1"></i>
+                            <strong>Hospitals:</strong> Select "Hospital" role for dedicated healthcare features
+                        </div>
                     </div>
                     
                     <!-- Role Selection -->
@@ -17,21 +21,21 @@
                         <label class="form-label fw-semibold">Register As</label>
                         <div class="role-cards">
                             <label class="role-card" for="id_role_0">
-                                <input type="radio" name="role" value="donor" id="id_role_0" form="reg-form">
+                                <input type="radio" name="role" value="donor" id="id_role_0" form="reg-form" {% if form.role.value == 'donor' or not form.role.value %}checked{% endif %}>
                                 <div class="role-card-inner">
                                     <i class="bi bi-heart-pulse-fill"></i>
                                     <span>Blood Donor</span>
                                 </div>
                             </label>
                             <label class="role-card" for="id_role_1">
-                                <input type="radio" name="role" value="seeker" id="id_role_1" form="reg-form">
+                                <input type="radio" name="role" value="seeker" id="id_role_1" form="reg-form" {% if form.role.value == 'seeker' %}checked{% endif %}>
                                 <div class="role-card-inner">
                                     <i class="bi bi-search-heart"></i>
                                     <span>Blood Seeker</span>
                                 </div>
                             </label>
                             <label class="role-card" for="id_role_2">
-                                <input type="radio" name="role" value="hospital" id="id_role_2" form="reg-form">
+                                <input type="radio" name="role" value="hospital" id="id_role_2" form="reg-form" {% if form.role.value == 'hospital' %}checked{% endif %}>
                                 <div class="role-card-inner">
                                     <i class="bi bi-hospital-fill"></i>
                                     <span>Hospital</span>
@@ -40,23 +44,86 @@
                         </div>
                     </div>
                     
-                    <form method="post" novalidate id="reg-form">
+                    <form method="post" enctype="multipart/form-data" novalidate id="reg-form">
                         {% csrf_token %}
                         <div class="row g-3">
                             {% for field in form %}
-                            {% if field.name != 'role' %}
-                            <div class="col-md-6">
-                                <label class="form-label fw-medium small">{{ field.label }}
+                            {% if field.name != 'role' and not field.is_hidden %}
+                            <div class="col-md-6 field-wrapper" data-field-name="{{ field.name }}">
+                                <label class="form-label fw-medium small" id="label-for-{{ field.name }}">{{ field.label }}
                                     {% if field.field.required %}<span class="text-blood">*</span>{% endif %}
                                 </label>
                                 {{ field }}
                                 {% if field.errors %}
-                                    <div class="text-danger small">{{ field.errors.0 }}</div>
+                                    <div class="text-danger small mt-1">{{ field.errors.0 }}</div>
+                                {% endif %}
+
+                                {% if field.name == 'username' %}
+                                    <div class="username-requirements mt-2 p-2 rounded bg-light border" style="font-size: 0.75rem;">
+                                        <div class="requirement-item d-flex align-items-center mb-1 text-muted" id="user-req-lowercase">
+                                            <i class="bi bi-x-circle-fill text-muted me-2 icon-state"></i>
+                                            <span>Only lowercase letters and digits (no capital letters)</span>
+                                        </div>
+                                        <div class="requirement-item d-flex align-items-center mb-1 text-muted" id="user-req-chars">
+                                            <i class="bi bi-x-circle-fill text-muted me-2 icon-state"></i>
+                                            <span>No spaces or special characters (except @/_/-)</span>
+                                        </div>
+                                        <div class="requirement-item d-flex align-items-center mb-1 text-muted" id="user-req-start">
+                                            <i class="bi bi-x-circle-fill text-muted me-2 icon-state"></i>
+                                            <span>Starts with a special character (recommended)</span>
+                                        </div>
+                                        <div class="requirement-item d-flex align-items-center text-muted" id="user-req-length">
+                                            <i class="bi bi-x-circle-fill text-muted me-2 icon-state"></i>
+                                            <span>40 characters or fewer</span>
+                                        </div>
+                                    </div>
+                                {% elif field.name == 'password1' %}
+                                    <div class="password-requirements mt-2 p-2 rounded bg-light border" style="font-size: 0.75rem;">
+                                        <div class="requirement-item d-flex align-items-center mb-1 text-muted" id="pass-req-length">
+                                            <i class="bi bi-x-circle-fill text-muted me-2 icon-state"></i>
+                                            <span>At least 8 characters</span>
+                                        </div>
+                                        <div class="requirement-item d-flex align-items-center mb-1 text-muted" id="pass-req-lowercase">
+                                            <i class="bi bi-x-circle-fill text-muted me-2 icon-state"></i>
+                                            <span>At least one lowercase letter</span>
+                                        </div>
+                                        <div class="requirement-item d-flex align-items-center mb-1 text-muted" id="pass-req-uppercase">
+                                            <i class="bi bi-x-circle-fill text-muted me-2 icon-state"></i>
+                                            <span>At least one uppercase letter</span>
+                                        </div>
+                                        <div class="requirement-item d-flex align-items-center mb-1 text-muted" id="pass-req-digit">
+                                            <i class="bi bi-x-circle-fill text-muted me-2 icon-state"></i>
+                                            <span>At least one digit</span>
+                                        </div>
+                                        <div class="requirement-item d-flex align-items-center text-muted" id="pass-req-special">
+                                            <i class="bi bi-x-circle-fill text-muted me-2 icon-state"></i>
+                                            <span>At least one special character (@$!%*?&#)</span>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                
+                                {% if field.help_text and field.name != 'username' and field.name != 'password1' %}
+                                    <div class="text-muted mt-1" style="font-size: 0.75rem; opacity: 0.85;">{{ field.help_text|safe }}</div>
                                 {% endif %}
                             </div>
                             {% endif %}
                             {% endfor %}
+                            
+                            <!-- Map location field -->
+                            <div class="col-12 mt-3" id="map-section" style="display: none;">
+                                <label class="form-label fw-semibold small">Hospital Location (Click/Drag marker to pin on map) <span class="text-blood">*</span></label>
+                                <div id="register-map" style="height: 300px; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 10px; min-height: 300px;"></div>
+                                <button type="button" id="locate-btn" class="btn btn-outline-blood btn-sm"><i class="bi bi-geo-alt-fill me-1"></i>Locate Me</button>
+                            </div>
                         </div>
+                        
+                        <!-- Hidden Fields -->
+                        {% for field in form %}
+                            {% if field.is_hidden %}
+                                {{ field }}
+                            {% endif %}
+                        {% endfor %}
+
                         <button type="submit" class="btn btn-blood w-100 mt-4">
                             <i class="bi bi-person-check-fill me-2"></i>Create Account
                         </button>
@@ -65,10 +132,316 @@
                         <p class="text-muted small">Already have an account? 
                             <a href="{% url 'login' %}" class="text-blood fw-semibold">Login here</a>
                         </p>
+                        <div class="alert alert-light small mt-2">
+                            <i class="bi bi-building-fill-cross me-1 text-blood"></i>
+                            <a href="{% url 'hospital_login' %}" class="text-blood fw-semibold">Hospital Login</a> 
+                            for registered healthcare institutions
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const roleInputs = document.querySelectorAll('input[name="role"]');
+    const fieldWrappers = document.querySelectorAll('.field-wrapper');
+    
+    const hospitalFields = [
+        'hospital_name',
+        'hospital_type',
+        'registration_number',
+        'emergency_contact',
+        'blood_bank_available',
+        'website',
+        'verification_document'
+    ];
+    
+    function updateFormFields() {
+        const selectedRole = document.querySelector('input[name="role"]:checked')?.value || 'donor';
+        
+        fieldWrappers.forEach(wrapper => {
+            const fieldName = wrapper.getAttribute('data-field-name');
+            const labelEl = wrapper.querySelector('label');
+            
+            if (selectedRole === 'hospital') {
+                if (hospitalFields.includes(fieldName)) {
+                    wrapper.style.display = 'block';
+                }
+                
+                // Relabel fields and add required markers for Hospital onboarding
+                if (fieldName === 'username') {
+                    if (labelEl) labelEl.innerHTML = 'Hospital Username (for login) <span class="text-blood">*</span>';
+                } else if (fieldName === 'first_name') {
+                    if (labelEl) labelEl.innerHTML = 'Contact Person Name <span class="text-blood">*</span>';
+                } else if (fieldName === 'last_name') {
+                    if (labelEl) labelEl.innerHTML = 'Designation <span class="text-blood">*</span>';
+                } else if (fieldName === 'phone_number') {
+                    if (labelEl) labelEl.innerHTML = 'Contact Number <span class="text-blood">*</span>';
+                } else if (fieldName === 'hospital_name') {
+                    if (labelEl) labelEl.innerHTML = 'Hospital Name <span class="text-blood">*</span>';
+                } else if (fieldName === 'hospital_type') {
+                    if (labelEl) labelEl.innerHTML = 'Hospital Type <span class="text-blood">*</span>';
+                } else if (fieldName === 'registration_number') {
+                    if (labelEl) labelEl.innerHTML = 'Registration/License Number <span class="text-blood">*</span>';
+                } else if (fieldName === 'address') {
+                    if (labelEl) labelEl.innerHTML = 'Address <span class="text-blood">*</span>';
+                } else if (fieldName === 'city') {
+                    if (labelEl) labelEl.innerHTML = 'City <span class="text-blood">*</span>';
+                } else if (fieldName === 'state') {
+                    if (labelEl) labelEl.innerHTML = 'State <span class="text-blood">*</span>';
+                }
+            } else {
+                if (hospitalFields.includes(fieldName)) {
+                    wrapper.style.display = 'none';
+                }
+                
+                // Restore standard labels for Donor/Seeker
+                if (fieldName === 'username') {
+                    if (labelEl) labelEl.innerHTML = 'Username <span class="text-blood">*</span>';
+                } else if (fieldName === 'first_name') {
+                    if (labelEl) labelEl.innerHTML = 'First Name <span class="text-blood">*</span>';
+                } else if (fieldName === 'last_name') {
+                    if (labelEl) labelEl.innerHTML = 'Last Name <span class="text-blood">*</span>';
+                } else if (fieldName === 'phone_number') {
+                    if (labelEl) labelEl.innerHTML = 'Phone Number <span class="text-blood">*</span>';
+                } else if (fieldName === 'hospital_name') {
+                    if (labelEl) labelEl.innerHTML = 'Hospital Name';
+                } else if (fieldName === 'hospital_type') {
+                    if (labelEl) labelEl.innerHTML = 'Hospital Type';
+                } else if (fieldName === 'registration_number') {
+                    if (labelEl) labelEl.innerHTML = 'Registration/License Number';
+                } else if (fieldName === 'address') {
+                    if (labelEl) labelEl.innerHTML = 'Address';
+                } else if (fieldName === 'city') {
+                    if (labelEl) labelEl.innerHTML = 'City';
+                } else if (fieldName === 'state') {
+                    if (labelEl) labelEl.innerHTML = 'State';
+                }
+            }
+        });
+        
+        // Toggle username placeholder dynamically
+        const usernameInput = document.querySelector('input[name="username"]');
+        if (usernameInput) {
+            if (selectedRole === 'hospital') {
+                usernameInput.setAttribute('placeholder', 'e.g. @city_hospital_hyd');
+            } else {
+                usernameInput.removeAttribute('placeholder');
+            }
+        }
+
+        // Show/hide map section
+        const mapSection = document.getElementById('map-section');
+        if (mapSection) {
+            if (selectedRole === 'hospital') {
+                mapSection.style.display = 'block';
+                if (window.hospitalRegisterMap) {
+                    setTimeout(() => {
+                        window.hospitalRegisterMap.invalidateSize();
+                    }, 200);
+                }
+            } else {
+                mapSection.style.display = 'none';
+            }
+        }
+    }
+    
+    roleInputs.forEach(input => {
+        input.addEventListener('change', updateFormFields);
+    });
+    
+    // Initial run
+    const checkedInput = document.querySelector('input[name="role"]:checked');
+    if (!checkedInput && roleInputs.length > 0) {
+        roleInputs[0].checked = true;
+    }
+    updateFormFields();
+
+    // Map Initialization logic
+    let map, marker;
+    const latField = document.querySelector('input[name="latitude"]');
+    const lngField = document.querySelector('input[name="longitude"]');
+    
+    // Default location: Mumbai (19.0760, 72.8777)
+    let defaultLat = 19.0760;
+    let defaultLng = 72.8777;
+    
+    if (latField && latField.value) {
+        defaultLat = parseFloat(latField.value);
+    }
+    if (lngField && lngField.value) {
+        defaultLng = parseFloat(lngField.value);
+    }
+    
+    function initMap() {
+        const mapContainer = document.getElementById('register-map');
+        if (mapContainer && typeof L !== 'undefined') {
+            map = L.map('register-map').setView([defaultLat, defaultLng], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+            
+            marker = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(map);
+            
+            if (latField && lngField && !latField.value) {
+                latField.value = defaultLat.toFixed(6);
+                lngField.value = defaultLng.toFixed(6);
+            }
+            
+            marker.on('dragend', function(e) {
+                const position = marker.getLatLng();
+                latField.value = position.lat.toFixed(6);
+                lngField.value = position.lng.toFixed(6);
+            });
+            
+            map.on('click', function(e) {
+                const position = e.latlng;
+                marker.setLatLng(position);
+                latField.value = position.lat.toFixed(6);
+                lngField.value = position.lng.toFixed(6);
+            });
+            
+            window.hospitalRegisterMap = map;
+        }
+    }
+    
+    // Try browser geolocation first to center map near user
+    if (navigator.geolocation && (!latField || !latField.value)) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            defaultLat = position.coords.latitude;
+            defaultLng = position.coords.longitude;
+            if (map) {
+                map.setView([defaultLat, defaultLng], 13);
+                marker.setLatLng([defaultLat, defaultLng]);
+                latField.value = defaultLat.toFixed(6);
+                lngField.value = defaultLng.toFixed(6);
+            }
+        });
+    }
+    
+    // Initialize map
+    setTimeout(initMap, 300);
+    
+    // Locate button
+    const locateBtn = document.getElementById('locate-btn');
+    if (locateBtn) {
+        locateBtn.addEventListener('click', function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    map.setView([lat, lng], 15);
+                    marker.setLatLng([lat, lng]);
+                    latField.value = lat.toFixed(6);
+                    lngField.value = lng.toFixed(6);
+                }, function(error) {
+                    alert("Error getting location: " + error.message);
+                });
+            } else {
+                alert("Geolocation is not supported by your browser.");
+            }
+        });
+    }
+
+    // Username and Password real-time validation checklist
+    const usernameInput = document.querySelector('input[name="username"]');
+    const passwordInput = document.querySelector('input[name="password1"]');
+
+    function updateRequirements(element, isValid) {
+        if (!element) return;
+        const icon = element.querySelector('.icon-state');
+        if (isValid) {
+            element.classList.remove('text-muted', 'text-danger');
+            element.classList.add('text-success');
+            if (icon) {
+                icon.className = 'bi bi-check-circle-fill text-success me-2 icon-state';
+            }
+        } else {
+            element.classList.remove('text-success');
+            element.classList.add('text-muted');
+            if (icon) {
+                icon.className = 'bi bi-x-circle-fill text-muted me-2 icon-state';
+            }
+        }
+    }
+
+    if (usernameInput) {
+        // Trigger validation on input and load
+        const validateUsername = function() {
+            const val = usernameInput.value;
+            
+            // 1. Only lowercase letters and digits (no capital letters)
+            const isOnlyLower = val.length > 0 && !/[A-Z]/.test(val);
+            updateRequirements(document.getElementById('user-req-lowercase'), isOnlyLower);
+
+            // 2. Allowed characters (lowercase letters, digits, @/_/-)
+            const isAllowed = val.length > 0 && /^[a-z0-9@_\-]+$/.test(val);
+            updateRequirements(document.getElementById('user-req-chars'), isAllowed);
+
+            // 2.5 Starts with a special character (@, _, -)
+            const startsWithSpecial = /^[@_\-]/.test(val);
+            updateRequirements(document.getElementById('user-req-start'), startsWithSpecial);
+
+            // 3. Length (40 chars or fewer)
+            const isLenValid = val.length > 0 && val.length <= 40;
+            updateRequirements(document.getElementById('user-req-length'), isLenValid);
+        };
+        usernameInput.addEventListener('input', validateUsername);
+        setTimeout(validateUsername, 100);
+    }
+
+    if (passwordInput) {
+        const validatePassword = function() {
+            const val = passwordInput.value;
+
+            // 1. At least 8 characters
+            updateRequirements(document.getElementById('pass-req-length'), val.length >= 8);
+
+            // 2. At least one lowercase letter
+            updateRequirements(document.getElementById('pass-req-lowercase'), /[a-z]/.test(val));
+
+            // 3. At least one uppercase letter
+            updateRequirements(document.getElementById('pass-req-uppercase'), /[A-Z]/.test(val));
+
+            // 4. At least one digit
+            updateRequirements(document.getElementById('pass-req-digit'), /[0-9]/.test(val));
+
+            // 5. At least one special character
+            updateRequirements(document.getElementById('pass-req-special'), /[@$!%*?&#]/.test(val));
+        };
+        passwordInput.addEventListener('input', validatePassword);
+        setTimeout(validatePassword, 100);
+    }
+
+    // PDF upload validation checker
+    const fileInput = document.querySelector('input[name="verification_document"]');
+    if (fileInput) {
+        const wrapper = fileInput.closest('.field-wrapper');
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'text-danger small mt-1 file-error';
+        errorDiv.style.display = 'none';
+        if (wrapper) {
+            wrapper.appendChild(errorDiv);
+        }
+
+        fileInput.addEventListener('change', function() {
+            const file = fileInput.files[0];
+            if (file) {
+                if (!file.name.toLowerCase().endsWith('.pdf')) {
+                    errorDiv.textContent = 'Only PDF files are allowed.';
+                    errorDiv.style.display = 'block';
+                    fileInput.value = ''; // clear the input
+                } else {
+                    errorDiv.style.display = 'none';
+                }
+            } else {
+                errorDiv.style.display = 'none';
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

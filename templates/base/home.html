@@ -22,33 +22,18 @@
                     Register today and be someone's lifesaver in their most critical moment.
                 </p>
                 <div class="d-flex gap-3 flex-wrap mt-4">
-                    <a href="{% url 'register' %}" class="btn btn-blood btn-lg px-4">
-                        <i class="bi bi-heart-fill me-2"></i>Donate Blood
+                    <a href="{% url 'register' %}" 
+                        class="btn btn-blood btn-lg px-4 d-flex align-items-center justify-content-center">
+                        <i class="bi bi-heart-fill me-2"></i>
+                        Donate Blood
                     </a>
                     <a href="{% url 'create_request' %}" class="btn btn-outline-light btn-lg px-4">
                         <i class="bi bi-search me-2"></i>Need Blood?
                     </a>
                 </div>
-                <div class="hero-search-card mt-4">
-                    <h6 class="mb-3 fw-semibold">Quick Donor Search</h6>
-                    <form action="{% url 'search_donors' %}" method="get" class="d-flex gap-2 flex-wrap">
-                        <select name="blood_group" class="form-select form-select-sm" style="max-width:100px">
-                            <option value="">Group</option>
-                            <option value="A">A</option>
-                            <option value="B">B</option>
-                            <option value="AB">AB</option>
-                            <option value="O">O</option>
-                        </select>
-                        <select name="rh_factor" class="form-select form-select-sm" style="max-width:100px">
-                            <option value="">RH</option>
-                            <option value="+">Positive</option>
-                            <option value="-">Negative</option>
-                        </select>
-                        <input type="text" name="city" placeholder="City..." class="form-control form-control-sm" style="max-width:140px">
-                        <button class="btn btn-blood btn-sm" type="submit"><i class="bi bi-search"></i></button>
-                    </form>
-                </div>
             </div>
+
+            <!-- Right Visual Graphic Column -->
             <div class="col-lg-6 d-none d-lg-block">
                 <div class="hero-visual">
                     <div class="blood-drop-animation">
@@ -66,6 +51,52 @@
                             <strong>{{ stats.hospitals }}+</strong> Hospitals
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Premium & Centered Quick Donor Search Card -->
+        <div class="row pb-5 justify-content-center hero-search-card-container">
+            <div class="col-12 col-xl-11">
+                <div class="hero-search-premium-card p-4 p-md-5 mx-auto">
+                    
+                    <div class="mb-3 d-flex justify-content-center">
+                        <div style="width: 54px; height: 54px; background: #e53935; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: white; box-shadow: 0 4px 20px rgba(229,57,53,0.5);">
+                            <i class="bi bi-search"></i>
+                        </div>
+                    </div>
+
+                        <h4 class="fw-semibold text-center mb-2" style="color: #fff; font-size: 1.25rem;">
+                        Quick Donor Search
+                    </h4>
+
+                    <div class="d-flex align-items-center justify-content-center gap-2 mb-4">
+                        <span style="display: block; height: 1px; width: 60px; background: linear-gradient(to right, transparent, #e53935);"></span>
+                        <i class="bi bi-droplet-fill" style="color: #e53935; font-size: 0.9rem;"></i>
+                        <span style="display: block; height: 1px; width: 60px; background: linear-gradient(to left, transparent, #e53935);"></span>
+                    </div>
+
+                    <form action="{% url 'search_donors' %}" method="get" class="search-form-wrap">
+                        <select name="blood_group" class="form-select search-form-select flex-grow-1 flex-sm-grow-0" style="min-width: 150px; max-width: 200px;">
+                            <option value="">Group</option>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="AB">AB</option>
+                            <option value="O">O</option>
+                        </select>
+
+                        <select name="rh_factor" class="form-select search-form-select flex-grow-1 flex-sm-grow-0" style="min-width: 150px; max-width: 200px;">
+                            <option value="">RH</option>
+                            <option value="+">Positive</option>
+                            <option value="-">Negative</option>
+                        </select>
+
+                        <input type="text" name="city" placeholder="Search by city..." class="form-control search-form-input flex-grow-1" style="min-width: 220px; max-width: 380px;">
+
+                        <button class="btn btn-blood search-form-btn d-flex align-items-center justify-content-center px-4 flex-grow-1 flex-sm-grow-0" type="submit" style="min-width: 180px; max-width: 240px;">
+                            <i class="bi bi-search me-2"></i> Search
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -213,6 +244,12 @@
                     <div class="how-icon"><i class="bi bi-person-plus-fill"></i></div>
                     <h5 class="fw-bold mt-3">Register</h5>
                     <p class="text-muted small">Sign up as a Donor, Seeker or Hospital with your medical details.</p>
+
+                    <div class="how-cta-wrap mt-4">
+                        <a href="/users/register/" class="btn btn-blood how-cta-btn">
+                            <i class="bi bi-heart-fill me-2"></i>Register Now
+                        </a>
+                    </div>
                 </div>
             </div>
             <div class="col-md-4">
@@ -221,6 +258,12 @@
                     <div class="how-icon" style="background:rgba(52,193,198,0.1);color:var(--teal)"><i class="bi bi-search-heart"></i></div>
                     <h5 class="fw-bold mt-3">Connect</h5>
                     <p class="text-muted small">Search for compatible donors or post an emergency blood request instantly.</p>
+
+                    <div class="how-cta-wrap mt-4">
+                        <a href="/requests/list/" class="btn btn-outline-blood how-cta-btn">
+                            <i class="bi bi-search me-2"></i>View Requests
+                        </a>
+                    </div>
                 </div>
             </div>
             <div class="col-md-4">
@@ -229,6 +272,12 @@
                     <div class="how-icon" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="bi bi-shield-fill-check"></i></div>
                     <h5 class="fw-bold mt-3">Save Lives</h5>
                     <p class="text-muted small">Meet at the hospital, donate blood, and be someone's hero today.</p>
+
+                    <div class="how-cta-wrap mt-4">
+                        <a href="/hospitals/list/" class="btn btn-blood how-cta-btn">
+                            <i class="bi bi-hospital-fill me-2"></i>Find Hospitals
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -252,6 +301,82 @@
 
 {% block extra_css %}
 <style>
+/* ---- Quick Donor Search Premium Card ---- */
+.hero-search-card-container {
+    padding-bottom: 3.5rem;
+}
+.hero-search-premium-card {
+    background: linear-gradient(135deg, rgba(80,10,10,0.55), rgba(30,10,10,0.7)) !important;
+    border: 1.5px solid rgba(180,30,30,0.3) !important;
+    border-radius: 24px !important;
+    backdrop-filter: blur(12px) !important;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.55), 0 0 30px rgba(180,30,30,0.1) inset !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+    width: 100%;
+    max-width: 1000px;
+}
+.hero-search-premium-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(180,30,30,0.45) !important;
+    box-shadow: 0 25px 55px rgba(0, 0, 0, 0.65), 0 0 40px rgba(180,30,30,0.15) inset !important;
+}
+.search-form-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 1.25rem; /* Improved spacing */
+    padding: 0.5rem 0;
+}
+.search-form-select, .search-form-input {
+    height: 52px !important;
+    background-color: rgba(30, 30, 30, 0.7) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.12) !important;
+    color: #f1f1f1 !important;
+    border-radius: 12px !important;
+    padding: 0 16px !important;
+    font-size: 14.5px !important;
+    transition: all 0.25s ease !important;
+}
+.search-form-select:hover, .search-form-input:hover {
+    border-color: rgba(255, 255, 255, 0.25) !important;
+    background-color: rgba(40, 40, 40, 0.8) !important;
+}
+.search-form-select:focus, .search-form-input:focus {
+    border-color: var(--blood-red) !important;
+    background-color: rgba(45, 45, 45, 0.9) !important;
+    box-shadow: 0 0 0 4px rgba(214, 40, 40, 0.25) !important;
+    outline: none !important;
+}
+.search-form-select::placeholder, .search-form-input::placeholder {
+    color: rgba(255, 255, 255, 0.4) !important;
+}
+.search-form-select {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ccc' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 12px center !important;
+    background-size: 12px 10px !important;
+    padding-right: 36px !important;
+}
+.search-form-btn {
+    height: 52px !important;
+    border-radius: 12px !important;
+    font-weight: 700 !important;
+    font-size: 15px !important;
+    letter-spacing: 0.3px;
+    background: var(--gradient-blood) !important;
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(214, 40, 40, 0.45) !important;
+    transition: all 0.25s ease !important;
+}
+.search-form-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(214, 40, 40, 0.6) !important;
+}
+.search-form-btn:active {
+    transform: translateY(0);
+}
 /* ---- Map Search Bar ---- */
 .map-search-bar {
     position: relative;
@@ -429,7 +554,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
+ <script>
 // ============================================================
 //  HOME PAGE MAP — with hospital search
 // ============================================================
@@ -455,24 +580,7 @@ const youIcon = L.divIcon({
     className: '', iconSize:[14,14], iconAnchor:[7,7]
 });
 
-// Build hospitals data from Django context
-const hospitalData = [
-    {% for h in hospitals %}
-    {% if h.latitude and h.longitude %}
-    {
-        name: "{{ h.hospital_name|escapejs }}",
-        lat: {{ h.latitude }},
-        lng: {{ h.longitude }},
-        address: "{{ h.address|escapejs }}",
-        contact: "{{ h.contact_number|escapejs }}",
-        city: "{{ h.city|escapejs }}",
-        state: "{{ h.state|escapejs }}",
-        blood_bank: {{ h.blood_bank_available|yesno:"true,false" }},
-        verified: {{ h.verified|yesno:"true,false" }}
-    },
-    {% endif %}
-    {% endfor %}
-];
+
 
 // Place all markers and keep references
 const markerMap = {};  // name (lowercase) -> {marker, data}
@@ -531,7 +639,7 @@ function onHospitalSearchInput(val) {
     }
 
     ac.innerHTML = matches.map(({data}, i) => `
-        <div class="autocomplete-item" data-name="${data.name}" onmousedown="selectHospital('${data.name.replace(/'/g,"\'")}')">
+        <div class="autocomplete-item" data-name="${data.name}" onmousedown="selectHospital('${data.name.replace(/'/g, "\\'")}')">
             <div class="autocomplete-icon"><i class="bi bi-hospital-fill"></i></div>
             <div>
                 <div class="autocomplete-name">${highlightMatch(data.name, val)}</div>

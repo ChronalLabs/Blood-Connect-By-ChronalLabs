@@ -10,12 +10,25 @@
                     {% csrf_token %}
                     <div class="row g-3">
                         {% for field in form %}
+                        {% if field.name == 'latitude' or field.name == 'longitude' %}
+                            <div style="display: none;">
+                                {{ field }}
+                            </div>
+                        {% else %}
                         <div class="col-md-6">
                             <label class="form-label small fw-medium">{{ field.label }}</label>
                             {{ field }}
                             {% if field.errors %}<div class="text-danger small">{{ field.errors.0 }}</div>{% endif %}
                         </div>
+                        {% endif %}
                         {% endfor %}
+                        
+                        <!-- Map Location selection -->
+                        <div class="col-12 mt-3">
+                            <label class="form-label fw-semibold small">Hospital Location (Click/Drag marker to pin on map)</label>
+                            <div id="edit-profile-map" style="height: 300px; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 10px; min-height: 300px;"></div>
+                            <button type="button" id="locate-btn" class="btn btn-outline-blood btn-sm"><i class="bi bi-geo-alt-fill me-1"></i>Locate Me</button>
+                        </div>
                     </div>
                     <div class="d-flex gap-2 mt-4">
                         <button type="submit" class="btn btn-blood px-4">Save Changes</button>
@@ -26,4 +39,69 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let map, marker;
+    const latField = document.querySelector('input[name="latitude"]');
+    const lngField = document.querySelector('input[name="longitude"]');
+    
+    let defaultLat = 19.0760;
+    let defaultLng = 72.8777;
+    
+    if (latField && latField.value) {
+        defaultLat = parseFloat(latField.value);
+    }
+    if (lngField && lngField.value) {
+        defaultLng = parseFloat(lngField.value);
+    }
+    
+    function initMap() {
+        const mapContainer = document.getElementById('edit-profile-map');
+        if (mapContainer && typeof L !== 'undefined') {
+            map = L.map('edit-profile-map').setView([defaultLat, defaultLng], 14);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+            
+            marker = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(map);
+            
+            marker.on('dragend', function(e) {
+                const position = marker.getLatLng();
+                latField.value = position.lat.toFixed(6);
+                lngField.value = position.lng.toFixed(6);
+            });
+            
+            map.on('click', function(e) {
+                const position = e.latlng;
+                marker.setLatLng(position);
+                latField.value = position.lat.toFixed(6);
+                lngField.value = position.lng.toFixed(6);
+            });
+        }
+    }
+    
+    setTimeout(initMap, 300);
+    
+    const locateBtn = document.getElementById('locate-btn');
+    if (locateBtn) {
+        locateBtn.addEventListener('click', function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    map.setView([lat, lng], 15);
+                    marker.setLatLng([lat, lng]);
+                    latField.value = lat.toFixed(6);
+                    lngField.value = lng.toFixed(6);
+                }, function(error) {
+                    alert("Error getting location: " + error.message);
+                });
+            } else {
+                alert("Geolocation is not supported by your browser.");
+            }
+        });
+    }
+});
+</script>
 {% endblock %}
