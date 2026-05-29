@@ -1,5 +1,6 @@
 {% extends "base/base.html" %}
-{% block title %}Hospital Login{% endblock %}
+{% load localization_tags %}
+{% block title %}{% t "Hospital Login" %}{% endblock %}
 {% block content %}
 <section class="auth-section">
     <div class="container">
@@ -8,8 +9,8 @@
                 <div class="auth-card">
                     <div class="text-center mb-4">
                         <div class="auth-logo"><i class="bi bi-building-fill-cross"></i></div>
-                        <h3 class="fw-bold mt-3">Hospital Login</h3>
-                        <p class="text-muted small">Secure access for hospitals and healthcare institutions.</p>
+                        <h3 class="fw-bold mt-3">{% t "Hospital Login" %}</h3>
+                        <p class="text-muted small">{% t "Secure access for hospitals and healthcare institutions." %}</p>
                     </div>
 
                     <form method="post" novalidate>
@@ -26,18 +27,18 @@
                         {% endfor %}
 
                         <button type="submit" class="btn btn-blood w-100 mt-2">
-                            <i class="bi bi-building-fill-cross me-2"></i>Hospital Login
+                            <i class="bi bi-building-fill-cross me-2"></i>{% t "Hospital Login" %}
                         </button>
                     </form>
 
                     <div class="text-center mt-4">
-                        <p class="text-muted small">Not a hospital user? 
-                            <a href="{% url 'login' %}" class="text-blood fw-semibold">Login as donor or seeker</a>
+                        <p class="text-muted small">{% t "Not a hospital user?" %} 
+                            <a href="{% url 'login' %}" class="text-blood fw-semibold">{% t "Login as donor or seeker" %}</a>
                         </p>
                     </div>
                     <div class="text-center mt-2">
-                        <p class="text-muted small">Don't have an account? 
-                            <a href="{% url 'register' %}" class="text-blood fw-semibold">Register here</a>
+                        <p class="text-muted small">{% t "Don't have an account?" %} 
+                            <a href="{% url 'register' %}" class="text-blood fw-semibold">{% t "Register here" %}</a>
                         </p>
                     </div>
                 </div>
@@ -45,12 +46,12 @@
 
             <div class="col-lg-6 d-none d-lg-block">
                 <div class="auth-visual">
-                    <h2 class="text-white fw-bold mb-3">Hospital access made easy.</h2>
-                    <p class="text-white-50">Manage hospital requests, blood stock, and patient support through a dedicated workflow.</p>
+                    <h2 class="text-white fw-bold mb-3">{% t "Hospital access made easy." %}</h2>
+                    <p class="text-white-50">{% t "Manage hospital requests, blood stock, and patient support through a dedicated workflow." %}</p>
                     <div class="auth-stats mt-4">
-                        <div class="auth-stat"><strong>100+</strong><br><small>Verified hospitals</small></div>
-                        <div class="auth-stat"><strong>24/7</strong><br><small>Emergency support</small></div>
-                        <div class="auth-stat"><strong>Fast</strong><br><small>Request dispatch</small></div>
+                        <div class="auth-stat"><strong>100+</strong><br><small>{% t "Verified hospitals" %}</small></div>
+                        <div class="auth-stat"><strong>24/7</strong><br><small>{% t "Emergency support" %}</small></div>
+                        <div class="auth-stat"><strong>Fast</strong><br><small>{% t "Request dispatch" %}</small></div>
                     </div>
                 </div>
             </div>

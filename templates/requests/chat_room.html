@@ -1,0 +1,518 @@
+{% extends "base/base.html" %}
+{% block title %}Chat with {{ other_user.get_full_name|default:other_user.username }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-wrapper {
+        max-width: 900px;
+        margin: 2rem auto;
+    }
+
+    .chat-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        height: 600px;
+        box-shadow: var(--shadow);
+    }
+
+    .chat-header {
+        background: var(--bg-secondary);
+        border-bottom: 1px solid var(--border);
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .chat-user-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .chat-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--gradient-blood);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .chat-avatar.seeker-avatar {
+        background: var(--gradient-teal);
+    }
+
+    .chat-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1.5rem;
+        background: rgba(15, 17, 23, 0.4);
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        scroll-behavior: smooth;
+    }
+
+    /* Message Bubbles */
+    .msg-group {
+        display: flex;
+        flex-direction: column;
+        max-width: 75%;
+    }
+
+    .msg-group.me {
+        align-self: flex-end;
+        align-items: flex-end;
+    }
+
+    .msg-group.other {
+        align-self: flex-start;
+        align-items: flex-start;
+    }
+
+    .msg-bubble {
+        padding: 10px 16px;
+        border-radius: 16px;
+        font-size: 0.95rem;
+        line-height: 1.45;
+        word-wrap: break-word;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .msg-group.me .msg-bubble {
+        background: var(--gradient-teal);
+        color: white;
+        border-bottom-right-radius: 4px;
+    }
+
+    .msg-group.other .msg-bubble {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        border: 1px solid var(--border);
+        border-bottom-left-radius: 4px;
+    }
+
+    .msg-meta {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        margin-top: 4px;
+        padding: 0 4px;
+    }
+
+    .chat-footer {
+        background: var(--bg-secondary);
+        border-top: 1px solid var(--border);
+        padding: 1.25rem;
+    }
+
+    .chat-form {
+        display: flex;
+        gap: 12px;
+    }
+
+    .chat-input {
+        background: var(--bg-primary);
+        border: 1px solid var(--border);
+        color: var(--text-primary) !important;
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-size: 0.95rem;
+        flex: 1;
+        transition: border-color 0.2s;
+    }
+
+    .chat-input:focus {
+        background: var(--bg-primary);
+        border-color: var(--teal);
+        box-shadow: none;
+        outline: none;
+    }
+
+    .btn-send {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .empty-chat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: var(--text-muted);
+        text-align: center;
+        gap: 12px;
+    }
+
+    .empty-chat i {
+        font-size: 3rem;
+        color: var(--border);
+    }
+
+    /* Floating Scroll Toast Notification */
+    .scroll-toast {
+        position: absolute;
+        bottom: 85px;
+        left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        background: var(--gradient-blood);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(214, 40, 40, 0.4);
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 100;
+    }
+
+    .scroll-toast.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    .chat-close-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.25s ease;
+        color: var(--text-muted) !important;
+        background: transparent;
+        text-decoration: none;
+    }
+
+    .chat-close-btn:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--blood-light) !important;
+        transform: rotate(90deg);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <div class="chat-wrapper">
+        <!-- Back navigation link -->
+        <div class="mb-3">
+            {% if user.role == 'donor' %}
+                <a href="{% url 'donor_dashboard' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+                </a>
+            {% else %}
+                <a href="{% url 'request_detail' blood_request.id %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i>Back to Request Details
+                </a>
+            {% endif %}
+        </div>
+
+        <div class="chat-card">
+            <!-- Header -->
+            <div class="chat-header">
+                <div class="chat-user-info">
+                    <div class="chat-avatar {% if other_user.role == 'seeker' %}seeker-avatar{% endif %}">
+                        {{ other_user.username|slice:":1"|upper }}
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-0 text-white">{{ other_user.get_full_name|default:other_user.username }}</h6>
+                        <small class="text-muted d-block">
+                            Role: <span class="text-capitalize">{{ other_user.get_role_display }}</span>
+                        </small>
+                    </div>
+                </div>
+                
+                <div class="d-flex align-items-center gap-3">
+                    <div class="text-end d-none d-sm-block">
+                        <span class="badge bg-blood">{{ blood_request.blood_type }} Emergency</span>
+                        <small class="d-block text-muted small mt-1">Patient: {{ blood_request.patient_name }}</small>
+                    </div>
+                    {% if user.role == 'donor' %}
+                        <a href="{% url 'donor_dashboard' %}" class="chat-close-btn" title="Close Chat">
+                            <i class="bi bi-x-lg fs-5"></i>
+                        </a>
+                    {% else %}
+                        <a href="{% url 'request_detail' blood_request.id %}" class="chat-close-btn" title="Close Chat">
+                            <i class="bi bi-x-lg fs-5"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Chat Area -->
+            <div class="chat-body" id="chat-body">
+                <div class="empty-chat" id="empty-chat-state" style="display: none;">
+                    <i class="bi bi-chat-heart-fill"></i>
+                    <div>
+                        <h6 class="fw-bold mb-1 text-white-50">Direct Connection Established</h6>
+                        <p class="small mb-0 text-muted">Send a message to coordinate the blood donation details securely.</p>
+                    </div>
+                </div>
+                <!-- Messages will load here dynamically -->
+            </div>
+
+            <!-- Floating Scroll Toast -->
+            <div id="scroll-toast" class="scroll-toast">
+                <i class="bi bi-arrow-down-circle-fill"></i> New message from {{ other_user.get_full_name|default:other_user.username }}
+            </div>
+
+            <!-- Footer / Input Form -->
+            <div class="chat-footer">
+                <form id="chat-form" class="chat-form" autocomplete="off">
+                    {% csrf_token %}
+                    <input type="text" id="chat-input" class="chat-input" placeholder="Type a secure message..." required>
+                    <button type="submit" class="btn btn-blood btn-send" id="btn-send">
+                        <i class="bi bi-send-fill"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const chatBody = document.getElementById("chat-body");
+        const chatForm = document.getElementById("chat-form");
+        const chatInput = document.getElementById("chat-input");
+        const emptyState = document.getElementById("empty-chat-state");
+        const responseId = "{{ donor_response.id }}";
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        let lastMessageId = 0;
+        let knownMessageIds = new Set();
+        let isFirstLoad = true;
+
+        const scrollToast = document.getElementById("scroll-toast");
+
+        // Tab Title Flashing
+        let titleInterval = null;
+        const originalTitle = document.title;
+
+        function startTitleFlash() {
+            if (titleInterval || document.hasFocus()) return;
+            let isAlert = false;
+            titleInterval = setInterval(() => {
+                document.title = isAlert ? `💬 New Message! | ${originalTitle}` : originalTitle;
+                isAlert = !isAlert;
+            }, 1000);
+        }
+
+        function stopTitleFlash() {
+            if (titleInterval) {
+                clearInterval(titleInterval);
+                titleInterval = null;
+                document.title = originalTitle;
+            }
+        }
+
+        window.addEventListener("focus", stopTitleFlash);
+        document.addEventListener("click", stopTitleFlash);
+
+        // Premium chime synthesizer via Web Audio API
+        function playChime() {
+            try {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                const audioCtx = new AudioContextClass();
+                
+                const playTone = (freq, time, duration) => {
+                    const osc = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
+                    
+                    osc.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+                    
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, time);
+                    
+                    gainNode.gain.setValueAtTime(0, time);
+                    gainNode.gain.linearRampToValueAtTime(0.12, time + 0.04);
+                    gainNode.gain.exponentialRampToValueAtTime(0.0001, time + duration);
+                    
+                    osc.start(time);
+                    osc.stop(time + duration);
+                };
+                
+                const now = audioCtx.currentTime;
+                // Soft elegant G5 -> C6 chime
+                playTone(783.99, now, 0.4);        // G5
+                playTone(1046.50, now + 0.08, 0.5); // C6
+            } catch (e) {
+                console.warn("Audio Context blocked or unsupported:", e);
+            }
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        // Format message bubble HTML
+        function createMessageBubble(msg) {
+            const alignmentClass = msg.is_me ? "me" : "other";
+            const escapedMsg = escapeHtml(msg.message);
+            
+            return `
+                <div class="msg-group ${alignmentClass}" data-msg-id="${msg.id}">
+                    <div class="msg-bubble">
+                        ${escapedMsg}
+                    </div>
+                    <div class="msg-meta">
+                        ${msg.created_at}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Fetch messages from Server
+        function fetchMessages() {
+            const url = `/requests/chat/${responseId}/messages/?last_id=${lastMessageId}`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    const messages = data.messages;
+                    
+                    if (messages.length > 0) {
+                        emptyState.style.display = "none";
+                        let scrollNeeded = isFirstLoad || (chatBody.scrollHeight - chatBody.scrollTop - chatBody.clientHeight < 100);
+                        let hasIncomingMessage = false;
+
+                        messages.forEach(msg => {
+                            if (!knownMessageIds.has(msg.id)) {
+                                knownMessageIds.add(msg.id);
+                                chatBody.insertAdjacentHTML('beforeend', createMessageBubble(msg));
+                                if (msg.id > lastMessageId) {
+                                    lastMessageId = msg.id;
+                                }
+                                if (!msg.is_me) {
+                                    hasIncomingMessage = true;
+                                }
+                            }
+                        });
+
+                        // Trigger notifications for new incoming messages after first load
+                        if (hasIncomingMessage && !isFirstLoad) {
+                            playChime();
+                            startTitleFlash();
+
+                            // Show float scroll toast if user has scrolled up
+                            const isScrolledUp = chatBody.scrollHeight - chatBody.scrollTop - chatBody.clientHeight >= 150;
+                            if (isScrolledUp) {
+                                scrollToast.classList.add("show");
+                            }
+                        }
+
+                        isFirstLoad = false;
+                        if (scrollNeeded) {
+                            scrollToBottom();
+                        }
+                    } else if (knownMessageIds.size === 0) {
+                        emptyState.style.display = "flex";
+                    }
+                })
+                .catch(err => console.error("Error fetching messages:", err));
+        }
+
+        // Scroll chat to the absolute bottom
+        function scrollToBottom() {
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        // Handle sending a message
+        chatForm.addEventListener("submit", function(e) {
+            e.preventDefault();
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            // Clear input field immediately for crisp performance feel
+            chatInput.value = "";
+
+            const url = `/requests/chat/${responseId}/messages/`;
+            
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrfToken
+                },
+                body: JSON.stringify({ message: text })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Failed to send message.");
+                }
+                return response.json();
+            })
+            .then(msg => {
+                emptyState.style.display = "none";
+                if (!knownMessageIds.has(msg.id)) {
+                    knownMessageIds.add(msg.id);
+                    chatBody.insertAdjacentHTML('beforeend', createMessageBubble(msg));
+                    if (msg.id > lastMessageId) {
+                        lastMessageId = msg.id;
+                    }
+                    scrollToBottom();
+                }
+            })
+            .catch(err => {
+                console.error("Error sending message:", err);
+                alert("Message could not be sent. Please try again.");
+            });
+        });
+
+        // Floating Scroll Toast Events
+        scrollToast.addEventListener("click", function() {
+            scrollToBottom();
+            scrollToast.classList.remove("show");
+        });
+
+        chatBody.addEventListener("scroll", function() {
+            if (chatBody.scrollHeight - chatBody.scrollTop - chatBody.clientHeight < 100) {
+                scrollToast.classList.remove("show");
+            }
+        });
+
+        // Initial Load and Polling interval
+        fetchMessages();
+        const pollInterval = setInterval(fetchMessages, 3000);
+
+        // Clear interval on window unload to optimize browser memory
+        window.addEventListener("beforeunload", () => {
+            clearInterval(pollInterval);
+        });
+    });
+</script>
+{% endblock %}

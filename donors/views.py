@@ -32,7 +32,10 @@ def donor_dashboard(request):
         status="open",
     ).order_by("-created_at")[:10]
     
-    my_responses = DonorResponse.objects.filter(donor=request.user).select_related("blood_request")[:10]
+    my_responses = list(DonorResponse.objects.filter(donor=request.user).select_related("blood_request")[:10])
+    for resp in my_responses:
+        resp.unread_count = resp.chat_messages.filter(is_read=False).exclude(sender=request.user).count()
+        
     recent_donations = profile.donation_history.all()[:5]
     
     return render(request, "donors/dashboard.html", {

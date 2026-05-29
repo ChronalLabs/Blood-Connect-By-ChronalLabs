@@ -10,6 +10,9 @@ from . import views
 urlpatterns = [
     # Admin panel
     path('admin/', admin.site.urls),
+
+    # Interface language switch
+    path('language/<str:language_code>/', views.set_language, name='set_language'),
     
     # Homepage
     path('', views.home, name='home'),

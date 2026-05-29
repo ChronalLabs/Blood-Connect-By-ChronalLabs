@@ -70,9 +70,66 @@
                     </a>
                 </div>
                 {% endif %}
-                
+
+                {# ── Hospital Fulfillment Panel ───────────────────────────── #}
+                {% if blood_request.linked_hospital %}
+                <hr class="my-4">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <i class="fas fa-hospital text-blood"></i>
+                    <h6 class="fw-bold mb-0">Linked Hospital: {{ blood_request.linked_hospital.hospital_name }}</h6>
+                    {% if blood_request.linked_hospital.verified %}
+                        <span class="badge-verified ms-1"><i class="bi bi-patch-check-fill me-1"></i>Verified</span>
+                    {% endif %}
+                </div>
+
+                {% if blood_request.status == 'fulfilled' %}
+                <div class="alert alert-success d-flex align-items-center gap-2" role="alert">
+                    <i class="fas fa-check-circle"></i>
+                    <span>This request has been fulfilled.</span>
+                </div>
+
+                {% elif can_hospital_fulfill %}
+                <div class="p-3 rounded mb-3" style="background: rgba(34,197,94,.08); border:1px solid rgba(34,197,94,.25);">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <strong class="text-success">
+                                <i class="fas fa-check-circle me-1"></i>Sufficient Stock Available
+                            </strong>
+                            <p class="mb-0 small text-muted mt-1">
+                                Your inventory has <strong>{{ hospital_stock_for_type }}</strong> unit(s) of
+                                <strong>{{ blood_request.blood_type }}</strong>.
+                                This request needs <strong>{{ blood_request.units_remaining }}</strong> unit(s).
+                            </p>
+                        </div>
+                        <form method="post"
+                              action="{% url 'fulfill_request' blood_request.id %}"
+                              onsubmit="return confirm('Fulfill this request? {{ blood_request.units_remaining }} unit(s) of {{ blood_request.blood_type }} will be deducted from your stock.');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-blood btn-sm px-4" id="fulfillBtn">
+                                <i class="fas fa-vial me-2"></i>Fulfill from Our Stock
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                {% elif user.is_authenticated and user.role == 'hospital' and user.hospital_profile.pk == blood_request.linked_hospital.pk %}
+                <div class="p-3 rounded mb-3" style="background: rgba(239,68,68,.08); border:1px solid rgba(239,68,68,.25);">
+                    <strong class="text-danger">
+                        <i class="fas fa-exclamation-triangle me-1"></i>Insufficient Stock
+                    </strong>
+                    <p class="mb-0 small text-muted mt-1">
+                        Your inventory has <strong>{{ hospital_stock_for_type }}</strong> unit(s) of
+                        <strong>{{ blood_request.blood_type }}</strong>, but
+                        <strong>{{ blood_request.units_remaining }}</strong> unit(s) are needed.
+                        <a href="{% url 'update_blood_stock' %}" class="ms-1">Update stock →</a>
+                    </p>
+                </div>
+                {% endif %}
+                {% endif %}
+
                 <!-- Ranked Compatible Donors -->
                 <hr class="my-4">
+
                 <h6 class="fw-bold mb-3">Compatible Donors{% if ranked_donors %} ({{ ranked_donors|length }}){% endif %}</h6>
                 {% if ranked_donors %}
                 {% for entry in ranked_donors %}
@@ -112,10 +169,22 @@
                 <hr class="my-4">
                 <h6 class="fw-bold mb-3">Donor Responses ({{ responses|length }})</h6>
                 {% for resp in responses %}
-                <div class="response-item">
-                    <i class="bi bi-person-check-fill text-blood me-2"></i>
-                    <span>{{ resp.donor.get_full_name|default:resp.donor.username }}</span>
-                    <span class="badge ms-2">{{ resp.get_status_display }}</span>
+                <div class="response-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="bi bi-person-check-fill text-blood me-2"></i>
+                        <span>{{ resp.donor.get_full_name|default:resp.donor.username }}</span>
+                        <span class="badge ms-2 bg-secondary">{{ resp.get_status_display }}</span>
+                    </div>
+                    {% if user == blood_request.requester or user == resp.donor %}
+                    <a href="{% url 'chat_room' resp.id %}" class="btn btn-outline-blood btn-xs d-flex align-items-center gap-1">
+                        <i class="bi bi-chat-dots-fill"></i>Chat
+                        {% if resp.unread_count > 0 %}
+                        <span class="badge bg-danger rounded-pill" style="font-size: 0.7rem; padding: 0.25em 0.5em;">
+                            {{ resp.unread_count }}
+                        </span>
+                        {% endif %}
+                    </a>
+                    {% endif %}
                 </div>
                 {% endfor %}
                 {% endif %}

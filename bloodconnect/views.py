@@ -8,6 +8,8 @@ from blood_requests.models import BloodRequest
 import json, requests as http_requests
 from django.conf import settings
 
+from .i18n import LANGUAGE_SESSION_KEY, normalize_language_code, translate_text as t
+
 
 def home(request):
     """Main landing page with hero, stats, and map"""
@@ -59,7 +61,16 @@ def contact(request):
             except Exception:
                 pass  # Fail silently
         
-        messages.success(request, 'Your message has been sent successfully! We will get back to you soon.')
+        messages.success(request, t('Your message has been sent successfully! We will get back to you soon.'))
         return redirect('contact')
     
     return render(request, 'base/contact.html')
+
+
+def set_language(request, language_code):
+    """Persist the selected interface language in session."""
+    language_code = normalize_language_code(language_code)
+    request.session[LANGUAGE_SESSION_KEY] = language_code
+
+    next_url = request.GET.get('next') or request.META.get('HTTP_REFERER') or '/'
+    return redirect(next_url)

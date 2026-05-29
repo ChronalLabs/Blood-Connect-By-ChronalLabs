@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+{% load static localization_tags %}
+<html lang="{{ current_language|default:'en' }}">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}BloodConnect{% endblock %} | Connecting Lives</title>
-    {% load static %}
+    <title>{% block title %}BloodConnect{% endblock %} | {% t "Connecting Lives" %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
         href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap"
@@ -34,32 +34,44 @@
                     {% if user.is_authenticated %}
                     {% if user.role == 'donor' %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i
-                                class="bi bi-house-door me-1"></i>Home</a></li>
+                                class="bi bi-house-door me-1"></i>{% t "Home" %}</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'donor_dashboard' %}"><i
-                                class="bi bi-heart-pulse me-1"></i>Donate</a></li>
+                                class="bi bi-heart-pulse me-1"></i>{% t "Donate" %}</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'hospital_list' %}"><i
-                                class="bi bi-hospital me-1"></i>Hospitals</a></li>
+                                class="bi bi-hospital me-1"></i>{% t "Hospitals" %}</a></li>
                     {% elif user.role == 'seeker' %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i
-                                class="bi bi-house-door me-1"></i>Home</a></li>
+                                class="bi bi-house-door me-1"></i>{% t "Home" %}</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'seeker_dashboard' %}"><i
-                                class="bi bi-search-heart me-1"></i>Seek Blood</a></li>
+                                class="bi bi-search-heart me-1"></i>{% t "Seek Blood" %}</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'hospital_list' %}"><i
-                                class="bi bi-hospital me-1"></i>Hospitals</a></li>
+                                class="bi bi-hospital me-1"></i>{% t "Hospitals" %}</a></li>
                     {% elif user.role == 'hospital' %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i
-                                class="bi bi-house-door me-1"></i>Home</a></li>
+                                class="bi bi-house-door me-1"></i>{% t "Home" %}</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'hospital_dashboard' %}"><i
-                                class="bi bi-building-fill-cross me-1"></i>Dashboard</a></li>
+                                class="bi bi-building-fill-cross me-1"></i>{% t "Dashboard" %}</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'request_list' %}"><i
-                                class="bi bi-people me-1"></i>Seekers</a></li>
+                                class="bi bi-people me-1"></i>{% t "Requests" %}</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'search_donors' %}"><i
-                                class="bi bi-heart-pulse me-1"></i>Donors</a></li>
+                                class="bi bi-heart-pulse me-1"></i>{% t "Find Donors" %}</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'hospital_list' %}"><i
-                                class="bi bi-hospital me-1"></i>All Hospitals</a></li>
+                                class="bi bi-hospital me-1"></i>{% t "All Hospitals" %}</a></li>
                     {% endif %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'request_list' %}"><i
                                 class="bi bi-exclamation-circle me-1"></i>Requests</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-1" href="{% url 'chat_list' %}">
+                            <i class="bi bi-chat-dots-fill"></i>
+                            <span>Messages</span>
+                            {% if total_unread_chats > 0 %}
+                            <span class="badge bg-danger rounded-pill" style="font-size: 0.68rem; padding: 0.25em 0.5em;">
+                                {{ total_unread_chats }}
+                            </span>
+                            {% endif %}
+                        </a>
+                    </li>
+                                class="bi bi-exclamation-circle me-1"></i>{% t "Requests" %}</a></li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#"
                             data-bs-toggle="dropdown">
@@ -69,60 +81,76 @@
                             <div class="d-none d-lg-inline">
                                 <span class="fw-semibold">{{ user.first_name|default:user.username }}</span>
                                 {% if user.role == 'hospital' %}
-                                <span class="badge bg-blood ms-1">Hospital</span>
+                                <span class="badge bg-blood ms-1">{% t "Hospital" %}</span>
                                 {% endif %}
                             </div>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="{% url 'profile' %}"><i
-                                        class="bi bi-person me-2"></i>Profile</a></li>
+                                        class="bi bi-person me-2"></i>{% t "Profile" %}</a></li>
                             <li><a class="dropdown-item" href="{% url 'dashboard' %}"><i
-                                        class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
+                                        class="bi bi-speedometer2 me-2"></i>{% t "Dashboard" %}</a></li>
                             {% if user.role == 'hospital' %}
                             <li><a class="dropdown-item" href="{% url 'hospital_dashboard' %}"><i
-                                        class="bi bi-building-fill-cross me-2"></i>Hospital Dashboard</a></li>
+                                        class="bi bi-building-fill-cross me-2"></i>{% t "Hospital Dashboard" %}</a></li>
                             {% endif %}
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
                             <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i
-                                        class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                                        class="bi bi-box-arrow-right me-2"></i>{% t "Logout" %}</a></li>
                         </ul>
                     </li>
                     {% else %}
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
                             href="{% url 'home' %}">
-                            Home
+                            {% t "Home" %}
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'hospital_list' %}active{% endif %}"
                             href="{% url 'hospital_list' %}">
-                            Hospitals
+                            {% t "Hospitals" %}
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'request_list' %}active{% endif %}"
                             href="{% url 'request_list' %}">
-                            Requests
+                            {% t "Requests" %}
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}"
                             href="{% url 'about' %}">
-                            About
+                            {% t "About" %}
                         </a>
                     </li>
+                    <li class="nav-item ms-2">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-light btn-sm dropdown-toggle px-3" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {{ current_language_label|default:"English" }}
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                {% for language in supported_languages %}
+                                <li>
+                                    <a class="dropdown-item {% if language.code == current_language %}active{% endif %}" href="{% url 'set_language' language.code %}?next={{ request.get_full_path|urlencode }}">
+                                        {{ language.label }}
+                                    </a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </li>
                     <li class="nav-item ms-2"><a class="btn btn-outline-light btn-sm px-3"
-                            href="{% url 'login' %}">Login</a></li>
+                            href="{% url 'login' %}">{% t "Login" %}</a></li>
                     <li class="nav-item ms-1"><a class="btn btn-outline-light btn-sm px-3"
-                            href="{% url 'hospital_login' %}">Hospital Login</a></li>
+                            href="{% url 'hospital_login' %}">{% t "Hospital Login" %}</a></li>
                     <li class="nav-item ms-1"><a class="btn btn-blood btn-sm px-3"
-                            href="{% url 'register' %}">Register</a></li>
+                            href="{% url 'register' %}">{% t "Register" %}</a></li>
                     {% endif %}
                 </ul>
             </div>
@@ -148,43 +176,42 @@
                         <div class="brand-icon brand-icon-sm"><i class="bi bi-droplet-fill"></i></div>
                         <span class="brand-text fs-5">Blood<span class="brand-accent">Connect</span></span>
                     </div>
-                    <p class="text-muted small">Connecting blood donors, seekers, and hospitals to save lives in
-                        critical moments.</p>
+                    <p class="text-muted small">{% t "Connecting blood donors, seekers, and hospitals to save lives in critical moments." %}</p>
                 </div>
                 <div class="col-lg-2 col-6">
-                    <h6 class="footer-heading">Quick Links</h6>
+                    <h6 class="footer-heading">{% t "Quick Links" %}</h6>
                     <ul class="footer-links">
-                        <li><a href="{% url 'home' %}">Home</a></li>
-                        <li><a href="{% url 'about' %}">About</a></li>
-                        <li><a href="{% url 'contact' %}">Contact</a></li>
-                        <li><a href="{% url 'hospital_list' %}">Hospitals</a></li>
+                        <li><a href="{% url 'home' %}">{% t "Home" %}</a></li>
+                        <li><a href="{% url 'about' %}">{% t "About" %}</a></li>
+                        <li><a href="{% url 'contact' %}">{% t "Contact" %}</a></li>
+                        <li><a href="{% url 'hospital_list' %}">{% t "Hospitals" %}</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-2 col-6">
-                    <h6 class="footer-heading">For Users</h6>
+                    <h6 class="footer-heading">{% t "For Users" %}</h6>
                     <ul class="footer-links">
-                        <li><a href="{% url 'register' %}">Register</a></li>
-                        <li><a href="{% url 'request_list' %}">View Requests</a></li>
-                        <li><a href="{% url 'search_donors' %}">Find Donors</a></li>
+                        <li><a href="{% url 'register' %}">{% t "Register" %}</a></li>
+                        <li><a href="{% url 'request_list' %}">{% t "View All" %}</a></li>
+                        <li><a href="{% url 'search_donors' %}">{% t "Find Donors" %}</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-4">
-                    <h6 class="footer-heading">Emergency Helpline</h6>
+                    <h6 class="footer-heading">{% t "Emergency Helpline" %}</h6>
                     <div class="d-flex align-items-center gap-2 mb-2">
                         <i class="bi bi-telephone-fill" style="color: var(--blood-red)"></i>
                         <span class="fw-semibold">1800-BLOOD-00</span>
                     </div>
-                    <p class="text-muted small">Available 24x7 for blood emergencies</p>
-                    <a href="{% url 'contact' %}" class="btn btn-blood btn-sm">Contact Us</a>
+                    <p class="text-muted small">{% t "Available 24x7 for blood emergencies" %}</p>
+                    <a href="{% url 'contact' %}" class="btn btn-blood btn-sm">{% t "Contact Us" %}</a>
                 </div>
             </div>
             <hr class="border-secondary my-4">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <p class="text-muted small mb-0">© 2026 BloodConnect. All rights reserved.</p>
-                <p class="text-muted small mb-0">© 2026 <a href="https://byteedu.co.in/">ByteEdu</a>All rights reserved.
+                <p class="text-muted small mb-0">© 2026 BloodConnect. {% t "All rights reserved." %}</p>
+                <p class="text-muted small mb-0">© 2026 <a href="https://byteedu.co.in/">ByteEdu</a> {% t "All rights reserved." %}
                 </p>
-                <p class="text-muted small mb-0">Made with <i class="bi bi-heart-fill"
-                        style="color:var(--blood-red)"></i> to save lives</p>
+                <p class="text-muted small mb-0">{% t "Made with" %} <i class="bi bi-heart-fill"
+                        style="color:var(--blood-red)"></i> {% t "to save lives" %}</p>
             </div>
         </div>
     </footer>

@@ -39,7 +39,41 @@
     </div>
     
     <div class="row g-4">
-        <!-- Open Requests -->
+        <!-- Requests at Our Facility -->
+        {% if linked_requests %}
+        <div class="col-12">
+            <div class="bc-card" style="border-left: 3px solid #d62828;">
+                <div class="d-flex justify-content-between mb-3">
+                    <h6 class="fw-bold mb-0">
+                        <i class="fas fa-hospital-alt text-blood me-2"></i>
+                        Requests at Our Facility
+                        <span class="badge ms-2" style="background:#d62828;font-size:.75rem;">{{ linked_requests|length }}</span>
+                    </h6>
+                </div>
+                {% for req in linked_requests %}
+                <div class="request-item">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                        <div class="d-flex gap-3">
+                            <div class="blood-type-badge-sm">{{ req.blood_type }}</div>
+                            <div>
+                                <h6 class="mb-0 fw-semibold">{{ req.patient_name }}</h6>
+                                <small class="text-muted">{{ req.units_remaining }} unit(s) needed &bull; {{ req.created_at|date:"M d, Y" }}</small>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 align-items-center">
+                            <span class="urgency-badge urgency-{{ req.urgency_level }}">{{ req.get_urgency_level_display }}</span>
+                            <a href="{% url 'request_detail' req.id %}" class="btn btn-xs btn-blood">
+                                <i class="fas fa-eye me-1"></i>View &amp; Fulfill
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Open Requests (global) -->
         <div class="col-lg-8">
             <div class="bc-card">
                 <div class="d-flex justify-content-between mb-3">
@@ -48,6 +82,7 @@
                     </h6>
                     <a href="{% url 'request_list' %}" class="btn btn-xs btn-outline-blood">All Requests</a>
                 </div>
+
                 {% for req in open_requests %}
                 <div class="request-item">
                     <div class="d-flex justify-content-between align-items-start">

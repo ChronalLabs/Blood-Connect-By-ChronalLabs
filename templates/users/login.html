@@ -1,5 +1,6 @@
 {% extends "base/base.html" %}
-{% block title %}Login{% endblock %}
+{% load localization_tags %}
+{% block title %}{% t "Login" %}{% endblock %}
 {% block content %}
 <section class="auth-section">
     <div class="container">
@@ -8,8 +9,8 @@
                 <div class="auth-card">
                     <div class="text-center mb-4">
                         <div class="auth-logo"><i class="bi bi-droplet-fill"></i></div>
-                        <h3 class="fw-bold mt-3">Welcome Back</h3>
-                        <p class="text-muted small">Login to your BloodConnect account</p>
+                        <h3 class="fw-bold mt-3">{% t "Welcome Back" %}</h3>
+                        <p class="text-muted small">{% t "Login to your BloodConnect account" %}</p>
                     </div>
 
                     <form method="post" novalidate>
@@ -28,20 +29,20 @@
                         {% endfor %}
 
                         <button type="submit" class="btn btn-blood w-100 mt-2">
-                            <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                            <i class="bi bi-box-arrow-in-right me-2"></i>{% t "Login" %}
                         </button>
                     </form>
 
                     <div class="text-center mt-4">
-                        <p class="text-muted small">Don't have an account? 
-                            <a href="{% url 'register' %}" class="text-blood fw-semibold">Register here</a>
+                        <p class="text-muted small">{% t "Don't have an account?" %} 
+                            <a href="{% url 'register' %}" class="text-blood fw-semibold">{% t "Register here" %}</a>
                         </p>
                     </div>
                     <div class="text-center mt-3">
                         <div class="alert alert-info small">
                             <i class="bi bi-building-fill-cross me-1"></i>
-                            <a href="{% url 'hospital_login' %}" class="text-blood fw-semibold">Hospital Login</a> 
-                            for healthcare institutions
+                            <a href="{% url 'hospital_login' %}" class="text-blood fw-semibold">{% t "Hospital Login" %}</a> 
+                            {% t "for healthcare institutions" %}
                         </div>
                     </div>
                 </div>
@@ -49,12 +50,12 @@
 
             <div class="col-lg-6 d-none d-lg-block">
                 <div class="auth-visual">
-                    <h2 class="text-white fw-bold mb-3">Be a Hero.<br>Donate Blood.</h2>
-                    <p class="text-white-50">One donation can save up to 3 lives. Join our network of donors across India.</p>
+                    <h2 class="text-white fw-bold mb-3">{% t "Be a Hero. Donate Blood." %}</h2>
+                    <p class="text-white-50">{% t "One donation can save up to 3 lives. Join our network of donors across India." %}</p>
                     <div class="auth-stats mt-4">
-                        <div class="auth-stat"><strong>4.5M+</strong><br><small>Donations</small></div>
-                        <div class="auth-stat"><strong>100+</strong><br><small>Hospitals</small></div>
-                        <div class="auth-stat"><strong>24/7</strong><br><small>Support</small></div>
+                        <div class="auth-stat"><strong>4.5M+</strong><br><small>{% t "Donations" %}</small></div>
+                        <div class="auth-stat"><strong>100+</strong><br><small>{% t "Hospitals" %}</small></div>
+                        <div class="auth-stat"><strong>24/7</strong><br><small>{% t "Support" %}</small></div>
                     </div>
                 </div>
             </div>

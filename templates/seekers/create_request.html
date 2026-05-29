@@ -1,9 +1,10 @@
 {% extends "base/base.html" %}
 {% block title %}Create Blood Request{% endblock %}
+
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
+        <div class="col-lg-9">
             <div class="bc-card">
                 <div class="mb-4">
                     <div class="d-flex align-items-center gap-3">
@@ -14,21 +15,124 @@
                         </div>
                     </div>
                 </div>
-                <form method="post">
+
+                <form method="post" id="bloodRequestForm">
                     {% csrf_token %}
-                    <div class="row g-3">
-                        {% for field in form %}
-                        <div class="col-md-6">
-                            <label class="form-label small fw-medium">{{ field.label }}
-                                {% if field.field.required %}<span class="text-blood">*</span>{% endif %}
-                            </label>
-                            {{ field }}
-                            {% if field.errors %}<div class="text-danger small">{{ field.errors.0 }}</div>{% endif %}
-                        </div>
-                        {% endfor %}
+
+                    {# ── Hospital Selection ─────────────────────────────────── #}
+                    <div class="mb-4 p-3 rounded" style="background: rgba(214,40,40,.06); border:1px solid rgba(214,40,40,.15);">
+                        <label class="form-label small fw-semibold text-blood mb-1" for="id_linked_hospital">
+                            <i class="fas fa-hospital me-1"></i>
+                            {{ form.linked_hospital.label }}
+                        </label>
+                        {{ form.linked_hospital }}
+                        {% if form.linked_hospital.errors %}
+                            <div class="text-danger small mt-1">{{ form.linked_hospital.errors.0 }}</div>
+                        {% endif %}
+                        <small class="text-muted d-block mt-1">
+                            Selecting a registered hospital auto-fills the details below. Choose "Other" to enter manually.
+                        </small>
                     </div>
+
+                    {# ── Patient & Blood Info ───────────────────────────────── #}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-medium" for="{{ form.patient_name.id_for_label }}">
+                                {{ form.patient_name.label }} <span class="text-blood">*</span>
+                            </label>
+                            {{ form.patient_name }}
+                            {% if form.patient_name.errors %}<div class="text-danger small">{{ form.patient_name.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-medium" for="{{ form.patient_age.id_for_label }}">
+                                {{ form.patient_age.label }}
+                            </label>
+                            {{ form.patient_age }}
+                            {% if form.patient_age.errors %}<div class="text-danger small">{{ form.patient_age.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-medium" for="{{ form.blood_group.id_for_label }}">
+                                {{ form.blood_group.label }} <span class="text-blood">*</span>
+                            </label>
+                            {{ form.blood_group }}
+                            {% if form.blood_group.errors %}<div class="text-danger small">{{ form.blood_group.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-medium" for="{{ form.rh_factor.id_for_label }}">
+                                {{ form.rh_factor.label }} <span class="text-blood">*</span>
+                            </label>
+                            {{ form.rh_factor }}
+                            {% if form.rh_factor.errors %}<div class="text-danger small">{{ form.rh_factor.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-medium" for="{{ form.units_required.id_for_label }}">
+                                {{ form.units_required.label }} <span class="text-blood">*</span>
+                            </label>
+                            {{ form.units_required }}
+                            {% if form.units_required.errors %}<div class="text-danger small">{{ form.units_required.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-medium" for="{{ form.urgency_level.id_for_label }}">
+                                {{ form.urgency_level.label }} <span class="text-blood">*</span>
+                            </label>
+                            {{ form.urgency_level }}
+                            {% if form.urgency_level.errors %}<div class="text-danger small">{{ form.urgency_level.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-medium" for="{{ form.required_by.id_for_label }}">
+                                {{ form.required_by.label }}
+                            </label>
+                            {{ form.required_by }}
+                            {% if form.required_by.errors %}<div class="text-danger small">{{ form.required_by.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    {# ── Hospital Details (auto-filled or manual) ───────────── #}
+                    <hr class="my-4">
+                    <p class="small text-muted mb-3">
+                        <i class="fas fa-info-circle me-1"></i>
+                        These fields are auto-filled when you select a registered hospital above.
+                    </p>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-medium" for="{{ form.hospital_name.id_for_label }}">
+                                {{ form.hospital_name.label }} <span class="text-blood">*</span>
+                            </label>
+                            {{ form.hospital_name }}
+                            {% if form.hospital_name.errors %}<div class="text-danger small">{{ form.hospital_name.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-medium" for="{{ form.city.id_for_label }}">
+                                {{ form.city.label }}
+                            </label>
+                            {{ form.city }}
+                            {% if form.city.errors %}<div class="text-danger small">{{ form.city.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-medium" for="{{ form.hospital_contact.id_for_label }}">
+                                {{ form.hospital_contact.label }}
+                            </label>
+                            {{ form.hospital_contact }}
+                            {% if form.hospital_contact.errors %}<div class="text-danger small">{{ form.hospital_contact.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-medium" for="{{ form.hospital_address.id_for_label }}">
+                                {{ form.hospital_address.label }} <span class="text-blood">*</span>
+                            </label>
+                            {{ form.hospital_address }}
+                            {% if form.hospital_address.errors %}<div class="text-danger small">{{ form.hospital_address.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-medium" for="{{ form.additional_notes.id_for_label }}">
+                                {{ form.additional_notes.label }}
+                            </label>
+                            {{ form.additional_notes }}
+                            {% if form.additional_notes.errors %}<div class="text-danger small">{{ form.additional_notes.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+
                     <div class="d-flex gap-2 mt-4">
-                        <button type="submit" class="btn btn-blood px-4">
+                        <button type="submit" class="btn btn-blood px-4" id="submitRequestBtn">
                             <i class="bi bi-send-fill me-2"></i>Submit Request
                         </button>
                         <a href="{% url 'seeker_dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
@@ -38,4 +142,75 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/**
+ * Auto-fill hospital details when a registered hospital is selected.
+ * Fetches from /hospitals/api/<pk>/info/ and populates the plain-text fields.
+ * On "Other" selection, clears the fields and allows manual entry.
+ */
+(function () {
+    'use strict';
+
+    var hospitalSelect = document.getElementById('id_linked_hospital');
+    if (!hospitalSelect) return;
+
+    var fieldsMap = {
+        hospital_name: 'id_hospital_name',
+        hospital_address: 'id_hospital_address',
+        hospital_contact: 'id_hospital_contact',
+        city: 'id_city',
+    };
+
+    function setFieldValue(fieldId, value) {
+        var el = document.getElementById(fieldId);
+        if (el) {
+            el.value = value || '';
+            el.readOnly = !!value;
+            el.style.opacity = value ? '0.75' : '';
+            el.title = value ? 'Auto-filled from registered hospital. Change the hospital selection to edit.' : '';
+        }
+    }
+
+    function clearFields() {
+        Object.values(fieldsMap).forEach(function (id) { setFieldValue(id, ''); });
+    }
+
+    function fetchAndFill(hospitalPk) {
+        var url = '/hospitals/api/' + hospitalPk + '/info/';
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (res) {
+                if (!res.ok) throw new Error('Network error');
+                return res.json();
+            })
+            .then(function (data) {
+                setFieldValue('id_hospital_name', data.name);
+                setFieldValue('id_hospital_address', data.address);
+                setFieldValue('id_hospital_contact', data.contact);
+                setFieldValue('id_city', data.city);
+            })
+            .catch(function () {
+                // On any error, fall back to manual entry silently.
+                clearFields();
+            });
+    }
+
+    hospitalSelect.addEventListener('change', function () {
+        var pk = this.value;
+        if (pk) {
+            fetchAndFill(pk);
+        } else {
+            clearFields();
+        }
+    });
+
+    // On page load, if a hospital is pre-selected (e.g. form re-rendered after
+    // validation error), trigger the fetch so fields remain consistent.
+    if (hospitalSelect.value) {
+        fetchAndFill(hospitalSelect.value);
+    }
+}());
+</script>
 {% endblock %}

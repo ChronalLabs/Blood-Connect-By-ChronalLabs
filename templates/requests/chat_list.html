@@ -1,0 +1,193 @@
+{% extends "base/base.html" %}
+{% block title %}My Messages{% endblock %}
+
+{% block extra_css %}
+<style>
+    .inbox-wrapper {
+        max-width: 800px;
+        margin: 2rem auto;
+    }
+
+    .inbox-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .chat-room-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        transition: all 0.25s ease;
+        text-decoration: none !important;
+        margin-bottom: 1rem;
+        cursor: pointer;
+    }
+
+    .chat-room-card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(52, 193, 198, 0.4);
+        background: var(--bg-card-hover);
+        box-shadow: var(--shadow);
+    }
+
+    .chat-room-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .chat-room-avatar {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: var(--gradient-blood);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .chat-room-avatar.seeker-avatar {
+        background: var(--gradient-teal);
+    }
+
+    .chat-room-details {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .chat-room-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 2px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .chat-room-meta {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .chat-room-preview {
+        font-size: 0.88rem;
+        color: rgba(255, 255, 255, 0.7);
+        white-space: nowrap;
+        overflow: hidden;
+        text-truncate: ellipsis;
+        max-width: 90%;
+    }
+
+    .chat-room-preview.unread-bold {
+        font-weight: 600;
+        color: white;
+    }
+
+    .chat-room-right {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+
+    .empty-inbox {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 4rem 2rem;
+        text-align: center;
+        color: var(--text-muted);
+    }
+
+    .empty-inbox i {
+        font-size: 4rem;
+        color: var(--border);
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="inbox-wrapper">
+        <div class="inbox-header">
+            <div>
+                <h3 class="fw-bold mb-1 text-white">My Conversations</h3>
+                <p class="text-muted small mb-0">Coordinate emergency blood donations securely in real-time</p>
+            </div>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i>Dashboard
+            </a>
+        </div>
+
+        {% for item in chat_rooms %}
+            <a href="{% url 'chat_room' item.response.id %}" class="chat-room-card">
+                <div class="chat-room-left">
+                    <div class="chat-room-avatar {% if item.other_user.role == 'seeker' %}seeker-avatar{% endif %}">
+                        {{ item.other_user.username|slice:":1"|upper }}
+                    </div>
+                    <div class="chat-room-details">
+                        <div class="chat-room-title">
+                            {{ item.other_user.get_full_name|default:item.other_user.username }}
+                            <span class="badge {% if item.other_user.role == 'seeker' %}bg-info text-dark{% else %}bg-secondary{% endif %}" style="font-size: 0.65rem;">
+                                {{ item.other_user.get_role_display }}
+                            </span>
+                        </div>
+                        <div class="chat-room-meta">
+                            <span class="text-blood fw-semibold"><i class="bi bi-droplet-fill me-1"></i>{{ item.response.blood_request.blood_type }}</span>
+                            <span>•</span>
+                            <span>Patient: {{ item.response.blood_request.patient_name }}</span>
+                        </div>
+                        <div class="chat-room-preview {% if item.unread_count > 0 %}unread-bold{% endif %} text-truncate">
+                            {% if item.last_message %}
+                                {% if item.last_message.sender == user %}You: {% endif %}{{ item.last_message.message }}
+                            {% else %}
+                                <span class="text-muted italic">No messages sent yet. Click to start the conversation!</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-room-right">
+                    {% if item.last_message %}
+                        <small class="text-muted small" style="font-size: 0.75rem;">
+                            {{ item.last_message.created_at|date:"M d, g:i A" }}
+                        </small>
+                    {% endif %}
+                    {% if item.unread_count > 0 %}
+                        <span class="badge bg-danger rounded-pill px-2.5 py-1 animate__animated animate__bounceIn" style="font-size: 0.75rem;">
+                            {{ item.unread_count }}
+                        </span>
+                    {% endif %}
+                </div>
+            </a>
+        {% empty %}
+            <div class="empty-inbox">
+                <i class="bi bi-chat-square-text-fill"></i>
+                <h5 class="fw-bold mb-2 text-white">No active chats found</h5>
+                <p class="small mb-0 text-muted">Chats are automatically created when you express interest in a request (as a donor) or when donors respond to your requests (as a seeker).</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
