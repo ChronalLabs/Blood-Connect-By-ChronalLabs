@@ -52,37 +52,100 @@
         </form>
     </div>
     
-    <div class="row g-3">
-        {% for req in requests_list %}
-        <div class="col-md-6 col-lg-4">
-            <div class="request-card urgency-{{ req.urgency_level }}">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div class="blood-type-badge">{{ req.blood_type }}</div>
-                    <span class="urgency-badge urgency-{{ req.urgency_level }}">{{ req.get_urgency_level_display }}</span>
-                </div>
-                <h6 class="fw-bold mb-1">{{ req.patient_name }}</h6>
-                <p class="text-muted small mb-1"><i class="bi bi-hospital me-1"></i>{{ req.hospital_name }}</p>
-                <p class="text-muted small mb-1"><i class="bi bi-geo-alt me-1"></i>{{ req.city|default:"Location not shared" }}</p>
-                <p class="text-muted small mb-3"><i class="bi bi-clock me-1"></i>{{ req.created_at|timesince }} ago</p>
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="small text-muted">
-                        <i class="bi bi-droplet me-1"></i>{{ req.units_remaining }}/{{ req.units_required }} units needed
-                    </span>
-                    <div class="d-flex gap-1">
-                        <a href="{% url 'request_detail' req.id %}" class="btn btn-xs btn-outline-blood">Details</a>
-                        {% if user.is_authenticated and user.role == 'donor' %}
-                        <a href="{% url 'respond_to_request' req.id %}" class="btn btn-xs btn-blood">Respond</a>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% empty %}
-        <div class="col-12 text-center py-5">
-            <i class="bi bi-check-circle-fill fs-2 text-success mb-3 d-block"></i>
-            <h5 class="text-muted">No open requests at this time</h5>
-        </div>
-        {% endfor %}
+    {% for req in requests_list %}
+<div style="
+  width: 100%;
+  margin-bottom: 16px;
+  border-radius: 16px;
+  padding: 2px;
+  background: {% if req.urgency_level == 'critical' %}linear-gradient(135deg, #ff2d2d, #ff6b35){% elif req.urgency_level == 'urgent' %}linear-gradient(135deg, #ff6b35, #ff9500){% elif req.urgency_level == 'moderate' %}linear-gradient(135deg, #ff9500, #ffd000){% else %}linear-gradient(135deg, #555, #777){% endif %};
+  box-shadow: {% if req.urgency_level == 'critical' %}0 4px 20px rgba(255,45,45,0.4), 0 8px 32px rgba(255,45,45,0.2){% elif req.urgency_level == 'urgent' %}0 4px 20px rgba(255,107,53,0.4), 0 8px 32px rgba(255,107,53,0.2){% elif req.urgency_level == 'moderate' %}0 4px 20px rgba(255,149,0,0.35), 0 8px 32px rgba(255,149,0,0.15){% else %}0 4px 20px rgba(100,100,100,0.3){% endif %};
+">
+  <div style="
+    background: #1a0a0a;
+    border-radius: 14px;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    position: relative;
+    overflow: hidden;
+  ">
+    <!-- Subtle inner glow top-left -->
+    <div style="
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: {% if req.urgency_level == 'critical' %}rgba(255,80,80,0.6){% elif req.urgency_level == 'urgent' %}rgba(255,130,60,0.6){% elif req.urgency_level == 'moderate' %}rgba(255,180,0,0.5){% else %}rgba(150,150,150,0.4){% endif %};
+    "></div>
+
+    <!-- Blood type badge -->
+    <div style="
+      flex-shrink: 0;
+      width: 72px; height: 72px;
+      border-radius: 14px;
+      background: {% if req.urgency_level == 'critical' %}linear-gradient(145deg, #ff4444, #cc1111){% elif req.urgency_level == 'urgent' %}linear-gradient(145deg, #ff7a35, #cc4400){% elif req.urgency_level == 'moderate' %}linear-gradient(145deg, #ffaa00, #cc7700){% else %}linear-gradient(145deg, #666, #333){% endif %};
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 700; color: #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15);
+      letter-spacing: -0.5px;
+    ">{{ req.blood_type }}</div>
+
+    <!-- Main info -->
+    <div style="flex: 1; min-width: 0;">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+        <span style="
+          font-size: 16px; font-weight: 700; color: #fff;
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        ">{{ req.patient_name }}</span>
+        <span style="
+          flex-shrink: 0;
+          font-size: 11px; font-weight: 600;
+          padding: 3px 10px; border-radius: 20px;
+          background: {% if req.urgency_level == 'critical' %}rgba(255,45,45,0.25){% elif req.urgency_level == 'urgent' %}rgba(255,107,53,0.25){% elif req.urgency_level == 'moderate' %}rgba(255,149,0,0.25){% else %}rgba(120,120,120,0.25){% endif %};
+          color: {% if req.urgency_level == 'critical' %}#ff6060{% elif req.urgency_level == 'urgent' %}#ff8c50{% elif req.urgency_level == 'moderate' %}#ffbb30{% else %}#aaa{% endif %};
+          border: 1px solid {% if req.urgency_level == 'critical' %}rgba(255,60,60,0.5){% elif req.urgency_level == 'urgent' %}rgba(255,110,55,0.5){% elif req.urgency_level == 'moderate' %}rgba(255,150,0,0.5){% else %}rgba(120,120,120,0.4){% endif %};
+          letter-spacing: 0.3px;
+        ">{{ req.get_urgency_level_display }}</span>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px 20px; font-size: 13px; color: rgba(255,255,255,0.55);">
+        <span><i class="bi bi-hospital" style="margin-right:5px; opacity:0.7;"></i>{{ req.hospital_name }}</span>
+        <span><i class="bi bi-geo-alt" style="margin-right:5px; opacity:0.7;"></i>{{ req.city|default:"Location not shared" }}</span>
+        <span><i class="bi bi-clock" style="margin-right:5px; opacity:0.7;"></i>{{ req.created_at|timesince }} ago</span>
+      </div>
     </div>
+
+    <!-- Units + actions -->
+    <div style="flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 10px;">
+      <span style="font-size: 13px; color: rgba(255,255,255,0.5); white-space: nowrap;">
+        <i class="bi bi-droplet" style="margin-right:4px;"></i>{{ req.units_remaining }}/{{ req.units_required }} units needed
+      </span>
+      <div style="display: flex; gap: 8px;">
+        <a href="{% url 'request_detail' req.id %}" style="
+          font-size: 13px; font-weight: 600; padding: 7px 16px;
+          border-radius: 8px; text-decoration: none;
+          background: transparent;
+          color: {% if req.urgency_level == 'critical' %}#ff6060{% elif req.urgency_level == 'urgent' %}#ff8c50{% elif req.urgency_level == 'moderate' %}#ffbb30{% else %}#aaa{% endif %};
+          border: 1.5px solid {% if req.urgency_level == 'critical' %}rgba(255,60,60,0.6){% elif req.urgency_level == 'urgent' %}rgba(255,110,55,0.6){% elif req.urgency_level == 'moderate' %}rgba(255,150,0,0.6){% else %}rgba(120,120,120,0.5){% endif %};
+          transition: background 0.15s;
+        ">Details</a>
+        {% if user.is_authenticated and user.role == 'donor' %}
+        <a href="{% url 'respond_to_request' req.id %}" style="
+          font-size: 13px; font-weight: 600; padding: 7px 16px;
+          border-radius: 8px; text-decoration: none;
+          color: #fff;
+          background: {% if req.urgency_level == 'critical' %}linear-gradient(135deg,#ff3333,#cc1111){% elif req.urgency_level == 'urgent' %}linear-gradient(135deg,#ff6b35,#cc4400){% elif req.urgency_level == 'moderate' %}linear-gradient(135deg,#ffaa00,#cc7700){% else %}linear-gradient(135deg,#555,#333){% endif %};
+          border: none;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        ">Respond</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% empty %}
+<div class="col-12 text-center py-5">
+  <i class="bi bi-check-circle-fill fs-2 text-success mb-3 d-block"></i>
+  <h5 class="text-muted">No open requests at this time</h5>
+</div>
+{% endfor %}
 </div>
 {% endblock %}
