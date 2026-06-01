@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.utils.crypto import get_random_string
 from users.forms import UserRegistrationForm
 from hospitals.models import HospitalProfile
 
@@ -90,7 +91,7 @@ class CoordinateValidationTests(TestCase):
         from users.models import CustomUser
         from hospitals.models import HospitalProfile
 
-        user = CustomUser.objects.create_user(username='hosp_coord_user', password='pass123')
+        user = CustomUser.objects.create_user(username='hosp_coord_user', password=get_random_string(32))
         hosp = HospitalProfile(
             user=user,
             hospital_name="City Hospital",
@@ -121,7 +122,7 @@ class CoordinateValidationTests(TestCase):
         from users.models import CustomUser
         from blood_requests.models import BloodRequest
 
-        user = CustomUser.objects.create_user(username='req_coord_user', password='pass123')
+        user = CustomUser.objects.create_user(username='req_coord_user', password=get_random_string(32))
         req = BloodRequest(
             requester=user,
             patient_name="Savitri",
