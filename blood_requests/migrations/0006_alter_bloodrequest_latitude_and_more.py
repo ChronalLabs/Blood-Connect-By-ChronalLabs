@@ -7,7 +7,8 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("blood_requests", "0003_donornotification"),
+        ("blood_requests", "0005_chatmessage_is_read"),
+        ("blood_requests", "0004_bloodrequest_linked_hospital"),
     ]
 
     operations = [
