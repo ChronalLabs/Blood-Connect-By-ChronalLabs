@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
-{% block title %}BloodConnect — Connect Donors, Seekers & Hospitals{% endblock %}
+{% load localization_tags %}
+{% block title %}BloodConnect — {% t "Connecting Lives" %}{% endblock %}
 
 {% block content %}
 
@@ -14,30 +15,29 @@
     <div class="hero-content">
         <div class="hero-badge">
             <span class="pulse-dot"></span>
-            Emergency Response Platform
+            {% t "Emergency Blood Network" %}
         </div>
         <h1 class="hero-title">
-            Every Drop<br>
-            <span class="hero-accent">Saves A Life</span>
+            {% t "Every Drop" %}<br>
+            <span class="hero-accent">{% t "Saves a Life" %}</span>
         </h1>
         <p class="hero-subtitle">
-            Connect with blood donors, seekers, and hospitals instantly.
-            BloodConnect bridges the gap in medical emergencies across India.
+            {% t "Connecting lives through the power of blood donation. Every drop counts." %}
         </p>
         <div class="hero-actions">
             <a href="/requests/emergency/" class="btn-emergency">
                 <i class="fas fa-heartbeat"></i>
-                Emergency Request
+                {% t "Emergency Request" %}
             </a>
             <a href="/seekers/search/" class="btn-hero-secondary">
                 <i class="fas fa-search"></i>
-                Find Donors
+                {% t "Find Donors" %}
             </a>
         </div>
 
         <!-- Quick Blood Group Search -->
         <div class="hero-search">
-            <p class="search-label">Quick Search by Blood Group</p>
+            <p class="search-label">{% t "Quick Donor Search" %}</p>
             <div class="blood-group-grid">
                 {% for bg in blood_groups %}
                 <a href="/seekers/search/?blood_group={{ bg|slice:':2' }}&rh_factor={{ bg|slice:'2:' }}"
@@ -55,21 +55,21 @@
                 <div class="stat-icon donors-icon"><i class="fas fa-tint"></i></div>
                 <div class="stat-info">
                     <span class="stat-num" data-count="12000">0</span>
-                    <span class="stat-label">Donors Registered</span>
+                    <span class="stat-label">{% t "Donors Registered" %}</span>
                 </div>
             </div>
             <div class="stat-item">
                 <div class="stat-icon hospitals-icon"><i class="fas fa-hospital"></i></div>
                 <div class="stat-info">
                     <span class="stat-num" data-count="450">0</span>
-                    <span class="stat-label">Partner Hospitals</span>
+                    <span class="stat-label">{% t "Partner Hospitals" %}</span>
                 </div>
             </div>
             <div class="stat-item">
                 <div class="stat-icon lives-icon"><i class="fas fa-heart"></i></div>
                 <div class="stat-info">
                     <span class="stat-num" data-count="8200">0</span>
-                    <span class="stat-label">Lives Saved</span>
+                    <span class="stat-label">{% t "Lives Saved" %}</span>
                 </div>
             </div>
         </div>
@@ -79,16 +79,16 @@
 <!-- Emergency Requests Strip -->
 {% if recent_requests %}
 <section class="emergency-strip">
-    <div class="strip-header">
+        <div class="strip-header">
         <span class="pulse-dot red"></span>
-        <strong>LIVE EMERGENCY REQUESTS</strong>
+        <strong>{% t "LIVE EMERGENCY REQUESTS" %}</strong>
     </div>
     <div class="requests-ticker">
         {% for req in recent_requests %}
         <div class="ticker-item urgency-{{ req.get_urgency_display_class }}">
             <span class="blood-tag">{{ req.get_full_blood_group }}</span>
             <span>{{ req.hospital_name }}</span>
-            <span class="ticker-units">{{ req.units_required }} unit{{ req.units_required|pluralize }}</span>
+            <span class="ticker-units">{{ req.units_required }} {% t "units needed" %}</span>
             {% if request.user.is_authenticated and request.user.role == 'donor' %}
             <a href="/donors/accept/{{ req.id }}/" class="btn-accept-sm">Accept</a>
             {% endif %}

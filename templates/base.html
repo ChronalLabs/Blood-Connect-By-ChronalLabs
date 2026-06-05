@@ -7,6 +7,7 @@
         <meta name="description" content="BloodConnect - Connecting blood donors, seekers and hospitals during emergencies">
     
         {% load static %}  <!-- ADD THIS LINE AT TOP -->
+        {% load localization_tags %}
     
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -46,10 +47,10 @@
             {% if request.user.is_authenticated %}
                 {% if request.user.role == 'donor' %}
                 <ul class="nav-links">
-                    <li><a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}"><i class="fas fa-home"></i> Home</a></li>
-                    <li><a href="/donors/dashboard/" class="nav-link {% if 'donors' in request.path %}active{% endif %}"><i class="fas fa-tint"></i> Donate</a></li>
-                    <li><a href="/hospitals/list/" class="nav-link {% if 'hospitals' in request.path %}active{% endif %}"><i class="fas fa-hospital"></i> Hospitals</a></li>
-                    <li><a href="/users/profile/" class="nav-link {% if 'profile' in request.path %}active{% endif %}"><i class="fas fa-user"></i> Profile</a></li>
+                    <li><a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}"><i class="fas fa-home"></i> {% t "Home" %}</a></li>
+                    <li><a href="/donors/dashboard/" class="nav-link {% if 'donors' in request.path %}active{% endif %}"><i class="fas fa-tint"></i> {% t "Donate" %}</a></li>
+                    <li><a href="/hospitals/list/" class="nav-link {% if 'hospitals' in request.path %}active{% endif %}"><i class="fas fa-hospital"></i> {% t "Hospitals" %}</a></li>
+                    <li><a href="/users/profile/" class="nav-link {% if 'profile' in request.path %}active{% endif %}"><i class="fas fa-user"></i> {% t "Profile" %}</a></li>
                 </ul>
                 {% elif request.user.role == 'seeker' %}
                 <ul class="nav-links">
@@ -68,6 +69,20 @@
                 {% endif %}
 
                 <div class="nav-actions">
+                    <div class="dropdown language-switch">
+                        <button class="btn-nav-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            {{ current_language_label|default:"English" }}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            {% for language in supported_languages %}
+                            <li>
+                                <a class="dropdown-item {% if language.code == current_language %}active{% endif %}" href="{% url 'set_language' language.code %}?next={{ request.get_full_path|urlencode }}">
+                                    {{ language.label }}
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
                     <span class="nav-user">
                         <div class="user-avatar">{{ request.user.name|first|upper }}</div>
                         {{ request.user.name|truncatechars:12 }}
@@ -76,13 +91,27 @@
                 </div>
             {% else %}
                 <ul class="nav-links">
-                    <li><a href="/" class="nav-link">Home</a></li>
-                    <li><a href="/hospitals/list/" class="nav-link">Hospitals</a></li>
-                    <li><a href="/contact/" class="nav-link">Contact</a></li>
+                    <li><a href="/" class="nav-link">{% t "Home" %}</a></li>
+                    <li><a href="/hospitals/list/" class="nav-link">{% t "Hospitals" %}</a></li>
+                    <li><a href="/contact/" class="nav-link">{% t "Contact" %}</a></li>
                 </ul>
                 <div class="nav-actions">
-                    <a href="/users/login/" class="btn-nav-secondary">Login</a>
-                    <a href="/users/register/" class="btn-nav-primary">Join Now</a>
+                    <div class="dropdown language-switch">
+                        <button class="btn-nav-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            {{ current_language_label|default:"English" }}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            {% for language in supported_languages %}
+                            <li>
+                                <a class="dropdown-item {% if language.code == current_language %}active{% endif %}" href="{% url 'set_language' language.code %}?next={{ request.get_full_path|urlencode }}">
+                                    {{ language.label }}
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <a href="/users/login/" class="btn-nav-secondary">{% t "Login" %}</a>
+                    <a href="/users/register/" class="btn-nav-primary">{% t "Join Now" %}</a>
                 </div>
             {% endif %}
 

@@ -748,35 +748,9 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; line-height: 1.2; }
   transition: all 0.3s;
 }
 .how-card:hover {
-  border-color: rgba(214,40,40,0.35);
+  border-color: rgba(214,40,40,0.3);
   transform: translateY(-4px);
-  box-shadow: 0 14px 42px rgba(0,0,0,0.28);
 }
-
-.how-cta-wrap {
-  opacity: 0;
-  transform: translateY(8px);
-  transition: all 0.25s;
-}
-
-.how-card:hover .how-cta-wrap {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.how-cta-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding-left: 18px;
-  padding-right: 18px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .how-cta-wrap { transition: none; }
-  .how-card:hover { box-shadow: none; }
-}
-
 
 .how-step {
   position: absolute;

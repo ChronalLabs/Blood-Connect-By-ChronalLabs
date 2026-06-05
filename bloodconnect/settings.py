@@ -7,6 +7,8 @@ import os
 from pathlib import Path
 from decouple import config, Csv
 
+from bloodconnect.i18n import SUPPORTED_LANGUAGES
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -69,7 +71,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'blood_requests.context_processors.unread_chat_count',
                 'bloodconnect.context_processors.language_context',
             ],
         },
@@ -114,10 +115,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 LANGUAGE_CODE = 'en'
-LANGUAGES = [
-    ('en', 'English'),
-    ('hi', 'हिन्दी'),
-]
+LANGUAGES = list(SUPPORTED_LANGUAGES.items())
 TIME_ZONE = 'Asia/Kolkata'
 USE_I18N = True
 USE_TZ = True
