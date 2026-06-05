@@ -142,7 +142,7 @@
         </div>
 
         {% for item in chat_rooms %}
-            <a href="{% url 'chat_room' item.response.id %}" class="chat-room-card">
+            <a href="{% url 'chat_room' item.response.id %}" class="chat-room-card" aria-label="Chat with {{ item.other_user.get_full_name|default:item.other_user.username }} regarding {{ item.response.blood_request.blood_type }} blood request for {{ item.response.blood_request.patient_name }}">
                 <div class="chat-room-left">
                     <div class="chat-room-avatar {% if item.other_user.role == 'seeker' %}seeker-avatar{% endif %}">
                         {{ item.other_user.username|slice:":1"|upper }}

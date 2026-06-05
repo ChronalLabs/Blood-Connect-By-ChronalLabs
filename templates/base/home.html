@@ -151,7 +151,7 @@
         <div class="d-flex align-items-center gap-3 mb-4">
             <div class="pulse-dot"></div>
             <h2 class="section-title mb-0">Live Emergency Requests</h2>
-            <a href="{% url 'request_list' %}" class="btn btn-sm btn-outline-blood ms-auto">View All</a>
+            <a href="{% url 'request_list' %}" class="btn btn-sm btn-outline-blood ms-auto" aria-label="View all blood requests">View All</a>
         </div>
         <div class="row g-3">
             {% for req in recent_requests %}
@@ -167,9 +167,9 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <span class="small text-muted"><i class="bi bi-droplet me-1"></i>{{ req.units_remaining }} units needed</span>
                         {% if user.is_authenticated and user.role == 'donor' %}
-                        <a href="{% url 'respond_to_request' req.id %}" class="btn btn-blood btn-xs">Respond</a>
+                        <a href="{% url 'respond_to_request' req.id %}" class="btn btn-blood btn-xs" aria-label="Respond to blood request for {{ req.patient_name }}">Respond</a>
                         {% else %}
-                        <a href="{% url 'request_detail' req.id %}" class="btn btn-outline-blood btn-xs">Details</a>
+                        <a href="{% url 'request_detail' req.id %}" class="btn btn-outline-blood btn-xs" aria-label="View details for {{ req.patient_name }}'s blood request">Details</a>
                         {% endif %}
                     </div>
                 </div>
@@ -293,7 +293,7 @@
             <a href="{% url 'register' %}" class="btn btn-light btn-lg text-blood fw-semibold px-5">
                 <i class="bi bi-heart-fill me-2"></i>Join BloodConnect
             </a>
-            <a href="{% url 'contact' %}" class="btn btn-outline-light btn-lg px-5">Learn More</a>
+            <a href="{% url 'contact' %}" class="btn btn-outline-light btn-lg px-5" aria-label="Learn more by contacting us">Learn More</a>
         </div>
     </div>
 </section>

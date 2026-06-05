@@ -24,7 +24,7 @@
             <div class="bc-card">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h6 class="fw-bold mb-0">My Blood Requests</h6>
-                    <a href="{% url 'create_request' %}" class="btn btn-blood btn-xs">+ New Request</a>
+                    <a href="{% url 'create_request' %}" class="btn btn-blood btn-xs" aria-label="Create new blood request">+ New Request</a>
                 </div>
                 {% for req in my_requests %}
                 <div class="request-item">
@@ -68,7 +68,7 @@
                     {% endif %}
                 </div>
                 {% endfor %}
-                <a href="{% url 'hospital_list' %}" class="btn btn-outline-blood w-100 btn-sm mt-2">View All Hospitals</a>
+                <a href="{% url 'hospital_list' %}" class="btn btn-outline-blood w-100 btn-sm mt-2" aria-label="View all partner hospitals">View All Hospitals</a>
             </div>
             
             <div class="bc-card">

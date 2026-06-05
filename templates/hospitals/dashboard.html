@@ -23,7 +23,7 @@
     <div class="bc-card mb-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h6 class="fw-bold mb-0"><i class="bi bi-droplet-fill text-blood me-2"></i>Blood Stock</h6>
-            <a href="{% url 'update_blood_stock' %}" class="btn btn-xs btn-outline-blood">Update</a>
+            <a href="{% url 'update_blood_stock' %}" class="btn btn-xs btn-outline-blood" aria-label="Update blood stock levels">Update</a>
         </div>
         <div class="row g-2">
             {% for blood_type, units in blood_stock.as_dict.items %}
@@ -62,7 +62,7 @@
                         </div>
                         <div class="d-flex gap-2 align-items-center">
                             <span class="urgency-badge urgency-{{ req.urgency_level }}">{{ req.get_urgency_level_display }}</span>
-                            <a href="{% url 'request_detail' req.id %}" class="btn btn-xs btn-blood">
+                            <a href="{% url 'request_detail' req.id %}" class="btn btn-xs btn-blood" aria-label="View and fulfill request for {{ req.patient_name }}">
                                 <i class="fas fa-eye me-1"></i>View &amp; Fulfill
                             </a>
                         </div>
@@ -80,7 +80,7 @@
                     <h6 class="fw-bold mb-0">
                         <div class="pulse-dot d-inline-block me-2"></div>Emergency Requests
                     </h6>
-                    <a href="{% url 'request_list' %}" class="btn btn-xs btn-outline-blood">All Requests</a>
+                    <a href="{% url 'request_list' %}" class="btn btn-xs btn-outline-blood" aria-label="View all blood requests">All Requests</a>
                 </div>
 
                 {% for req in open_requests %}
@@ -101,7 +101,7 @@
                         <div class="text-end">
                             <span class="urgency-badge urgency-{{ req.urgency_level }}">{{ req.get_urgency_level_display }}</span>
                             <div class="mt-1 small text-muted">{{ req.units_remaining }} units needed</div>
-                            <a href="{% url 'request_detail' req.id %}" class="btn btn-xs btn-outline-blood mt-1">Details</a>
+                            <a href="{% url 'request_detail' req.id %}" class="btn btn-xs btn-outline-blood mt-1" aria-label="View details for blood request by {{ req.patient_name }}">Details</a>
                         </div>
                     </div>
                 </div>
@@ -116,7 +116,7 @@
             <div class="bc-card mb-3">
                 <div class="d-flex justify-content-between mb-3">
                     <h6 class="fw-bold mb-0">Staff</h6>
-                    <a href="{% url 'add_employee' %}" class="btn btn-xs btn-blood">+ Add</a>
+                    <a href="{% url 'add_employee' %}" class="btn btn-xs btn-blood" aria-label="Add new hospital employee">+ Add</a>
                 </div>
                 {% for emp in employees %}
                 <div class="employee-item">

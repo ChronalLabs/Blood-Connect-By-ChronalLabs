@@ -101,7 +101,7 @@
                         <a href="tel:{{ donor.user.phone_number }}" class="btn-call">
                             <i class="fas fa-phone"></i> {{ donor.user.phone_number }}
                         </a>
-                        <a href="/seekers/request/?prefill={{ donor.blood_group }}" class="btn-details">
+                        <a href="/seekers/request/?prefill={{ donor.blood_group }}" class="btn-details" aria-label="Request blood from {{ donor.user.name }} ({{ donor.get_full_blood_group }})">
                             Request
                         </a>
                     </div>

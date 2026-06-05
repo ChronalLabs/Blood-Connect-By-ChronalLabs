@@ -40,7 +40,7 @@
                 <a href="tel:{{ hospital.contact_number }}" class="btn-call">
                     <i class="fas fa-phone"></i> {{ hospital.contact_number }}
                 </a>
-                <a href="/hospitals/{{ hospital.id }}/" class="btn-details">View Details</a>
+                <a href="/hospitals/{{ hospital.id }}/" class="btn-details" aria-label="View details for {{ hospital.hospital_name }}">View Details</a>
             </div>
         </div>
         {% empty %}
