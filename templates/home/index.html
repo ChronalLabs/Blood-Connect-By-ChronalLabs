@@ -41,7 +41,8 @@
             <div class="blood-group-grid">
                 {% for bg in blood_groups %}
                 <a href="/seekers/search/?blood_group={{ bg|slice:':2' }}&rh_factor={{ bg|slice:'2:' }}"
-                   class="blood-badge {% if '-' in bg %}negative{% else %}positive{% endif %}">
+                   class="blood-badge {% if '-' in bg %}negative{% else %}positive{% endif %}"
+                   aria-label="Search for {{ bg }} blood donors">
                     {{ bg }}
                 </a>
                 {% endfor %}
@@ -90,7 +91,7 @@
             <span>{{ req.hospital_name }}</span>
             <span class="ticker-units">{{ req.units_required }} unit{{ req.units_required|pluralize }}</span>
             {% if request.user.is_authenticated and request.user.role == 'donor' %}
-            <a href="/donors/accept/{{ req.id }}/" class="btn-accept-sm">Accept</a>
+            <a href="/donors/accept/{{ req.id }}/" class="btn-accept-sm" aria-label="Accept blood request for {{ req.hospital_name }}">Accept</a>
             {% endif %}
         </div>
         {% endfor %}
@@ -165,7 +166,7 @@
 <section class="hospitals-preview">
     <div class="section-header">
         <h2>Partner Hospitals</h2>
-        <a href="/hospitals/list/" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
+        <a href="/hospitals/list/" class="view-all" aria-label="View all partner hospitals">View All <i class="fas fa-arrow-right"></i></a>
     </div>
     <div class="hospitals-grid">
         {% for hospital in hospitals %}
@@ -182,7 +183,7 @@
             {% endif %}
             <div class="hospital-card-footer">
                 <a href="tel:{{ hospital.contact_number }}" class="btn-call"><i class="fas fa-phone"></i> {{ hospital.contact_number }}</a>
-                <a href="/hospitals/{{ hospital.id }}/" class="btn-details">Details</a>
+                <a href="/hospitals/{{ hospital.id }}/" class="btn-details" aria-label="View details for {{ hospital.hospital_name }}">Details</a>
             </div>
         </div>
         {% endfor %}

@@ -32,7 +32,7 @@
     <!-- Navbar -->
     <nav class="navbar" id="mainNavbar">
         <div class="nav-container">
-            <a href="/" class="nav-brand">
+            <a href="/" class="nav-brand" aria-label="BloodConnect Home">
                 <div class="brand-icon">
                     <svg viewBox="0 0 40 40" fill="none">
                         <path d="M20 4C20 4 6 14 6 24C6 31.73 12.27 38 20 38C27.73 38 34 31.73 34 24C34 14 20 4 20 4Z" fill="#d62828"/>
@@ -72,7 +72,7 @@
                         <div class="user-avatar">{{ request.user.name|first|upper }}</div>
                         {{ request.user.name|truncatechars:12 }}
                     </span>
-                    <a href="/users/logout/" class="btn-nav-logout"><i class="fas fa-sign-out-alt"></i></a>
+                    <a href="/users/logout/" class="btn-nav-logout" aria-label="Logout"><i class="fas fa-sign-out-alt"></i></a>
                 </div>
             {% else %}
                 <ul class="nav-links">
@@ -99,7 +99,7 @@
         <div class="flash-message flash-{{ message.tags }}" role="alert">
             <i class="fas {% if 'success' in message.tags %}fa-check-circle{% elif 'error' in message.tags %}fa-exclamation-circle{% else %}fa-info-circle{% endif %}"></i>
             {{ message }}
-            <button class="flash-close" onclick="this.parentElement.remove()">&times;</button>
+            <button class="flash-close" onclick="this.parentElement.remove()" aria-label="Close alert">&times;</button>
         </div>
         {% endfor %}
     </div>
@@ -115,7 +115,7 @@
         <div class="footer-container">
             <div class="footer-brand">
                 <div class="footer-logo">
-                    <svg viewBox="0 0 40 40" fill="none" width="32">
+                    <svg viewBox="0 0 40 40" fill="none" width="32" aria-hidden="true">
                         <path d="M20 4C20 4 6 14 6 24C6 31.73 12.27 38 20 38C27.73 38 34 31.73 34 24C34 14 20 4 20 4Z" fill="#d62828"/>
                     </svg>
                     <span>BloodConnect</span>

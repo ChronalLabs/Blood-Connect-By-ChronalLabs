@@ -21,7 +21,7 @@
                 <span class="status-badge status-{{ req.status }} mb-2 d-block">{{ req.get_status_display }}</span>
                 {% if req.status == 'open' %}
                 <a href="{% url 'cancel_request' req.id %}" class="btn btn-outline-danger btn-xs"
-                   onclick="return confirm('Cancel this request?')">Cancel</a>
+                   onclick="return confirm('Cancel this request?')" aria-label="Cancel blood request for {{ req.patient_name }}">Cancel</a>
                 {% endif %}
             </div>
         </div>

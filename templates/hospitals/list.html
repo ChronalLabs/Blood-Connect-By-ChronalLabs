@@ -210,7 +210,7 @@
                     </div>
                 </div>
                 <div class="mt-2 d-flex gap-2">
-                    <a href="{% url 'hospital_detail' hospital.pk %}" class="btn btn-xs btn-outline-blood" onclick="event.stopPropagation()">View Details</a>
+                    <a href="{% url 'hospital_detail' hospital.pk %}" class="btn btn-xs btn-outline-blood" onclick="event.stopPropagation()" aria-label="View details for {{ hospital.hospital_name }}">View Details</a>
                     <button class="btn btn-xs btn-ghost" onclick="event.stopPropagation();focusHospital('{{ hospital.hospital_name|escapejs }}')">
                         <i class="bi bi-geo-alt me-1"></i>Show on Map
                     </button>

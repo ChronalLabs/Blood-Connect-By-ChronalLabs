@@ -64,7 +64,7 @@
                         <div class="pulse-dot d-inline-block me-2"></div>
                         Blood Requests You Can Fulfill ({{ donor.blood_type }} donor)
                     </h6>
-                    <a href="{% url 'request_list' %}" class="btn btn-xs btn-outline-blood">View All</a>
+                    <a href="{% url 'request_list' %}" class="btn btn-xs btn-outline-blood" aria-label="View all blood requests">View All</a>
                 </div>
                 {% for req in open_requests %}
                 <div class="request-item">
@@ -79,7 +79,7 @@
                         </div>
                         <div class="text-end">
                             <span class="urgency-badge urgency-{{ req.urgency_level }} mb-2 d-block">{{ req.get_urgency_level_display }}</span>
-                            <a href="{% url 'respond_to_request' req.id %}" class="btn btn-blood btn-xs">Respond</a>
+                            <a href="{% url 'respond_to_request' req.id %}" class="btn btn-blood btn-xs" aria-label="Respond to blood request for {{ req.patient_name }}">Respond</a>
                         </div>
                     </div>
                 </div>
@@ -105,7 +105,7 @@
                     </div>
                     <div class="d-flex justify-content-between align-items-center mt-1">
                         <small class="text-muted text-truncate" style="max-width: 170px;">{{ resp.blood_request.hospital_name }}</small>
-                        <a href="{% url 'chat_room' resp.id %}" class="btn btn-outline-blood btn-xs d-flex align-items-center gap-1">
+                        <a href="{% url 'chat_room' resp.id %}" class="btn btn-outline-blood btn-xs d-flex align-items-center gap-1" aria-label="Chat with seeker {{ resp.blood_request.requester.get_full_name|default:resp.blood_request.requester.username }} regarding {{ resp.blood_request.patient_name }}">
                             <i class="bi bi-chat-dots-fill"></i>Chat
                             {% if resp.unread_count > 0 %}
                             <span class="badge bg-danger rounded-pill" style="font-size: 0.7rem; padding: 0.25em 0.5em;">
@@ -124,7 +124,7 @@
             <div class="bc-card">
                 <div class="d-flex justify-content-between mb-3">
                     <h6 class="fw-bold mb-0">Donation History</h6>
-                    <a href="{% url 'add_donation' %}" class="btn btn-xs btn-blood">+ Add</a>
+                    <a href="{% url 'add_donation' %}" class="btn btn-xs btn-blood" aria-label="Add new blood donation record">+ Add</a>
                 </div>
                 {% for donation in recent_donations %}
                 <div class="donation-item">

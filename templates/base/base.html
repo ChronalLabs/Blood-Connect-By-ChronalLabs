@@ -22,11 +22,11 @@
 <body>
     <nav class="navbar navbar-expand-lg bc-navbar sticky-top">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'home' %}">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'home' %}" aria-label="BloodConnect Home">
                 <div class="brand-icon"><i class="bi bi-droplet-fill"></i></div>
                 <span class="brand-text">Blood<span class="brand-accent">Connect</span></span>
             </a>
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-label="Toggle navigation menu">
                 <i class="bi bi-list text-white fs-4"></i>
             </button>
             <div class="collapse navbar-collapse" id="navMenu">
@@ -74,7 +74,7 @@
                                 class="bi bi-exclamation-circle me-1"></i>{% t "Requests" %}</a></li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#"
-                            data-bs-toggle="dropdown">
+                            data-bs-toggle="dropdown" aria-label="User menu dropdown">
                             <div class="nav-avatar {% if user.role == 'hospital' %}hospital-avatar{% endif %}">
                                 <i class="bi {% if user.role == 'hospital' %}bi-building-fill-cross{% else %}bi-person-fill{% endif %}"></i>
                             </div>
@@ -131,7 +131,7 @@
                     </li>
                     <li class="nav-item ms-2">
                         <div class="dropdown">
-                            <button class="btn btn-outline-light btn-sm dropdown-toggle px-3" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <button class="btn btn-outline-light btn-sm dropdown-toggle px-3" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Select Language">
                                 {{ current_language_label|default:"English" }}
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end">
@@ -220,7 +220,7 @@
     <script src="{% static 'js/bloodconnect.js' %}"></script>
     {% block extra_js %}{% endblock %}
     <!-- Scroll to Top Button -->
-    <button id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" style="opacity:0;visibility:hidden;position:fixed;bottom:2rem;right:2rem;z-index:999;
+    <button id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Scroll to top" style="opacity:0;visibility:hidden;position:fixed;bottom:2rem;right:2rem;z-index:999;
   background:#e53e3e;color:white;border:none;border-radius:50%;
   width:45px;height:45px;font-size:1.2rem;cursor:pointer;
   box-shadow:0 4px 15px rgba(229,62,62,0.4);transition:all 0.3s;">
