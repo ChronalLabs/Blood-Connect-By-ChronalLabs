@@ -1,280 +1,152 @@
 # Contributing to BloodConnect 🩸
 
-Thank you for your interest in contributing to **BloodConnect** — a platform that connects blood donors, seekers, and hospitals during emergencies. Every contribution counts!
+Thank you for your interest in contributing to **BloodConnect**! Your support is vital in making this platform more robust and reliable during medical emergencies.
 
----
-
-## Table of Contents
-
-- [Code of Conduct](#-code-of-conduct)
-- [Tech Stack Overview](#-tech-stack-overview)
-- [Local Development Setup](#-local-development-setup)
-- [Running Tests](#-running-tests)
-- [Git Branching Workflow](#-git-branching-workflow)
-- [Submitting a Pull Request](#-submitting-a-pull-request)
-- [Common Issues & Tips](#-common-issues--tips)
+This document outlines the workflows, standards, and setup instructions to help you make successful contributions.
 
 ---
 
 ## 🧭 Code of Conduct
 
-We expect all contributors to treat others with empathy, kindness, and respect. Harassment or exclusionary behavior of any kind is not tolerated.
+We expect all contributors to adhere to a respectful and inclusive code of conduct. Please treat other community members with empathy, kindness, and respect.
 
 ---
 
-## 🛠️ Tech Stack Overview
+## 🛠️ Local Development Setup
 
-| Layer    | Technology                        |
-| -------- | --------------------------------- |
-| Backend  | Python Django 4.2                 |
-| Database | SQLite (dev) / PostgreSQL (prod)  |
-| Frontend | HTML5, CSS3, Bootstrap 5          |
-| Maps     | Leaflet.js (OpenStreetMap)        |
-| Auth     | Django Authentication             |
+To run BloodConnect on your local system, follow these steps:
 
-Knowing this before you start will help you navigate the codebase faster.
-
----
-
-## 💻 Local Development Setup
-
-### Prerequisites
-
-Make sure these are installed before you begin:
-
+### 1. Prerequisites
+Ensure you have the following installed:
 - **Python 3.10+**
-- **pip**
-- **venv** (built into Python 3)
-- **Git**
+- **pip** (Python package installer)
+- **Virtualenv** (or Python's built-in `venv` module)
 
-### Step 1 — Fork & Clone
+### 2. Fork and Clone
+1. Fork the BloodConnect repository on GitHub by clicking the **Fork** button.
+2. Clone your forked repository locally:
+   ```bash
+   git clone https://github.com/YOUR-USERNAME/Blood-Connect-By-ChronalLabs.git
+   cd Blood-Connect-By-ChronalLabs
+   ```
 
-1. Click **Fork** on the [BloodConnect GitHub repo](https://github.com/ChronalLabs/Blood-Connect-By-ChronalLabs).
-2. Clone your fork locally:
-
-```bash
-git clone https://github.com/YOUR-USERNAME/Blood-Connect-By-ChronalLabs.git
-cd Blood-Connect-By-ChronalLabs
-```
-
-3. Add the upstream remote so you can pull in future changes:
-
-```bash
-git remote add upstream https://github.com/ChronalLabs/Blood-Connect-By-ChronalLabs.git
-```
-
-### Step 2 — Create a Virtual Environment
-
+### 3. Create a Virtual Environment
+Initialize a local virtual environment:
 ```bash
 python3 -m venv venv
 ```
+Activate the environment:
+- **macOS and Linux:**
+  ```bash
+  source venv/bin/activate
+  ```
+- **Windows (CMD):**
+  ```cmd
+  venv\Scripts\activate.bat
+  ```
+- **Windows (PowerShell):**
+  ```powershell
+  venv\Scripts\Activate.ps1
+  ```
 
-Activate it:
-
-| OS | Command |
-| --- | --- |
-| macOS / Linux | `source venv/bin/activate` |
-| Windows (CMD) | `venv\Scripts\activate.bat` |
-| Windows (PowerShell) | `venv\Scripts\Activate.ps1` |
-
-You should see `(venv)` in your terminal prompt once activated.
-
-### Step 3 — Install Dependencies
-
+### 4. Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### Step 4 — Configure Environment Variables
-
+### 5. Configure Environment Variables
+Create a local `.env` configuration file from the example template:
 ```bash
 cp .env.example .env
 ```
+Open `.env` and configure your settings:
+- Update the `SECRET_KEY` with a secure random key.
+- Set `DEBUG=True` for local development.
 
-Open `.env` and update:
-
-```env
-SECRET_KEY=your-secure-random-key-here
-DEBUG=True
-```
-
-> **Tip:** Generate a strong secret key with:
-> ```bash
-> python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
-> ```
-
-### Step 5 — Run Database Migrations
-
+### 6. Run Database Migrations
+Initialize the SQLite database and run the Django migrations:
 ```bash
 python manage.py makemigrations users donors seekers hospitals blood_requests
 python manage.py migrate
 ```
 
-### Step 6 — Create a Superuser
-
+### 7. Create a Superuser
+Create an admin account to access the Django admin panel (`/admin/`):
 ```bash
 python manage.py createsuperuser
 ```
 
-This gives you access to the Django Admin panel at `/admin/`.
-
-### Step 7 — (Optional) Load Sample Data
-
-```bash
-python manage.py shell
-```
-
-Paste the following:
-
-```python
-from users.models import CustomUser
-from hospitals.models import HospitalProfile, BloodStock
-from donors.models import DonorProfile
-
-u = CustomUser.objects.create_user(
-    'hospital1', password='pass123', role='hospital',
-    first_name='City', last_name='Hospital'
-)
-h = HospitalProfile.objects.create(
-    user=u, hospital_name='City General Hospital',
-    address='123 Main St', city='Mumbai', state='Maharashtra',
-    pincode='400001', contact_number='9999888777',
-    verified=True, blood_bank_available=True,
-    latitude=19.0760, longitude=72.8777
-)
-BloodStock.objects.create(
-    hospital=h, a_positive=15, b_positive=8,
-    o_positive=20, ab_positive=5, a_negative=3
-)
-```
-
-### Step 8 — Collect Static Files
-
+### 8. Collect Static Files
+Generate static file directories for local testing:
 ```bash
 python manage.py collectstatic
 ```
 
-### Step 9 — Start the Dev Server
-
+### 9. Start the Development Server
 ```bash
 python manage.py runserver
 ```
-
-Open **http://127.0.0.1:8000** in your browser. You're live!
+Visit **http://127.0.0.1:8000** in your browser to see the live app!
 
 ---
 
 ## 🧪 Running Tests
 
-**Always run tests before pushing code or opening a PR.**
+Always run tests before pushing code or submitting a Pull Request.
 
-Run the full test suite:
-
+Run the entire Django test suite:
 ```bash
 python manage.py test
 ```
 
-Run a specific test module:
-
+To run a specific test file (for example, the blood compatibility tests):
 ```bash
 python manage.py test blood_requests.tests.test_compatibility
 ```
-
-If your change touches a specific app (e.g. `donors`), run that app's tests too:
-
-```bash
-python manage.py test donors
-```
-
-All tests must pass before you submit a PR.
 
 ---
 
 ## 🌿 Git Branching Workflow
 
-### Keep Your Fork Up to Date
-
-Before starting any new work, sync with upstream:
-
-```bash
-git checkout main
-git fetch upstream
-git merge upstream/main
-```
+We follow structured conventions for branch names and commit messages.
 
 ### Branch Naming Convention
+Please create a new branch from `main` using one of the following prefixes:
 
-Create a new branch from `main` using one of these prefixes:
-
-| Prefix | Purpose | Example |
-| --- | --- | --- |
-| `feat/` | New feature | `feat/hospital-dashboard` |
-| `fix/` | Bug fix | `fix/compatibility-test-city` |
-| `docs/` | Documentation | `docs/improve-contributing-guide` |
-| `refactor/` | Refactor (no logic change) | `refactor/blood-matching-logic` |
-| `chore/` | Build, deps, tooling | `chore/update-requirements` |
-
-```bash
-git checkout -b feat/your-feature-name
-```
+| Branch Prefix | Purpose | Example |
+| :--- | :--- | :--- |
+| `feat/` | Adding a new feature | `feat/hospital-dashboard` |
+| `fix/` | Fixing a bug | `fix/compatibility-test-city` |
+| `docs/` | Documentation improvements | `docs/add-contributing-guide` |
+| `refactor/` | Code refactoring (no functional changes) | `refactor/blood-matching-logic` |
+| `chore/` | Build scripts, tasks, dependencies, etc. | `chore/update-readme` |
 
 ### Commit Message Guidelines
-
-Write commits in the **imperative mood**, scoped to a single logical change:
-
-```
-feat: add donor availability status toggle
-fix: resolve duplicate keyword error in compatibility tests
-docs: update setup instructions for Windows users
-```
-
-**Avoid:** `fixed bug`, `updates`, `wip`, or vague messages.
+Keep your commit messages atomic, descriptive, and in the imperative mood:
+- **Good:** `feat: add donor availability status toggle`
+- **Good:** `fix: resolve duplicate keyword error in compatibility tests`
+- **Bad:** `fixed bug` or `updates`
 
 ---
 
-## 🚀 Submitting a Pull Request
+## 🚀 Submitting a Pull Request (PR)
 
-1. **Push your branch:**
+Once you are ready to submit your changes, follow these steps:
 
-```bash
-git push origin feat/your-feature-name
-```
-
-2. **Open a PR** on GitHub — you'll see a "Compare & pull request" banner on the repo page.
-
-3. **Fill in the PR description** using this template:
-
-```
-## What does this PR do?
-Brief description of the change.
-
-## Related issue
-Closes #<issue-number>
-
-## Testing done
-- [ ] Ran `python manage.py test`
-- [ ] Manually tested on local dev server
-- [ ] No regressions in existing functionality
-```
-
-4. **Respond to review comments** promptly. Once approved, a maintainer will merge your PR into `main`.
+1. **Commit and Push:**
+   Commit your changes and push your branch to your GitHub fork:
+   ```bash
+   git push origin <your-branch-name>
+   ```
+2. **Open the PR:**
+   Go to the original BloodConnect repository on GitHub. You should see a prompt to open a Pull Request. Click **Compare & pull request**.
+3. **Fill Out the PR Description:**
+   - Clearly describe what changes were made.
+   - Reference any relevant issues (e.g. `Closes #37`).
+   - Mention what manual or automated testing was performed.
+4. **Review Process:**
+   Project maintainers will review your code. Please address any comments or requested changes in a timely manner. Once approved, your PR will be merged into the `main` branch!
 
 ---
 
-## 🐛 Common Issues & Tips
-
-**`ModuleNotFoundError` after cloning**
-→ Make sure your virtual environment is activated (`source venv/bin/activate`) and you've run `pip install -r requirements.txt`.
-
-**Migrations conflict**
-→ If you get migration conflicts, delete the `db.sqlite3` file and re-run `python manage.py migrate` from scratch on your local branch.
-
-**Static files not loading**
-→ Run `python manage.py collectstatic` and make sure `DEBUG=True` in your `.env`.
-
-**`SECRET_KEY` error on startup**
-→ Ensure your `.env` file exists (copy from `.env.example`) and has a non-empty `SECRET_KEY`.
-
----
-
-Thank you for contributing to **BloodConnect**! Let's save lives together. 🩸❤️
+Thank you again for contributing to **BloodConnect**! Let's save lives together! 🩸❤️

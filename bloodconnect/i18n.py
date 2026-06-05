@@ -13,6 +13,7 @@ SUPPORTED_LANGUAGES = {
     "hi": "हिन्दी",
 }
 LANGUAGE_SESSION_KEY = "bloodconnect_language"
+TRANSLATION_FALLBACK_LANGUAGE = DEFAULT_LANGUAGE
 
 TRANSLATIONS = {
     "hi": {
@@ -61,6 +62,7 @@ TRANSLATIONS = {
                 "All rights reserved.": "सर्वाधिकार सुरक्षित।",
                 "Made with": "के साथ बनाया गया",
                 "to save lives": "जान बचाने के लिए",
+        "Connecting blood donors, seekers, and hospitals to save lives in critical moments.": "आपात क्षणों में जीवन बचाने के लिए रक्त दाताओं, सहायता चाहने वालों और अस्पतालों को जोड़ता है।",
                 "Learn More": "और जानें",
                 "Ready to Make a Difference?": "क्या आप बदलाव लाने के लिए तैयार हैं?",
                 "Join thousands of donors and hospitals in our life-saving network.": "हमारे जीवनरक्षक नेटवर्क में हज़ारों दाताओं और अस्पतालों से जुड़ें।",
@@ -200,6 +202,78 @@ TRANSLATIONS = {
         "You have been logged out successfully.": "आप सफलतापूर्वक लॉग आउट हो गए हैं।",
         "Your message has been sent successfully! We will get back to you soon.": "आपका संदेश सफलतापूर्वक भेज दिया गया है। हम जल्द ही आपसे संपर्क करेंगे।",
         "Welcome to BloodConnect": "ब्लडकनेक्ट में आपका स्वागत है",
+        "5+ Donors": "5+ दाता",
+        "0+ Hospitals": "0+ अस्पताल",
+        "5+": "5+",
+        "0+": "0+",
+        "Verified Hospitals": "मान्यताप्राप्त अस्पताल",
+        "Search hospital by name or city...": "नाम या शहर द्वारा अस्पताल खोजें...",
+        "Ready to make a difference? Join thousands of donors and hospitals in our life-saving network.": "क्या आप फर्क डालने के लिए तैयार हैं? हमारे जीवन-रक्षक नेटवर्क में हज़ारों दाताओं और अस्पतालों से जुड़ें।",
+        "Join Blood Connect": "ब्लडकनेक्ट में शामिल हों",
+        "Hospitals Near You": "आपके पास के अस्पताल",
+        "Simple steps to save a life or find help": "जीवन बचाने या सहायता पाने के सरल चरण",
+        "01": "01",
+        "02": "02",
+        "03": "03",
+        "Sign up as a Donor, Seeker or Hospital with your medical details.": "अपने चिकित्सा विवरण के साथ दाता, सहायता चाहने वाला या अस्पताल के रूप में साइन अप करें।",
+        "Search for compatible donors or post an emergency blood request instantly.": "अनुकूल दाताओं की खोज करें या तुरंत एक आपातकालीन रक्त अनुरोध पोस्ट करें।",
+        "Meet at the hospital, donate blood, and be someone's hero today": "अस्पताल में मिलें, रक्तदान करें, और आज किसी के लिए हीरो बनें।",
+        "Ready to make a difference? Join thousands of donors and hospitals in our life-saving network.": "क्या आप बदलाव लाने के लिए तैयार हैं? हमारे जीवन-रक्षक नेटवर्क में हज़ारों दाताओं और अस्पतालों से जुड़ें।",
+        "Create your account to start saving lives": "जीवन बचाना शुरू करने के लिए अपना खाता बनाएं",
+        "Register As": "के रूप में पंजीकरण",
+        "Blood Donor": "रक्त दाता",
+        "Blood Seeker": "रक्त सहायता चाहने वाला",
+        "Username *": "उपयोगकर्ता नाम *",
+        "Find": "खोजें",
+        "0 hospitals on the network": "नेटवर्क में 0 अस्पताल",
+        "Search hospital by name or city...": "नाम या शहर द्वारा अस्पताल खोजें...",
+        "Back Home": "होम पर वापस",
+        "Live Emergency Requests": "लाइव आपातकालीन अनुरोध",
+        "Critical - Within Hours": "गंभीर - कुछ घंटों के भीतर",
+        "2 units needed": "2 यूनिट चाहिए",
+        "units needed": "यूनिट चाहिए",
+        "You": "आप",
+        "Request": "अनुरोध",
+        "Sign up as a Donor, Seeker or Hospital with your medical details.": "अपने चिकित्सा विवरण के साथ दाता, सहायता चाहने वाला या अस्पताल के रूप में साइन अप करें।",
+        "Search for compatible donors or post an emergency blood request instantly.": "अनुकूल दाताओं की खोज करें या तुरंत एक आपातकालीन रक्त अनुरोध पोस्ट करें।",
+        "Meet at the hospital, donate blood, and be someone's hero today.": "अस्पताल में मिलें, रक्तदान करें, और आज किसी के लिए हीरो बनें।",
+        "0 hospitals on the network": "नेटवर्क में 0 अस्पताल",
+        "No Hospitals Yet": "अभी कोई अस्पताल नहीं",
+        "Be the first to register your hospital on BloodConnect. Help connect lifesaving blood donations with patients in need.": "ब्लडकनेक्ट पर अपना अस्पताल पंजीकृत करने वाले पहले बनें। आवश्यक मरीजों के साथ जीवनरक्षक रक्त दान जोड़ने में मदद करें।",
+        "Back Home": "होम पर वापस",
+        "Live Blood Requests": "लाइव रक्त अनुरोध",
+        "1 open requests": "1 खुला अनुरोध",
+        "All Groups": "सभी समूह",
+        "RH Factor": "आरएच फैक्टर",
+        "Urgency": "आपातता",
+        "Searching...": "खोज जा रहा है...",
+        "Searching for": "खोज रहा है",
+        "No results found for": "के लिए कोई परिणाम नहीं मिला",
+        "Search failed. Check connection.": "खोज विफल हुई। कनेक्शन जांचें।",
+        "No results": "कोई परिणाम नहीं",
+        "No hospital found for": "के लिए कोई अस्पताल नहीं मिला",
+        "Try a different name or city.": "कृपया अलग नाम या शहर आज़माएं।",
+        "Found via search": "खोज के माध्यम से मिला",
+        "Not yet registered on BloodConnect": "अभी तक BloodConnect पर पंजीकृत नहीं",
+        "Showing location for": "स्थान दिखा रहा है",
+        "Could not connect to search service. Check your internet.": "खोज सेवा से कनेक्ट नहीं हो सका। अपना इंटरनेट जांचें।",
+        "Hospitals on the network": "नेटवर्क में अस्पताल",
+        "Show on map": "मानचित्र पर दिखाएँ",
+        "Show on Map": "मानचित्र पर दिखाएँ",
+        "Find": "खोजें",
+        "Clear": "हटाएँ",
+        "Hospital": "अस्पताल",
+        "Searched": "खोजना किया गया",
+        "You": "आप",
+        "This Hospital": "यह अस्पताल",
+        "Search Result": "खोज परिणाम",
+        "Need Blood Here?": "क्या यहाँ रक्त चाहिए?",
+        "Request Blood": "रक्त का अनुरोध करें",
+        "Login to Request": "अनुरोध करने के लिए लॉगिन करें",
+        "All Hospitals": "सभी अस्पताल",
+        "Verified": "मान्यताप्राप्त",
+        "Last updated:" : "अंतिम अपडेट:" ,
+        "units": "यूनिट",
     }
 }
 
@@ -228,7 +302,16 @@ def translate_text(text, language_code=None):
         return text
 
     code = get_current_language(language_code)
-    return TRANSLATIONS.get(code, {}).get(str(text), text)
+    key = str(text)
+    localized_text = TRANSLATIONS.get(code, {}).get(key)
+    if localized_text is not None:
+        return localized_text
+
+    fallback_text = TRANSLATIONS.get(TRANSLATION_FALLBACK_LANGUAGE, {}).get(key)
+    if fallback_text is not None:
+        return fallback_text
+
+    return text
 
 
 def translate_choices(choices, language_code=None):

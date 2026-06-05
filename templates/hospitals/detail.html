@@ -1,4 +1,5 @@
 {% extends "base/base.html" %}
+{% load localization_tags %}
 {% block title %}{{ hospital.hospital_name }}{% endblock %}
 
 {% block extra_css %}
@@ -90,7 +91,7 @@
                         <div class="d-flex align-items-center gap-2 mb-1">
                             <h4 class="fw-bold mb-0">{{ hospital.hospital_name }}</h4>
                             {% if hospital.verified %}
-                            <span class="badge-verified"><i class="bi bi-patch-check-fill"></i> Verified</span>
+                            <span class="badge-verified"><i class="bi bi-patch-check-fill"></i> {% t "Verified" %}</span>
                             {% endif %}
                         </div>
                         <p class="text-muted mb-1">
@@ -108,10 +109,10 @@
                         {% endif %}
                         <div class="d-flex gap-2 mt-2 flex-wrap">
                             {% if hospital.blood_bank_available %}
-                            <span class="badge bg-success-soft text-success px-3 py-2">Blood Bank Available</span>
+                            <span class="badge bg-success-soft text-success px-3 py-2">{% t "Blood Bank Available" %}</span>
                             {% endif %}
                             {% if hospital.has_24hr_service %}
-                            <span class="badge bg-info-soft text-info px-3 py-2">24x7 Service</span>
+                            <span class="badge bg-info-soft text-info px-3 py-2">24x7</span>
                             {% endif %}
                         </div>
                     </div>
@@ -124,20 +125,20 @@
 
             {% if blood_stock %}
             <div class="bc-card">
-                <h6 class="fw-bold mb-3"><i class="bi bi-droplet-fill text-blood me-2"></i>Blood Stock</h6>
+                <h6 class="fw-bold mb-3"><i class="bi bi-droplet-fill text-blood me-2"></i>{% t "Blood Stock" %}</h6>
                 <div class="row g-2">
                     {% for blood_type, units in blood_stock.as_dict.items %}
                     <div class="col-3 col-sm-2">
                         <div class="blood-stock-cell {% if units == 0 %}stock-empty{% elif units < 5 %}stock-low{% else %}stock-ok{% endif %}">
                             <div class="stock-type">{{ blood_type }}</div>
                             <div class="stock-units">{{ units }}</div>
-                            <div class="stock-label">units</div>
+                            <div class="stock-label">{% t "units" %}</div>
                         </div>
                     </div>
                     {% endfor %}
                 </div>
                 <p class="text-muted small mt-2 mb-0">
-                    <i class="bi bi-clock me-1"></i>Last updated: {{ blood_stock.last_updated|date:"M d, Y H:i" }}
+                    <i class="bi bi-clock me-1"></i>{% t "Last updated:" %} {{ blood_stock.last_updated|date:"M d, Y H:i" }}
                 </p>
             </div>
             {% endif %}
@@ -146,7 +147,7 @@
         <!-- Map + Search sidebar -->
         <div class="col-lg-4">
             <div class="bc-card mb-3">
-                <h6 class="fw-bold mb-3"><i class="bi bi-map me-2"></i>Location</h6>
+                <h6 class="fw-bold mb-3"><i class="bi bi-map me-2"></i>{% t "Location" %}</h6>
 
                 <!-- Search bar -->
                 <div class="map-search-bar mb-2">
@@ -154,7 +155,7 @@
                         <input
                             type="text"
                             id="detail-search-input"
-                            placeholder="Search another hospital..."
+                            placeholder="{% t "Search another hospital..." %}"
                             autocomplete="off"
                             oninput="onSearchInput(this.value)"
                             onkeydown="handleKey(event)"
@@ -174,26 +175,26 @@
                 <div style="position:relative">
                     <div id="detail-map" style="height:300px;border-radius:12px;overflow:hidden;"></div>
                     <div class="map-legend">
-                        <div class="map-legend-item"><div class="legend-dot" style="background:#34c1c6"></div>This Hospital</div>
-                        <div class="map-legend-item"><div class="legend-dot" style="background:#d62828"></div>Search Result</div>
-                    </div>
+                                <div class="map-legend-item"><div class="legend-dot" style="background:#34c1c6"></div>{% t "This Hospital" %}</div>
+                                <div class="map-legend-item"><div class="legend-dot" style="background:#d62828"></div>{% t "Search Result" %}</div>
+                            </div>
                 </div>
             </div>
 
             <div class="bc-card">
-                <h6 class="fw-bold mb-3">Need Blood Here?</h6>
-                <p class="text-muted small">Create an emergency blood request for this hospital</p>
+                <h6 class="fw-bold mb-3">{% t "Need Blood Here?" %}</h6>
+                <p class="text-muted small">{% t "Create an emergency blood request for this hospital" %}</p>
                 {% if user.is_authenticated %}
-                <a href="{% url 'create_request' %}" class="btn btn-blood w-100">
-                    <i class="bi bi-droplet-fill me-2"></i>Request Blood
+                    <a href="{% url 'create_request' %}" class="btn btn-blood w-100">
+                    <i class="bi bi-droplet-fill me-2"></i>{% t "Request Blood" %}
                 </a>
                 {% else %}
-                <a href="{% url 'login' %}" class="btn btn-blood w-100">
-                    <i class="bi bi-box-arrow-in-right me-2"></i>Login to Request
+                    <a href="{% url 'login' %}" class="btn btn-blood w-100">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>{% t "Login to Request" %}
                 </a>
                 {% endif %}
                 <a href="{% url 'hospital_list' %}" class="btn btn-outline-blood w-100 mt-2">
-                    <i class="bi bi-arrow-left me-2"></i>All Hospitals
+                    <i class="bi bi-arrow-left me-2"></i>{% t "All Hospitals" %}
                 </a>
             </div>
         </div>
@@ -240,9 +241,9 @@ function onSearchInput(val) {
             headers: {'Accept-Language':'en'}
         })
         .then(r=>r.json())
-        .then(results => {
+                .then(results => {
             if (!results.length) {
-                ac.innerHTML = `<div style="padding:12px;color:rgba(255,255,255,0.4);font-size:12px;text-align:center">No results for "${val}"</div>`;
+                ac.innerHTML = `<div style="padding:12px;color:rgba(255,255,255,0.4);font-size:12px;text-align:center">${tr('No results') + ' for "' + val + '"'}</div>`;
                 ac.classList.add('open'); return;
             }
             ac.innerHTML = results.map(r => {
@@ -270,25 +271,25 @@ function doSearch() {
     const val = document.getElementById('detail-search-input').value.trim();
     if (!val) return;
     document.getElementById('detail-autocomplete').classList.remove('open');
-    showStatus('Searching...', 'found');
+    showStatus(tr('Searching...'), 'found');
     fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val+' hospital')}&format=json&limit=1`, {
         headers: {'Accept-Language':'en'}
     })
     .then(r=>r.json())
     .then(results => {
-        if (!results.length) { showStatus('No results found for "'+val+'"', 'notfound'); return; }
+        if (!results.length) { showStatus(tr('No results found for') + ' "' + val + '"', 'notfound'); return; }
         const r = results[0];
         const label = r.display_name.split(',').slice(0,3).join(', ');
         placeSearchMarker(parseFloat(r.lat), parseFloat(r.lon), label);
     })
-    .catch(() => showStatus('Search failed. Check connection.', 'notfound'));
+    .catch(() => showStatus(tr('Search failed. Check connection.'), 'notfound'));
 }
 
 function placeSearchMarker(lat, lng, label) {
     if (searchMarker) map.removeLayer(searchMarker);
     searchMarker = L.marker([lat, lng], {icon: searchedIcon})
         .addTo(map)
-        .bindPopup(`<div class="map-popup"><strong>${label}</strong><br><small style="color:#f59e0b">Search result</small></div>`)
+        .bindPopup(`<div class="map-popup"><strong>${label}</strong><br><small style="color:#f59e0b">${tr('Search Result')}</small></div>`)
         .openPopup();
     map.setView([lat, lng], 14);
     showStatus('📍 ' + label, 'geocoded');

@@ -1,5 +1,6 @@
 {% extends "base/base.html" %}
-{% block title %}Hospitals{% endblock %}
+{% load localization_tags %}
+{% block title %}{% t "Hospitals" %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -167,8 +168,8 @@
 <div class="container py-5">
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
         <div>
-            <h4 class="fw-bold mb-1">Verified Hospitals</h4>
-            <p class="text-muted mb-0">{{ hospitals|length }} hospitals on the network</p>
+            <h4 class="fw-bold mb-1">{% t "Verified Hospitals" %}</h4>
+            <p class="text-muted mb-0">{{ hospitals|length }} {% t "Hospitals on the network" %}</p>
         </div>
     </div>
 
@@ -179,7 +180,7 @@
             <div class="hospital-card mb-3"
                  onclick="focusHospital('{{ hospital.hospital_name|escapejs }}')"
                  style="cursor:pointer"
-                 title="Show on map">
+                 title="{% t "Show on map" %}">
                 <div class="d-flex gap-3 align-items-start">
                     <div class="hospital-icon">
                         {% if hospital.logo %}
@@ -201,7 +202,7 @@
                         </p>
                         <div class="d-flex gap-2 flex-wrap">
                             {% if hospital.blood_bank_available %}
-                            <span class="badge bg-success-soft text-success">Blood Bank</span>
+                            <span class="badge bg-success-soft text-success">{% t "Blood Bank" %}</span>
                             {% endif %}
                             {% if hospital.has_24hr_service %}
                             <span class="badge bg-info-soft text-info">24x7</span>
@@ -210,7 +211,7 @@
                     </div>
                 </div>
                 <div class="mt-2 d-flex gap-2">
-                    <a href="{% url 'hospital_detail' hospital.pk %}" class="btn btn-xs btn-outline-blood" onclick="event.stopPropagation()">View Details</a>
+                    <a href="{% url 'hospital_detail' hospital.pk %}" class="btn btn-xs btn-outline-blood" onclick="event.stopPropagation()">{% t "View Details" %}</a>
                     <button class="btn btn-xs btn-ghost" onclick="event.stopPropagation();focusHospital('{{ hospital.hospital_name|escapejs }}')">
                         <i class="bi bi-geo-alt me-1"></i>Show on Map
                     </button>
@@ -220,16 +221,16 @@
             <!-- IMPROVED EMPTY STATE -->
             <div class="empty-state-container">
                 <div class="empty-state-icon">🏥</div>
-                <h5 class="empty-state-title">No Hospitals Yet</h5>
+                <h5 class="empty-state-title">{% t "No Hospitals Yet" %}</h5>
                 <p class="empty-state-subtitle">
-                    Be the first to register your hospital on BloodConnect. Help connect lifesaving blood donations with patients in need.
+                    {% t "Be the first to register your hospital on BloodConnect. Help connect lifesaving blood donations with patients in need." %}
                 </p>
                 <div class="empty-state-cta">
                     <a href="{% url 'register' %}" class="btn-primary">
-                        <i class="bi bi-plus-circle"></i> Register Hospital
+                        <i class="bi bi-plus-circle"></i> {% t "Register Hospital" %}
                     </a>
                     <a href="{% url 'home' %}" class="btn-secondary">
-                        <i class="bi bi-arrow-left"></i> Back Home
+                        <i class="bi bi-arrow-left"></i> {% t "Back Home" %}
                     </a>
                 </div>
             </div>
@@ -247,7 +248,7 @@
                         <input
                             type="text"
                             id="hospital-search-input"
-                            placeholder="Search hospital by name or city..."
+                            placeholder="{% t "Search hospital by name or city..." %}"
                             autocomplete="off"
                             oninput="onHospitalSearchInput(this.value)"
                             onkeydown="handleSearchKey(event)"
@@ -267,9 +268,9 @@
                 <div class="map-container rounded-4 overflow-hidden" style="position:relative">
                     <div id="hospital-map" style="height:590px;"></div>
                     <div class="map-legend">
-                        <div class="map-legend-item"><div class="legend-dot" style="background:#34c1c6"></div>Hospital</div>
-                        <div class="map-legend-item"><div class="legend-dot" style="background:#d62828"></div>Searched</div>
-                        <div class="map-legend-item"><div class="legend-dot" style="background:#22c55e"></div>You</div>
+                        <div class="map-legend-item"><div class="legend-dot" style="background:#34c1c6"></div>{% t "Hospital" %}</div>
+                            <div class="map-legend-item"><div class="legend-dot" style="background:#d62828"></div>{% t "Searched" %}</div>
+                            <div class="map-legend-item"><div class="legend-dot" style="background:#22c55e"></div>{% t "You" %}</div>
                     </div>
                 </div>
             </div>
@@ -351,7 +352,7 @@ function onHospitalSearchInput(val) {
         .slice(0, 7);
 
     if (!matches.length) {
-        ac.innerHTML = '<div style="padding:12px 16px;color:rgba(255,255,255,0.4);font-size:13px;text-align:center"><i class="bi bi-search me-2"></i>No hospitals found for "' + val + '"</div>';
+        ac.innerHTML = '<div style="padding:12px 16px;color:rgba(255,255,255,0.4);font-size:13px;text-align:center"><i class="bi bi-search me-2"></i>' + (tr('No results found for') + ' "' + val + '"') + '</div>';
         ac.classList.add('open');
         return;
     }
@@ -387,13 +388,13 @@ function searchHospitalOnMap() {
     });
     if (match) { focusHospital(val); return; }
 
-    showStatus('Searching for "' + val + '"...', 'found');
+    showStatus(tr('Searching for') + ' "' + val + '"...', 'found');
     fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(val + ' hospital') + '&format=json&limit=1', {
         headers: {'Accept-Language': 'en'}
     })
     .then(function(r) { return r.json(); })
     .then(function(results) {
-        if (!results.length) { showStatus('No results found for "' + val + '"', 'notfound'); return; }
+        if (!results.length) { showStatus(tr('No results found for') + ' "' + val + '"', 'notfound'); return; }
         var r = results[0];
         var lat = parseFloat(r.lat);
         var lng = parseFloat(r.lon);
@@ -401,12 +402,12 @@ function searchHospitalOnMap() {
         if (searchMarker) map.removeLayer(searchMarker);
         searchMarker = L.marker([lat, lng], {icon: searchedIcon})
             .addTo(map)
-            .bindPopup('<div class="map-popup"><strong>' + label + '</strong><br><small style="color:#f59e0b">⚠ Not registered on BloodConnect yet</small></div>')
+            .bindPopup('<div class="map-popup"><strong>' + label + '</strong><br><small style="color:#f59e0b">⚠ ' + tr('Not yet registered on BloodConnect') + '</small></div>')
             .openPopup();
         map.setView([lat, lng], 15);
-        showStatus('📍 Showing: ' + label, 'geocoded');
+        showStatus('📍 ' + tr('Showing location for') + ' "' + label + '"', 'geocoded');
     })
-    .catch(function() { showStatus('Search failed. Check your connection.', 'notfound'); });
+    .catch(function() { showStatus(tr('Search failed. Check connection.'), 'notfound'); });
 }
 
 function clearSearch() {

@@ -1,5 +1,6 @@
 {% extends "base/base.html" %}
 {% load static %}
+{% load localization_tags %}
 {% block title %}Home{% endblock %}
 
 {% block content %}
@@ -11,24 +12,24 @@
             <div class="col-lg-6">
                 <div class="hero-badge mb-3">
                     <i class="bi bi-droplet-fill me-2"></i>
-                    Emergency Blood Network
+                    {% t "Emergency Blood Network" %}
                 </div>
                 <h1 class="hero-title">
-                    Every Drop<br>
-                    <span class="text-blood">Saves a Life</span>
+                    {% t "Every Drop" %}<br>
+                    <span class="text-blood">{% t "Saves a Life" %}</span>
                 </h1>
                 <p class="hero-subtitle">
-                    BloodConnect bridges the gap between blood donors, seekers, and hospitals.
-                    Register today and be someone's lifesaver in their most critical moment.
+                    {% t "BloodConnect bridges the gap between blood donors, seekers, and hospitals." %}
+                    {% t "Register today and be someone's lifesaver in their most critical moment." %}
                 </p>
                 <div class="d-flex gap-3 flex-wrap mt-4">
-                    <a href="{% url 'register' %}" 
+                        <a href="{% url 'register' %}" 
                         class="btn btn-blood btn-lg px-4 d-flex align-items-center justify-content-center">
                         <i class="bi bi-heart-fill me-2"></i>
-                        Donate Blood
+                        {% t "Donate Blood" %}
                     </a>
                     <a href="{% url 'create_request' %}" class="btn btn-outline-light btn-lg px-4">
-                        <i class="bi bi-search me-2"></i>Need Blood?
+                        <i class="bi bi-search me-2"></i>{% t "Need Blood?" %}
                     </a>
                 </div>
             </div>
@@ -67,7 +68,7 @@
                     </div>
 
                         <h4 class="fw-semibold text-center mb-2" style="color: #fff; font-size: 1.25rem;">
-                        Quick Donor Search
+                        {% t "Quick Donor Search" %}
                     </h4>
 
                     <div class="d-flex align-items-center justify-content-center gap-2 mb-4">
@@ -78,7 +79,7 @@
 
                     <form action="{% url 'search_donors' %}" method="get" class="search-form-wrap">
                         <select name="blood_group" class="form-select search-form-select flex-grow-1 flex-sm-grow-0" style="min-width: 150px; max-width: 200px;">
-                            <option value="">Group</option>
+                            <option value="">{% t "Group" %}</option>
                             <option value="A">A</option>
                             <option value="B">B</option>
                             <option value="AB">AB</option>
@@ -86,15 +87,15 @@
                         </select>
 
                         <select name="rh_factor" class="form-select search-form-select flex-grow-1 flex-sm-grow-0" style="min-width: 150px; max-width: 200px;">
-                            <option value="">RH</option>
-                            <option value="+">Positive</option>
-                            <option value="-">Negative</option>
+                            <option value="">{% t "RH" %}</option>
+                            <option value="+">{% t "Positive" %}</option>
+                            <option value="-">{% t "Negative" %}</option>
                         </select>
 
-                        <input type="text" name="city" placeholder="Search by city..." class="form-control search-form-input flex-grow-1" style="min-width: 220px; max-width: 380px;">
+                        <input type="text" name="city" placeholder="{% t "Search by city..." %}" class="form-control search-form-input flex-grow-1" style="min-width: 220px; max-width: 380px;">
 
                         <button class="btn btn-blood search-form-btn d-flex align-items-center justify-content-center px-4 flex-grow-1 flex-sm-grow-0" type="submit" style="min-width: 180px; max-width: 240px;">
-                            <i class="bi bi-search me-2"></i> Search
+                            <i class="bi bi-search me-2"></i> {% t "Search" %}
                         </button>
                     </form>
                 </div>
@@ -116,28 +117,28 @@
                 <div class="stat-card">
                     <div class="stat-icon"><i class="bi bi-heart-fill"></i></div>
                     <div class="stat-number">{{ stats.donors }}+</div>
-                    <div class="stat-label">Registered Donors</div>
+                    <div class="stat-label">{% t "Registered Donors" %}</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-card">
                     <div class="stat-icon" style="background:rgba(52,193,198,0.15);color:var(--teal)"><i class="bi bi-hospital-fill"></i></div>
                     <div class="stat-number">{{ stats.hospitals }}+</div>
-                    <div class="stat-label">Partner Hospitals</div>
+                    <div class="stat-label">{% t "Partner Hospitals" %}</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-card">
                     <div class="stat-icon" style="background:rgba(255,165,0,0.15);color:#f59e0b"><i class="bi bi-lightning-fill"></i></div>
                     <div class="stat-number">{{ stats.requests_fulfilled }}+</div>
-                    <div class="stat-label">Requests Fulfilled</div>
+                    <div class="stat-label">{% t "Requests Fulfilled" %}</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-card">
                     <div class="stat-icon" style="background:rgba(34,197,94,0.15);color:#22c55e"><i class="bi bi-shield-fill-check"></i></div>
                     <div class="stat-number">{{ stats.lives_saved }}+</div>
-                    <div class="stat-label">Lives Saved</div>
+                    <div class="stat-label">{% t "Lives Saved" %}</div>
                 </div>
             </div>
         </div>
@@ -150,7 +151,7 @@
     <div class="container">
         <div class="d-flex align-items-center gap-3 mb-4">
             <div class="pulse-dot"></div>
-            <h2 class="section-title mb-0">Live Emergency Requests</h2>
+            <h2 class="section-title mb-0">{% t "Live Emergency Requests" %}</h2>
             <a href="{% url 'request_list' %}" class="btn btn-sm btn-outline-blood ms-auto">View All</a>
         </div>
         <div class="row g-3">
@@ -165,7 +166,7 @@
                     <p class="text-muted small mb-2"><i class="bi bi-hospital me-1"></i>{{ req.hospital_name }}</p>
                     <p class="text-muted small mb-3"><i class="bi bi-geo-alt me-1"></i>{{ req.city|default:"Location not specified" }}</p>
                     <div class="d-flex justify-content-between align-items-center">
-                        <span class="small text-muted"><i class="bi bi-droplet me-1"></i>{{ req.units_remaining }} units needed</span>
+                        <span class="small text-muted"><i class="bi bi-droplet me-1"></i>{{ req.units_remaining }} {% t "units needed" %}</span>
                         {% if user.is_authenticated and user.role == 'donor' %}
                         <a href="{% url 'respond_to_request' req.id %}" class="btn btn-blood btn-xs">Respond</a>
                         {% else %}
@@ -244,12 +245,6 @@
                     <div class="how-icon"><i class="bi bi-person-plus-fill"></i></div>
                     <h5 class="fw-bold mt-3">Register</h5>
                     <p class="text-muted small">Sign up as a Donor, Seeker or Hospital with your medical details.</p>
-
-                    <div class="how-cta-wrap mt-4">
-                        <a href="/users/register/" class="btn btn-blood how-cta-btn">
-                            <i class="bi bi-heart-fill me-2"></i>Register Now
-                        </a>
-                    </div>
                 </div>
             </div>
             <div class="col-md-4">
@@ -258,12 +253,6 @@
                     <div class="how-icon" style="background:rgba(52,193,198,0.1);color:var(--teal)"><i class="bi bi-search-heart"></i></div>
                     <h5 class="fw-bold mt-3">Connect</h5>
                     <p class="text-muted small">Search for compatible donors or post an emergency blood request instantly.</p>
-
-                    <div class="how-cta-wrap mt-4">
-                        <a href="/requests/list/" class="btn btn-outline-blood how-cta-btn">
-                            <i class="bi bi-search me-2"></i>View Requests
-                        </a>
-                    </div>
                 </div>
             </div>
             <div class="col-md-4">
@@ -272,12 +261,6 @@
                     <div class="how-icon" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="bi bi-shield-fill-check"></i></div>
                     <h5 class="fw-bold mt-3">Save Lives</h5>
                     <p class="text-muted small">Meet at the hospital, donate blood, and be someone's hero today.</p>
-
-                    <div class="how-cta-wrap mt-4">
-                        <a href="/hospitals/list/" class="btn btn-blood how-cta-btn">
-                            <i class="bi bi-hospital-fill me-2"></i>Find Hospitals
-                        </a>
-                    </div>
                 </div>
             </div>
         </div>
@@ -554,7 +537,7 @@
 {% endblock %}
 
 {% block extra_js %}
- <script>
+<script>
 // ============================================================
 //  HOME PAGE MAP — with hospital search
 // ============================================================
@@ -580,7 +563,24 @@ const youIcon = L.divIcon({
     className: '', iconSize:[14,14], iconAnchor:[7,7]
 });
 
-
+// Build hospitals data from Django context
+const hospitalData = [
+    {% for h in hospitals %}
+    {% if h.latitude and h.longitude %}
+    {
+        name: "{{ h.hospital_name|escapejs }}",
+        lat: {{ h.latitude }},
+        lng: {{ h.longitude }},
+        address: "{{ h.address|escapejs }}",
+        contact: "{{ h.contact_number|escapejs }}",
+        city: "{{ h.city|escapejs }}",
+        state: "{{ h.state|escapejs }}",
+        blood_bank: {{ h.blood_bank_available|yesno:"true,false" }},
+        verified: {{ h.verified|yesno:"true,false" }}
+    },
+    {% endif %}
+    {% endfor %}
+];
 
 // Place all markers and keep references
 const markerMap = {};  // name (lowercase) -> {marker, data}
@@ -639,7 +639,7 @@ function onHospitalSearchInput(val) {
     }
 
     ac.innerHTML = matches.map(({data}, i) => `
-        <div class="autocomplete-item" data-name="${data.name}" onmousedown="selectHospital('${data.name.replace(/'/g, "\\'")}')">
+        <div class="autocomplete-item" data-name="${data.name}" onmousedown="selectHospital('${data.name.replace(/'/g,"\'")}')">
             <div class="autocomplete-icon"><i class="bi bi-hospital-fill"></i></div>
             <div>
                 <div class="autocomplete-name">${highlightMatch(data.name, val)}</div>
@@ -677,13 +677,13 @@ function searchHospitalOnMap() {
     }
 
     // No local match → geocode via Nominatim
-    showStatus('Searching for "' + val + '"...', 'found');
+    showStatus(tr('Searching for') + ' "' + val + '"...', 'found');
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val + ' hospital india')}&format=json&limit=1&addressdetails=1`;
     fetch(url, { headers: { 'Accept-Language': 'en' } })
         .then(r => r.json())
         .then(results => {
             if (!results.length) {
-                showStatus('⚠ No hospital found for "' + val + '". Try a different name or city.', 'notfound');
+                showStatus('⚠ ' + tr('No hospital found for') + ' "' + val + '". ' + tr('Try a different name or city.'), 'notfound');
                 return;
             }
             const r = results[0];
@@ -696,16 +696,16 @@ function searchHospitalOnMap() {
                 .addTo(map)
                 .bindPopup(`<div class="map-popup">
                     <strong>${displayName}</strong><br>
-                    <small style="color:#8b8fa8">Found via search</small><br>
-                    <small style="color:#f59e0b"><i class="bi bi-exclamation-circle"></i> Not yet registered on BloodConnect</small>
+                    <small style="color:#8b8fa8">${tr('Found via search')}</small><br>
+                    <small style="color:#f59e0b"><i class="bi bi-exclamation-circle"></i> ${tr('Not yet registered on BloodConnect')}</small>
                 </div>`)
                 .openPopup();
 
             map.setView([lat, lng], 15);
-            showStatus('📍 Showing location for "' + displayName + '"', 'geocoded');
+            showStatus('📍 ' + tr('Showing location for') + ' "' + displayName + '"', 'geocoded');
             showInfoCard(displayName, r.address?.city || r.address?.state || '', r.address?.postcode || '', false);
         })
-        .catch(() => showStatus('Could not connect to search service. Check your internet.', 'notfound'));
+        .catch(() => showStatus(tr('Could not connect to search service. Check your internet.'), 'notfound'));
 }
 
 function selectHospital(name) {
