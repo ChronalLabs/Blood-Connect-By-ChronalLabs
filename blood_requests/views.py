@@ -1,10 +1,11 @@
 from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
+from django.http import JsonResponse, StreamingHttpResponse
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 from .models import BloodRequest, DonorResponse
 import json
+import time
 
 
 def request_list(request):
@@ -77,6 +78,17 @@ def requests_json(request):
     return JsonResponse(list(requests_qs), safe=False)
 
 
+def _serialize_chat_message(msg, user):
+    return {
+        "id": msg.id,
+        "sender_username": msg.sender.username,
+        "sender_name": msg.sender.get_full_name() or msg.sender.username,
+        "is_me": msg.sender == user,
+        "message": msg.message,
+        "created_at": timezone.localtime(msg.created_at).strftime("%I:%M %p"),
+    }
+
+
 @login_required
 def chat_room(request, response_id):
     donor_response = get_object_or_404(DonorResponse, id=response_id)
@@ -109,7 +121,7 @@ def chat_messages(request, response_id):
 
     if request.method == "GET":
         last_id = request.GET.get("last_id")
-        messages_qs = donor_response.chat_messages.all()
+        messages_qs = donor_response.chat_messages.select_related("sender").all()
         if last_id:
             try:
                 messages_qs = messages_qs.filter(id__gt=int(last_id))
@@ -119,16 +131,7 @@ def chat_messages(request, response_id):
         # Mark other sender's messages as read upon being fetched
         donor_response.chat_messages.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
 
-        data = []
-        for msg in messages_qs:
-            data.append({
-                "id": msg.id,
-                "sender_username": msg.sender.username,
-                "sender_name": msg.sender.get_full_name() or msg.sender.username,
-                "is_me": msg.sender == request.user,
-                "message": msg.message,
-                "created_at": timezone.localtime(msg.created_at).strftime("%I:%M %p"),
-            })
+        data = [_serialize_chat_message(msg, request.user) for msg in messages_qs]
         return JsonResponse({"messages": data}, safe=False)
 
     elif request.method == "POST":
@@ -152,16 +155,52 @@ def chat_messages(request, response_id):
             message=message_text
         )
 
-        return JsonResponse({
-            "id": msg.id,
-            "sender_username": msg.sender.username,
-            "sender_name": msg.sender.get_full_name() or msg.sender.username,
-            "is_me": True,
-            "message": msg.message,
-            "created_at": timezone.localtime(msg.created_at).strftime("%I:%M %p"),
-        })
+        return JsonResponse(_serialize_chat_message(msg, request.user))
 
     return JsonResponse({"error": "Method not allowed."}, status=405)
+
+
+@login_required
+def chat_stream(request, response_id):
+    donor_response = get_object_or_404(DonorResponse, id=response_id)
+    seeker = donor_response.blood_request.requester
+    donor = donor_response.donor
+
+    if request.user != seeker and request.user != donor:
+        raise PermissionDenied("You do not have access to this chat room.")
+
+    last_id = request.headers.get("Last-Event-ID") or request.GET.get("last_id")
+    try:
+        last_id = int(last_id) if last_id is not None else 0
+    except ValueError:
+        last_id = 0
+
+    donor_response.chat_messages.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
+
+    def event_stream():
+        nonlocal last_id
+        idle_cycles = 0
+        while True:
+            new_messages = list(
+                donor_response.chat_messages.filter(id__gt=last_id).select_related("sender").order_by("id")
+            )
+            if new_messages:
+                idle_cycles = 0
+                for msg in new_messages:
+                    last_id = msg.id
+                    payload = json.dumps(_serialize_chat_message(msg, request.user))
+                    yield f"id: {msg.id}\nevent: message\ndata: {payload}\n\n"
+            else:
+                idle_cycles += 1
+                yield ": keep-alive\n\n"
+            if idle_cycles >= 30:
+                idle_cycles = 0
+            time.sleep(1)
+
+    response = StreamingHttpResponse(event_stream(), content_type="text/event-stream")
+    response["Cache-Control"] = "no-cache"
+    response["X-Accel-Buffering"] = "no"
+    return response
 
 
 @login_required
@@ -184,4 +223,3 @@ def chat_list(request):
         })
         
     return render(request, "requests/chat_list.html", {"chat_rooms": chat_rooms})
-
