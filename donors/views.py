@@ -150,6 +150,7 @@ def respond_to_request(request, request_id):
     return redirect("donor_dashboard")
 
 
+@login_required
 def search_donors(request):
     """Public donor search"""
     blood_group = request.GET.get("blood_group", "")
