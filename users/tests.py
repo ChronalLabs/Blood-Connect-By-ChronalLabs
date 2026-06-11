@@ -1,7 +1,83 @@
+from django.core.cache import cache
 from django.test import TestCase
+from django.urls import reverse
 from django.utils.crypto import get_random_string
+from django.contrib.auth import get_user_model
 from users.forms import UserRegistrationForm
 from hospitals.models import HospitalProfile
+from users.views import LOGIN_THROTTLE_MESSAGE
+
+User = get_user_model()
+
+
+class LoginThrottleTests(TestCase):
+    def setUp(self):
+        cache.clear()
+        self.user = User.objects.create_user(
+            username="donor_login",
+            password="CorrectPass123!",
+            role="donor",
+            first_name="Donor",
+            last_name="User",
+        )
+        self.hospital_user = User.objects.create_user(
+            username="hospital_login",
+            password="HospitalPass123!",
+            role="hospital",
+            first_name="City",
+            last_name="Hospital",
+        )
+
+    def tearDown(self):
+        cache.clear()
+
+    def test_user_login_success_clears_failed_attempts(self):
+        login_url = reverse("login")
+
+        for _ in range(4):
+            response = self.client.post(
+                login_url,
+                {"username": self.user.username, "password": "WrongPass123!"},
+            )
+            self.assertEqual(response.status_code, 200)
+            self.assertContains(response, "Invalid username or password.")
+
+        response = self.client.post(
+            login_url,
+            {"username": self.user.username, "password": "CorrectPass123!"},
+            follow=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertGreaterEqual(len(response.redirect_chain), 2)
+        self.assertEqual(response.redirect_chain[0][0], reverse("dashboard"))
+        self.assertEqual(response.redirect_chain[-1][0], reverse("donor_setup"))
+
+        self.client.logout()
+        follow_up = self.client.post(
+            login_url,
+            {"username": self.user.username, "password": "WrongPass123!"},
+        )
+        self.assertEqual(follow_up.status_code, 200)
+        self.assertContains(follow_up, "Invalid username or password.")
+        self.assertNotContains(follow_up, LOGIN_THROTTLE_MESSAGE)
+
+    def test_hospital_login_locks_after_failed_attempts(self):
+        login_url = reverse("hospital_login")
+
+        for _ in range(4):
+            response = self.client.post(
+                login_url,
+                {"username": self.hospital_user.username, "password": "WrongPass123!"},
+            )
+            self.assertEqual(response.status_code, 200)
+            self.assertContains(response, "Invalid hospital credentials.")
+
+        locked = self.client.post(
+            login_url,
+            {"username": self.hospital_user.username, "password": "WrongPass123!"},
+        )
+        self.assertEqual(locked.status_code, 200)
+        self.assertContains(locked, LOGIN_THROTTLE_MESSAGE)
 
 class HospitalRegistrationTests(TestCase):
     def test_donor_registration_validation(self):
@@ -187,4 +263,3 @@ class CoordinateValidationTests(TestCase):
         req.longitude = Decimal('-180.100000')
         with self.assertRaises(ValidationError):
             req.full_clean()
-

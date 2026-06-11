@@ -7,6 +7,17 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import CustomUser, EmergencyContact
 from .forms import UserRegistrationForm, CustomLoginForm, UserProfileForm, EmergencyContactForm
+from .login_throttle import (
+    get_client_ip,
+    is_login_locked,
+    register_login_failure,
+    reset_login_throttle,
+)
+
+
+LOGIN_THROTTLE_MESSAGE = (
+    "Too many failed login attempts. Please try again in 15 minutes."
+)
 
 
 def register(request):
@@ -61,11 +72,20 @@ def user_login(request):
     """Login view"""
     if request.user.is_authenticated:
         return redirect("dashboard")
-    
+
     if request.method == "POST":
+        username = request.POST.get("username", "")
+        client_ip = get_client_ip(request)
+
+        if is_login_locked("user", username, client_ip):
+            messages.error(request, LOGIN_THROTTLE_MESSAGE)
+            form = CustomLoginForm(data=request.POST)
+            return render(request, "users/login.html", {"form": form})
+
         form = CustomLoginForm(data=request.POST)
         if form.is_valid():
             user = form.get_user()
+            reset_login_throttle("user", username, client_ip)
             login(request, user)
             if user.role == "hospital":
                 messages.info(request, f"Welcome {user.first_name or user.username}! For hospital-specific features, consider using the Hospital Login.")
@@ -74,10 +94,13 @@ def user_login(request):
             next_url = request.GET.get("next", "dashboard")
             return redirect(next_url)
         else:
-            messages.error(request, "Invalid username or password.")
+            if register_login_failure("user", username, client_ip):
+                messages.error(request, LOGIN_THROTTLE_MESSAGE)
+            else:
+                messages.error(request, "Invalid username or password.")
     else:
         form = CustomLoginForm()
-    
+
     return render(request, "users/login.html", {"form": form})
 
 
@@ -91,19 +114,34 @@ def hospital_login(request):
             return redirect("dashboard")
 
     if request.method == "POST":
+        username = request.POST.get("username", "")
+        client_ip = get_client_ip(request)
+
+        if is_login_locked("hospital", username, client_ip):
+            messages.error(request, LOGIN_THROTTLE_MESSAGE)
+            form = CustomLoginForm(data=request.POST)
+            return render(request, "users/hospital_login.html", {"form": form})
+
         form = CustomLoginForm(data=request.POST)
         if form.is_valid():
             user = form.get_user()
             if user.role != "hospital":
-                messages.error(request, "This login is for hospital accounts only. Please use the regular login.")
+                if register_login_failure("hospital", username, client_ip):
+                    messages.error(request, LOGIN_THROTTLE_MESSAGE)
+                else:
+                    messages.error(request, "This login is for hospital accounts only. Please use the regular login.")
                 return redirect("login")
             else:
+                reset_login_throttle("hospital", username, client_ip)
                 login(request, user)
                 messages.success(request, f"Welcome to BloodConnect, {user.hospital_profile.hospital_name}!")
                 next_url = request.GET.get("next", "hospital_dashboard")
                 return redirect(next_url)
         else:
-            messages.error(request, "Invalid hospital credentials.")
+            if register_login_failure("hospital", username, client_ip):
+                messages.error(request, LOGIN_THROTTLE_MESSAGE)
+            else:
+                messages.error(request, "Invalid hospital credentials.")
     else:
         form = CustomLoginForm()
 
