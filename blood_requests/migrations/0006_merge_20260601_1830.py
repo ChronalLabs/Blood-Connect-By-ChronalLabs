@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blood_requests', '0004_alter_bloodrequest_latitude_and_more'),
+        ('blood_requests', '0006_alter_bloodrequest_latitude_and_more'),
         ('blood_requests', '0004_bloodrequest_linked_hospital'),
         ('blood_requests', '0005_chatmessage_is_read'),
     ]
