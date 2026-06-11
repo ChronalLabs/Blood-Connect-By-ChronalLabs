@@ -300,6 +300,15 @@ var markerMap = {};
 var searchMarker = null;
 var acFocusIdx = -1;
 
+function escapeHtml(text) {
+    return String(text ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+}
+
 hospitalData.forEach(function(h) {
     if (h.lat && h.lng) {
         var marker = L.marker([h.lat, h.lng], { icon: hospitalIcon })
@@ -310,7 +319,7 @@ hospitalData.forEach(function(h) {
 });
 
 function buildPopup(h) {
-    return '<div class="map-popup" style="min-width:180px"><strong>' + h.name + '</strong><br><small style="color:#8b8fa8"><i class="bi bi-geo-alt"></i> ' + h.address + '</small><br><small style="color:#8b8fa8"><i class="bi bi-telephone"></i> ' + h.contact + '</small>' + (h.blood_bank ? '<br><span style="background:rgba(34,197,94,0.15);color:#22c55e;padding:2px 8px;border-radius:8px;font-size:11px;display:inline-block;margin-top:4px">Blood Bank ✓</span>' : '') + '</div>';
+    return '<div class="map-popup" style="min-width:180px"><strong>' + escapeHtml(h.name) + '</strong><br><small style="color:#8b8fa8"><i class="bi bi-geo-alt"></i> ' + escapeHtml(h.address) + '</small><br><small style="color:#8b8fa8"><i class="bi bi-telephone"></i> ' + escapeHtml(h.contact) + '</small>' + (h.blood_bank ? '<br><span style="background:rgba(34,197,94,0.15);color:#22c55e;padding:2px 8px;border-radius:8px;font-size:11px;display:inline-block;margin-top:4px">Blood Bank ✓</span>' : '') + '</div>';
 }
 
 if (navigator.geolocation) {
@@ -351,14 +360,14 @@ function onHospitalSearchInput(val) {
         .slice(0, 7);
 
     if (!matches.length) {
-        ac.innerHTML = '<div style="padding:12px 16px;color:rgba(255,255,255,0.4);font-size:13px;text-align:center"><i class="bi bi-search me-2"></i>No hospitals found for "' + val + '"</div>';
+        ac.innerHTML = '<div style="padding:12px 16px;color:rgba(255,255,255,0.4);font-size:13px;text-align:center"><i class="bi bi-search me-2"></i>No hospitals found for "' + escapeHtml(val) + '"</div>';
         ac.classList.add('open');
         return;
     }
 
     ac.innerHTML = matches.map(function(item) {
         var data = item.data;
-        return '<div class="autocomplete-item" data-name="' + data.name + '" onmousedown="selectHospital(\'' + data.name.replace(/'/g, "\\'") + '\')"><div class="ac-icon"><i class="bi bi-hospital-fill"></i></div><div><div class="ac-name">' + highlight(data.name, val) + '</div><div class="ac-sub">' + data.address + '</div></div>' + (data.verified ? '<div class="ac-badge"><i class="bi bi-patch-check-fill"></i> Verified</div>' : '') + '</div>';
+        return '<div class="autocomplete-item" data-name="' + encodeURIComponent(data.name) + '" onmousedown="selectHospitalByEncodedName(this.dataset.name)"><div class="ac-icon"><i class="bi bi-hospital-fill"></i></div><div><div class="ac-name">' + highlight(data.name, val) + '</div><div class="ac-sub">' + escapeHtml(data.address) + '</div></div>' + (data.verified ? '<div class="ac-badge"><i class="bi bi-patch-check-fill"></i> Verified</div>' : '') + '</div>';
     }).join('');
     ac.classList.add('open');
     acFocusIdx = -1;
@@ -366,14 +375,18 @@ function onHospitalSearchInput(val) {
 
 function highlight(text, q) {
     var i = text.toLowerCase().indexOf(q.toLowerCase());
-    if (i === -1) return text;
-    return text.slice(0, i) + '<span style="color:#d62828;font-weight:800">' + text.slice(i, i + q.length) + '</span>' + text.slice(i + q.length);
+    if (i === -1) return escapeHtml(text);
+    return escapeHtml(text.slice(0, i)) + '<span style="color:#d62828;font-weight:800">' + escapeHtml(text.slice(i, i + q.length)) + '</span>' + escapeHtml(text.slice(i + q.length));
 }
 
 function selectHospital(name) {
     document.getElementById('hospital-search-input').value = name;
     document.getElementById('map-autocomplete').classList.remove('open');
     focusHospital(name);
+}
+
+function selectHospitalByEncodedName(encodedName) {
+    selectHospital(decodeURIComponent(encodedName));
 }
 
 function searchHospitalOnMap() {
@@ -401,7 +414,7 @@ function searchHospitalOnMap() {
         if (searchMarker) map.removeLayer(searchMarker);
         searchMarker = L.marker([lat, lng], {icon: searchedIcon})
             .addTo(map)
-            .bindPopup('<div class="map-popup"><strong>' + label + '</strong><br><small style="color:#f59e0b">⚠ Not registered on BloodConnect yet</small></div>')
+            .bindPopup('<div class="map-popup"><strong>' + escapeHtml(label) + '</strong><br><small style="color:#f59e0b">⚠ Not registered on BloodConnect yet</small></div>')
             .openPopup();
         map.setView([lat, lng], 15);
         showStatus('📍 Showing: ' + label, 'geocoded');

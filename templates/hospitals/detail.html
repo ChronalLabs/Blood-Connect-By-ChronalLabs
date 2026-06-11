@@ -204,6 +204,15 @@
 {% block extra_js %}
 {% if hospital.latitude and hospital.longitude %}
 <script>
+function escapeHtml(text) {
+    return String(text ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+}
+
 const hospitalLat = {{ hospital.latitude }};
 const hospitalLng = {{ hospital.longitude }};
 const hospitalName = "{{ hospital.hospital_name|escapejs }}";
@@ -223,7 +232,7 @@ const searchedIcon = L.divIcon({
 // Main hospital marker
 L.marker([hospitalLat, hospitalLng], { icon: hospitalIcon })
   .addTo(map)
-  .bindPopup(`<div class="map-popup"><strong>${hospitalName}</strong><br><small>{{ hospital.city }}</small></div>`)
+  .bindPopup(`<div class="map-popup"><strong>${escapeHtml(hospitalName)}</strong><br><small>{{ hospital.city|escapejs }}</small></div>`)
   .openPopup();
 
 let searchMarker = null;
@@ -242,16 +251,16 @@ function onSearchInput(val) {
         .then(r=>r.json())
         .then(results => {
             if (!results.length) {
-                ac.innerHTML = `<div style="padding:12px;color:rgba(255,255,255,0.4);font-size:12px;text-align:center">No results for "${val}"</div>`;
+                ac.innerHTML = `<div style="padding:12px;color:rgba(255,255,255,0.4);font-size:12px;text-align:center">No results for "${escapeHtml(val)}"</div>`;
                 ac.classList.add('open'); return;
             }
             ac.innerHTML = results.map(r => {
                 const label = r.display_name.split(',').slice(0,3).join(', ');
-                return `<div class="ac-item" data-lat="${r.lat}" data-lng="${r.lon}" data-label="${label.replace(/"/g,"&quot;")}"
-                             onmousedown="selectResult(${r.lat},${r.lon},'${label.replace(/'/g,"\'")}')">
+                return `<div class="ac-item" data-lat="${r.lat}" data-lng="${r.lon}" data-label="${encodeURIComponent(label)}"
+                             onmousedown="selectResult(${r.lat},${r.lon}, decodeURIComponent(this.dataset.label))">
                     <div class="ac-icon"><i class="bi bi-hospital-fill"></i></div>
                     <div>
-                        <div style="font-weight:600;font-size:12.5px">${label}</div>
+                        <div style="font-weight:600;font-size:12.5px">${escapeHtml(label)}</div>
                     </div>
                 </div>`;
             }).join('');
@@ -288,7 +297,7 @@ function placeSearchMarker(lat, lng, label) {
     if (searchMarker) map.removeLayer(searchMarker);
     searchMarker = L.marker([lat, lng], {icon: searchedIcon})
         .addTo(map)
-        .bindPopup(`<div class="map-popup"><strong>${label}</strong><br><small style="color:#f59e0b">Search result</small></div>`)
+        .bindPopup(`<div class="map-popup"><strong>${escapeHtml(label)}</strong><br><small style="color:#f59e0b">Search result</small></div>`)
         .openPopup();
     map.setView([lat, lng], 14);
     showStatus('📍 ' + label, 'geocoded');
@@ -325,6 +334,16 @@ document.addEventListener('click', e => {
 const map = L.map('detail-map').setView([20.5937, 78.9629], 5);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 let searchMarker = null;
+
+function escapeHtml(text) {
+    return String(text ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+}
+
 function onSearchInput(val) {
     clearTimeout(window._t);
     if (!val.trim()) return;
@@ -334,9 +353,9 @@ function onSearchInput(val) {
         .then(r=>r.json()).then(res=>{
             ac.innerHTML = res.map(r=>{
                 const l = r.display_name.split(',').slice(0,3).join(', ');
-                return `<div class="ac-item" onmousedown="selectResult(${r.lat},${r.lon},'${l.replace(/'/g,"\'")}')">
+                return `<div class="ac-item" data-label="${encodeURIComponent(l)}" onmousedown="selectResult(${r.lat},${r.lon}, decodeURIComponent(this.dataset.label))">
                     <div class="ac-icon"><i class="bi bi-hospital-fill"></i></div>
-                    <div style="font-size:12.5px;font-weight:600">${l}</div>
+                    <div style="font-size:12.5px;font-weight:600">${escapeHtml(l)}</div>
                 </div>`;
             }).join('') || `<div style="padding:12px;color:rgba(255,255,255,0.4);font-size:12px;text-align:center">No results</div>`;
             ac.classList.add('open');
@@ -348,7 +367,7 @@ function selectResult(lat,lng,label){
     document.getElementById('detail-autocomplete').classList.remove('open');
     if(searchMarker) map.removeLayer(searchMarker);
     const icon=L.divIcon({html:`<div class="map-marker" style="background:#d62828"><i class="bi bi-hospital-fill"></i></div>`,className:'',iconSize:[36,36],iconAnchor:[18,36]});
-    searchMarker=L.marker([lat,lng],{icon}).addTo(map).bindPopup(label).openPopup();
+    searchMarker=L.marker([lat,lng],{icon}).addTo(map).bindPopup(escapeHtml(label)).openPopup();
     map.setView([lat,lng],14);
 }
 function doSearch(){const v=document.getElementById('detail-search-input').value.trim();if(v)onSearchInput(v);}
