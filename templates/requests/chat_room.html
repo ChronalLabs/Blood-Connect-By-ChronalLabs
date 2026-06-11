@@ -396,6 +396,9 @@
             `;
         }
 
+        const streamUrl = `/requests/chat/${responseId}/stream/`;
+        let messageStream = null;
+
         // Fetch messages from Server
         function fetchMessages() {
             const url = `/requests/chat/${responseId}/messages/?last_id=${lastMessageId}`;
@@ -444,6 +447,52 @@
                     }
                 })
                 .catch(err => console.error("Error fetching messages:", err));
+        }
+
+        function connectMessageStream() {
+            if (messageStream) {
+                messageStream.close();
+            }
+
+            const url = `${streamUrl}?last_id=${lastMessageId}`;
+            messageStream = new EventSource(url);
+
+            messageStream.addEventListener("message", function(event) {
+                try {
+                    const msg = JSON.parse(event.data);
+
+                    if (knownMessageIds.has(msg.id)) {
+                        return;
+                    }
+
+                    knownMessageIds.add(msg.id);
+                    emptyState.style.display = "none";
+                    chatBody.insertAdjacentHTML('beforeend', createMessageBubble(msg));
+                    if (msg.id > lastMessageId) {
+                        lastMessageId = msg.id;
+                    }
+
+                    const isScrolledUp = chatBody.scrollHeight - chatBody.scrollTop - chatBody.clientHeight >= 150;
+                    if (!msg.is_me) {
+                        playChime();
+                        startTitleFlash();
+                        if (isScrolledUp && !isFirstLoad) {
+                            scrollToast.classList.add("show");
+                        }
+                    }
+
+                    if (isFirstLoad || !isScrolledUp) {
+                        scrollToBottom();
+                    }
+                    isFirstLoad = false;
+                } catch (err) {
+                    console.error("Error parsing streamed message:", err);
+                }
+            });
+
+            messageStream.onerror = function(err) {
+                console.warn("Message stream disconnected, relying on EventSource reconnect.", err);
+            };
         }
 
         // Scroll chat to the absolute bottom
@@ -505,13 +554,14 @@
             }
         });
 
-        // Initial Load and Polling interval
+        // Initial load and live stream connection
         fetchMessages();
-        const pollInterval = setInterval(fetchMessages, 3000);
+        connectMessageStream();
 
-        // Clear interval on window unload to optimize browser memory
         window.addEventListener("beforeunload", () => {
-            clearInterval(pollInterval);
+            if (messageStream) {
+                messageStream.close();
+            }
         });
     });
 </script>

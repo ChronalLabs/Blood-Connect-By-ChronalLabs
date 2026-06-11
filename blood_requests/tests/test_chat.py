@@ -101,6 +101,10 @@ class SecureChatTests(TestCase):
         response = self.client.post(reverse('chat_messages', args=[self.response.id]), {'message': 'Hack!'})
         self.assertEqual(response.status_code, 403)
 
+        # External user trying to open the live stream
+        response = self.client.get(reverse('chat_stream', args=[self.response.id]))
+        self.assertEqual(response.status_code, 403)
+
     def test_messages_api_get_and_post(self):
         """Verify get and post endpoints for message coordination."""
         self.client.force_login(self.donor)
@@ -144,6 +148,24 @@ class SecureChatTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()['messages']), 1)
         self.assertEqual(response.json()['messages'][0]['message'], 'Thank you so much!')
+
+    def test_chat_stream_emits_sse_messages(self):
+        """Verify the live stream endpoint emits SSE-formatted chat payloads."""
+        ChatMessage.objects.create(
+            donor_response=self.response,
+            sender=self.seeker,
+            message='Live stream test'
+        )
+
+        self.client.force_login(self.donor)
+        response = self.client.get(reverse('chat_stream', args=[self.response.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/event-stream")
+
+        first_chunk = next(iter(response.streaming_content))
+        self.assertIn(b"event: message", first_chunk)
+        self.assertIn(b"Live stream test", first_chunk)
+        response.close()
 
     def test_unread_message_counting_and_marking_read(self):
         """Verify unread counts are calculated correctly and marked as read upon viewing."""
@@ -192,4 +214,3 @@ class SecureChatTests(TestCase):
         self.assertEqual(len(response.context['chat_rooms']), 1)
         self.assertEqual(response.context['chat_rooms'][0]['unread_count'], 1)
         self.assertEqual(response.context['chat_rooms'][0]['last_message'].message, 'Global message test')
-
