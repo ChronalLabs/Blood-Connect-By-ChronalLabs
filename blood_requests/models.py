@@ -6,6 +6,8 @@ from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
 
+CHAT_MESSAGE_MAX_LENGTH = 2000
+
 
 class BloodRequest(models.Model):
     BLOOD_GROUP_CHOICES = [
@@ -176,7 +178,7 @@ class ChatMessage(models.Model):
         on_delete=models.CASCADE,
         related_name='sent_chat_messages'
     )
-    message = models.TextField()
+    message = models.CharField(max_length=CHAT_MESSAGE_MAX_LENGTH)
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -185,4 +187,3 @@ class ChatMessage(models.Model):
 
     def __str__(self):
         return f"{self.sender.username}: {self.message[:30]} ({self.created_at.strftime('%M:%S')})"
-
