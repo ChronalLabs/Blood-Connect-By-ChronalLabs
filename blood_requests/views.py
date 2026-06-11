@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.core.paginator import Paginator
 from django.utils import timezone
 from .models import BloodRequest, DonorResponse
 import json
@@ -20,17 +21,27 @@ def request_list(request):
         requests_qs = requests_qs.filter(rh_factor=rh_factor)
     if urgency:
         requests_qs = requests_qs.filter(urgency_level=urgency)
+
+    requests_page = Paginator(
+        requests_qs.select_related("requester"),
+        20,
+    ).get_page(request.GET.get("page"))
     
     return render(request, "requests/list.html", {
-        "requests_list": requests_qs,
+        "requests_list": requests_page,
         "blood_group": blood_group,
         "rh_factor": rh_factor,
+        "urgency": urgency,
     })
 
 
 def request_detail(request, pk):
     blood_request = get_object_or_404(BloodRequest, pk=pk)
-    responses = list(blood_request.donor_responses.all().select_related("donor"))
+    responses_page = Paginator(
+        blood_request.donor_responses.all().select_related("donor").order_by("-created_at"),
+        10,
+    ).get_page(request.GET.get("responses_page"))
+    responses = list(responses_page.object_list)
     for resp in responses:
         resp.unread_count = resp.chat_messages.filter(is_read=False).exclude(sender=request.user).count() if request.user.is_authenticated else 0
     ranked_donors = blood_request.get_ranked_donors(radius_km=50)
@@ -61,7 +72,7 @@ def request_detail(request, pk):
 
     return render(request, "requests/detail.html", {
         "blood_request": blood_request,
-        "responses": responses,
+        "responses_page": responses_page,
         "ranked_donors": ranked_donors,
         "can_hospital_fulfill": can_hospital_fulfill,
         "hospital_stock_for_type": hospital_stock_for_type,
@@ -184,4 +195,3 @@ def chat_list(request):
         })
         
     return render(request, "requests/chat_list.html", {"chat_rooms": chat_rooms})
-
