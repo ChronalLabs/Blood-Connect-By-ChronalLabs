@@ -167,5 +167,36 @@
     <script src="/static/js/main.js"></script>
 
     {% block extra_js %}{% endblock %}
+
+    <!-- Scroll to Top Button -->
+    <button
+        id="scrollTopBtn"
+        type="button"
+        aria-label="Back to top"
+        onclick="window.scrollTo({top:0,behavior:'smooth'})"
+        style="opacity:0;visibility:hidden;position:fixed;bottom:1.5rem;right:1.5rem;z-index:999;
+        background:#e53e3e;color:white;border:none;border-radius:999px;
+        width:44px;height:44px;font-size:1.2rem;cursor:pointer;
+        box-shadow:0 4px 15px rgba(229,62,62,0.4);transition:all 0.25s ease;"
+    >
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const btn = document.getElementById("scrollTopBtn");
+            if (!btn) return;
+
+            const toggleScrollBtn = () => {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const shouldShow = scrollTop > 150;
+                btn.style.opacity = shouldShow ? "1" : "0";
+                btn.style.visibility = shouldShow ? "visible" : "hidden";
+            };
+
+            toggleScrollBtn();
+            window.addEventListener("scroll", toggleScrollBtn, { passive: true });
+        });
+    </script>
 </body>
 </html>
