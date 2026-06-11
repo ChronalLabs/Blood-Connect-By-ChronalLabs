@@ -400,6 +400,7 @@
 .map-search-icon { color: #34c1c6; font-size: 18px; flex-shrink: 0; }
 .map-search-inner input {
     flex: 1;
+    min-width: 0;
     background: none;
     border: none;
     outline: none;
@@ -435,6 +436,37 @@
     flex-shrink: 0;
 }
 .map-clear-btn:hover { background: rgba(214,40,40,0.15); color: #ff6b6b; border-color: rgba(214,40,40,0.3); }
+
+@media (max-width: 576px) {
+    .map-search-inner {
+        flex-wrap: wrap;
+        padding: 12px;
+        gap: 8px;
+    }
+
+    .map-search-icon {
+        order: 0;
+    }
+
+    .map-search-inner input {
+        flex: 1 1 100%;
+        width: 100%;
+        order: 1;
+    }
+
+    .map-search-btn {
+        flex: 1 1 calc(100% - 42px);
+        order: 2;
+        padding: 9px 14px;
+        font-size: 12.5px;
+        justify-content: center;
+    }
+
+    .map-clear-btn {
+        flex: 0 0 34px;
+        order: 3;
+    }
+}
 
 /* Autocomplete dropdown */
 .map-autocomplete {
