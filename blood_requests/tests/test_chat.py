@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth import get_user_model
-from blood_requests.models import BloodRequest, DonorResponse, ChatMessage
+from blood_requests.models import BloodRequest, DonorResponse, ChatMessage, CHAT_MESSAGE_MAX_LENGTH
 from donors.models import DonorProfile
 
 User = get_user_model()
@@ -145,6 +145,20 @@ class SecureChatTests(TestCase):
         self.assertEqual(len(response.json()['messages']), 1)
         self.assertEqual(response.json()['messages'][0]['message'], 'Thank you so much!')
 
+    def test_chat_message_length_is_capped(self):
+        """Very long chat messages should be rejected before they hit storage."""
+        self.client.force_login(self.donor)
+
+        long_message = "x" * (CHAT_MESSAGE_MAX_LENGTH + 1)
+        response = self.client.post(
+            reverse('chat_messages', args=[self.response.id]),
+            {'message': long_message},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('cannot exceed', response.json()['error'])
+        self.assertEqual(self.response.chat_messages.count(), 0)
+
     def test_unread_message_counting_and_marking_read(self):
         """Verify unread counts are calculated correctly and marked as read upon viewing."""
         # Seeker sends 2 messages
@@ -192,4 +206,3 @@ class SecureChatTests(TestCase):
         self.assertEqual(len(response.context['chat_rooms']), 1)
         self.assertEqual(response.context['chat_rooms'][0]['unread_count'], 1)
         self.assertEqual(response.context['chat_rooms'][0]['last_message'].message, 'Global message test')
-

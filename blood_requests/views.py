@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
-from .models import BloodRequest, DonorResponse
+from .models import BloodRequest, DonorResponse, CHAT_MESSAGE_MAX_LENGTH
 import json
 
 
@@ -144,6 +144,11 @@ def chat_messages(request, response_id):
 
         if not message_text:
             return JsonResponse({"error": "Message cannot be empty."}, status=400)
+        if len(message_text) > CHAT_MESSAGE_MAX_LENGTH:
+            return JsonResponse(
+                {"error": f"Message cannot exceed {CHAT_MESSAGE_MAX_LENGTH} characters."},
+                status=400,
+            )
 
         from .models import ChatMessage
         msg = ChatMessage.objects.create(
@@ -184,4 +189,3 @@ def chat_list(request):
         })
         
     return render(request, "requests/chat_list.html", {"chat_rooms": chat_rooms})
-
