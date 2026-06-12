@@ -386,6 +386,7 @@
 .map-search-inner {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     background: var(--bg-card, #1e2130);
     border: 1.5px solid rgba(255,255,255,0.1);
     border-radius: 14px;
@@ -399,7 +400,8 @@
 }
 .map-search-icon { color: #34c1c6; font-size: 18px; flex-shrink: 0; }
 .map-search-inner input {
-    flex: 1;
+    flex: 1 1 220px;
+    min-width: 0;
     background: none;
     border: none;
     outline: none;
@@ -435,6 +437,33 @@
     flex-shrink: 0;
 }
 .map-clear-btn:hover { background: rgba(214,40,40,0.15); color: #ff6b6b; border-color: rgba(214,40,40,0.3); }
+
+@media (max-width: 575.98px) {
+    .map-search-inner {
+        padding: 10px;
+        gap: 8px;
+    }
+
+    .map-search-icon {
+        margin-top: 2px;
+    }
+
+    .map-search-inner input {
+        flex: 1 1 100%;
+        order: 1;
+    }
+
+    .map-search-btn {
+        flex: 1 1 calc(100% - 42px);
+        order: 2;
+        justify-content: center;
+    }
+
+    .map-clear-btn {
+        flex: 0 0 34px;
+        order: 3;
+    }
+}
 
 /* Autocomplete dropdown */
 .map-autocomplete {
