@@ -144,6 +144,8 @@ def chat_messages(request, response_id):
 
         if not message_text:
             return JsonResponse({"error": "Message cannot be empty."}, status=400)
+        if len(message_text) > 2000:
+            return JsonResponse({"error": "Message cannot exceed 2000 characters."}, status=400)
 
         from .models import ChatMessage
         msg = ChatMessage.objects.create(
@@ -184,4 +186,3 @@ def chat_list(request):
         })
         
     return render(request, "requests/chat_list.html", {"chat_rooms": chat_rooms})
-

@@ -145,6 +145,20 @@ class SecureChatTests(TestCase):
         self.assertEqual(len(response.json()['messages']), 1)
         self.assertEqual(response.json()['messages'][0]['message'], 'Thank you so much!')
 
+    def test_messages_api_rejects_oversized_payload(self):
+        """Reject oversized chat payloads before they hit storage."""
+        self.client.force_login(self.donor)
+        oversized_message = "x" * 2001
+
+        response = self.client.post(
+            reverse('chat_messages', args=[self.response.id]),
+            {'message': oversized_message},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['error'], 'Message cannot exceed 2000 characters.')
+        self.assertEqual(self.response.chat_messages.count(), 0)
+
     def test_unread_message_counting_and_marking_read(self):
         """Verify unread counts are calculated correctly and marked as read upon viewing."""
         # Seeker sends 2 messages
@@ -192,4 +206,3 @@ class SecureChatTests(TestCase):
         self.assertEqual(len(response.context['chat_rooms']), 1)
         self.assertEqual(response.context['chat_rooms'][0]['unread_count'], 1)
         self.assertEqual(response.context['chat_rooms'][0]['last_message'].message, 'Global message test')
-
