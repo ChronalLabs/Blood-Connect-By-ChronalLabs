@@ -4,6 +4,21 @@ from users.forms import UserRegistrationForm
 from hospitals.models import HospitalProfile
 
 class HospitalRegistrationTests(TestCase):
+    def test_donor_registration_rejects_weak_password(self):
+        form_data = {
+            'username': 'donor_weak',
+            'role': 'donor',
+            'first_name': 'John',
+            'last_name': 'Doe',
+            'phone_number': '1234567890',
+            'password1': 'Weak123!',
+            'password2': 'Weak123!',
+        }
+        form = UserRegistrationForm(data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn('password1', form.errors)
+        self.assertIn('12 characters long', form.errors['password1'][0])
+
     def test_donor_registration_validation(self):
         # Verify donor fields validation
         form_data = {
@@ -187,4 +202,3 @@ class CoordinateValidationTests(TestCase):
         req.longitude = Decimal('-180.100000')
         with self.assertRaises(ValidationError):
             req.full_clean()
-

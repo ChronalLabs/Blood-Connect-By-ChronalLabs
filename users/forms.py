@@ -113,7 +113,7 @@ class UserRegistrationForm(UserCreationForm):
         ]
         self.fields = {key: self.fields[key] for key in ordered_fields if key in self.fields}
         if 'password1' in self.fields:
-            self.fields['password1'].help_text = t('Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character (e.g. @$!%*?&#).')
+            self.fields['password1'].help_text = t('Password must be at least 12 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character (e.g. @$!%*?&#).')
 
     def clean_username(self):
         username = self.cleaned_data.get('username')
@@ -131,8 +131,8 @@ class UserRegistrationForm(UserCreationForm):
         password = self.cleaned_data.get('password1')
         if password:
             import re
-            if len(password) < 8:
-                raise forms.ValidationError(t('Password must be at least 8 characters long.'))
+            if len(password) < 12:
+                raise forms.ValidationError(t('Password must be at least 12 characters long.'))
             if not re.search(r'[A-Z]', password):
                 raise forms.ValidationError(t('Password must contain at least one uppercase letter.'))
             if not re.search(r'[a-z]', password):
