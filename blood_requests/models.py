@@ -176,7 +176,7 @@ class ChatMessage(models.Model):
         on_delete=models.CASCADE,
         related_name='sent_chat_messages'
     )
-    message = models.TextField()
+    message = models.CharField(max_length=2000)
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -185,4 +185,3 @@ class ChatMessage(models.Model):
 
     def __str__(self):
         return f"{self.sender.username}: {self.message[:30]} ({self.created_at.strftime('%M:%S')})"
-
