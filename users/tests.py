@@ -1,4 +1,6 @@
+from django.core.cache import cache
 from django.test import TestCase
+from django.urls import reverse
 from django.utils.crypto import get_random_string
 from users.forms import UserRegistrationForm
 from hospitals.models import HospitalProfile
@@ -55,6 +57,51 @@ class HospitalRegistrationTests(TestCase):
         }
         form = UserRegistrationForm(data=form_data)
         self.assertTrue(form.is_valid(), form.errors)
+
+
+class LoginRateLimitTests(TestCase):
+    """Login endpoints should share a short brute-force lockout window."""
+
+    def setUp(self):
+        cache.clear()
+        self.user = self._create_user()
+
+    def tearDown(self):
+        cache.clear()
+
+    def _create_user(self):
+        from users.models import CustomUser
+
+        return CustomUser.objects.create_user(
+            username='rate_limit_user',
+            password='ValidPass2026!',
+            first_name='Rate',
+            last_name='Limit',
+            role='donor',
+        )
+
+    def _post_invalid_login(self, url_name):
+        return self.client.post(reverse(url_name), {
+            'username': self.user.username,
+            'password': 'WrongPass2026!',
+        })
+
+    def test_failed_logins_lock_both_auth_endpoints(self):
+        for _ in range(4):
+            response = self._post_invalid_login('login')
+            self.assertEqual(response.status_code, 200)
+            self.assertContains(response, 'Invalid username or password.')
+
+        blocked = self._post_invalid_login('hospital_login')
+        self.assertEqual(blocked.status_code, 429)
+        self.assertContains(
+            blocked,
+            'Too many failed login attempts. Please try again later.',
+            status_code=429,
+        )
+
+        still_blocked = self._post_invalid_login('login')
+        self.assertEqual(still_blocked.status_code, 429)
 
 
 class SeedDataCommandTests(TestCase):
@@ -187,4 +234,3 @@ class CoordinateValidationTests(TestCase):
         req.longitude = Decimal('-180.100000')
         with self.assertRaises(ValidationError):
             req.full_clean()
-

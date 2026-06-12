@@ -44,9 +44,10 @@ cp .env.example .env
 ### 3. Run Migrations
 
 ```bash
-python manage.py makemigrations users donors seekers hospitals blood_requests
 python manage.py migrate
 ```
+
+If you change models locally, run `python manage.py makemigrations` before `migrate`.
 
 ### 4. Create Superuser (Admin)
 
@@ -216,6 +217,33 @@ GOOGLE_SHEETS_CREDENTIALS=https://script.google.com/macros/s/YOUR_ID/exec
 ## 👥 Contributing
 
 We love contributions! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) to learn how to fork the repository, set up local development, run tests, and submit a pull request.
+
+### Contribution Flow
+
+```mermaid
+flowchart LR
+    A[Fork the repo] --> B[Clone locally]
+    B --> C[Create a branch]
+    C --> D[Run the app and tests]
+    D --> E[Make the change]
+    E --> F[Commit and push]
+    F --> G[Open a pull request]
+    G --> H[Review and merge]
+```
+
+### Documentation Search
+
+Use repo search when you need setup notes, troubleshooting, or contribution guidance:
+
+- [Search documentation in this repo](https://github.com/ChronalLabs/Blood-Connect-By-ChronalLabs/search?q=documentation&type=code)
+- Quick keywords to try: `CONTRIBUTING`, `seed_data`, `migrate`, `collectstatic`, `troubleshooting`
+
+## 🛠️ Troubleshooting
+
+- If `.env` values are missing, copy `.env.example` and fill in `SECRET_KEY` before running the server.
+- If static assets do not load, run `python manage.py collectstatic` and restart the app.
+- If the database feels out of sync, rerun `python manage.py migrate`.
+- If port `8000` is busy, start Django on another port with `python manage.py runserver 8001`.
 
 ---
 
