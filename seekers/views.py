@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.views.decorators.http import require_POST
 from .models import SeekerProfile
 from .forms import BloodRequestForm, DonorSearchForm
 from donors.models import DonorProfile
@@ -59,6 +60,7 @@ def my_requests(request):
 
 
 @login_required
+@require_POST
 def cancel_request(request, request_id):
     if request.user.role != "seeker":
         messages.error(request, "Access denied.")
