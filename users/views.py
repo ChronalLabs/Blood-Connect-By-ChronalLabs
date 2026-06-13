@@ -5,8 +5,31 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.cache import cache
+from django.conf import settings
+from functools import wraps
 from .models import CustomUser, EmergencyContact
 from .forms import UserRegistrationForm, CustomLoginForm, UserProfileForm, EmergencyContactForm
+
+
+def rate_limit(max_attempts=5, timeout=300):
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapper(request, *args, **kwargs):
+            if request.method == "POST":
+                ip = request.META.get('REMOTE_ADDR', '')
+                key = f"login_rate_limit:{ip}"
+                attempts = cache.get(key, 0)
+                if attempts >= max_attempts:
+                    messages.error(
+                        request,
+                        f"Too many login attempts. Please try again in {timeout // 60} minute(s)."
+                    )
+                    return redirect(request.path)
+                cache.set(key, attempts + 1, timeout)
+            return view_func(request, *args, **kwargs)
+        return wrapper
+    return decorator
 
 
 def register(request):
@@ -57,6 +80,7 @@ def register(request):
     return render(request, "users/register.html", {"form": form})
 
 
+@rate_limit(max_attempts=5, timeout=300)
 def user_login(request):
     """Login view"""
     if request.user.is_authenticated:
@@ -81,6 +105,7 @@ def user_login(request):
     return render(request, "users/login.html", {"form": form})
 
 
+@rate_limit(max_attempts=5, timeout=300)
 def hospital_login(request):
     """Hospital-specific login view"""
     if request.user.is_authenticated:
