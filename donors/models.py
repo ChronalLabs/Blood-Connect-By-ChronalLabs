@@ -53,6 +53,20 @@ class DonorProfile(models.Model):
         from datetime import date, timedelta
         return date.today() - self.last_blood_donation_date > timedelta(days=90)
 
+    def enforce_cooldown(self):
+        if not self.can_donate():
+            if self.availability_status == 'available':
+                self.availability_status = 'cooldown'
+                return True
+        elif self.availability_status == 'cooldown':
+            self.availability_status = 'available'
+            return True
+        return False
+
+    def save(self, *args, **kwargs):
+        self.enforce_cooldown()
+        super().save(*args, **kwargs)
+
 
 class BloodDonationHistory(models.Model):
     donor = models.ForeignKey(DonorProfile, on_delete=models.CASCADE, related_name='donation_history')
