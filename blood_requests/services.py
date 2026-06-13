@@ -1,3 +1,4 @@
+import threading
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import IntegrityError, transaction
@@ -11,7 +12,8 @@ def notify_compatible_donors(blood_request, radius_km=50):
     Notify compatible donors for a new blood request.
 
     Returns a list of DonorNotification objects created during this call.
-    Existing notifications are left untouched to avoid duplicate emails.
+    Emails are sent asynchronously in a background thread to avoid blocking
+    the request lifecycle.
     """
     if blood_request.status != 'open' or blood_request.units_remaining <= 0:
         return []
@@ -25,16 +27,33 @@ def notify_compatible_donors(blood_request, radius_km=50):
     )
 
     notifications = []
+    email_tasks = []
     for item in ranked_donors:
         donor_profile = item['donor']
         notification = _create_notification_once(blood_request, donor_profile.user)
         if notification is None:
             continue
 
-        _send_email_notification(notification, blood_request, donor_profile)
+        email_tasks.append((notification, blood_request, donor_profile))
         notifications.append(notification)
 
+    if email_tasks:
+        thread = threading.Thread(
+            target=_send_all_emails,
+            args=(email_tasks,),
+            daemon=True,
+        )
+        thread.start()
+
     return notifications
+
+
+def _send_all_emails(email_tasks):
+    for notification, blood_request, donor_profile in email_tasks:
+        try:
+            _send_email_notification(notification, blood_request, donor_profile)
+        except Exception:
+            pass
 
 
 def _create_notification_once(blood_request, donor):
