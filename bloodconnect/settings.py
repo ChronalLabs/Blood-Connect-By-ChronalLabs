@@ -27,6 +27,22 @@ ALLOWED_HOSTS = config(
 )
 
 
+# CORS: restrict to known frontend origins in production
+CORS_ALLOWED_ORIGINS = config(
+    'CORS_ALLOWED_ORIGINS',
+    default='http://localhost:8000,http://127.0.0.1:8000',
+    cast=Csv(),
+)
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = [
+    'GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS',
+]
+CORS_ALLOW_HEADERS = [
+    'authorization', 'content-type', 'x-csrftoken',
+    'x-requested-with', 'accept', 'origin',
+]
+
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -36,6 +52,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'bloodconnect',
+    # Third-party apps
+    'corsheaders',
     # BloodConnect apps
     'users',
     'donors',
@@ -45,6 +63,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # Static files in production
     'django.contrib.sessions.middleware.SessionMiddleware',
