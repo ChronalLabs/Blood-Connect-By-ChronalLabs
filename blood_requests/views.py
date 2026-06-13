@@ -3,6 +3,8 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_POST
 from .models import BloodRequest, DonorResponse
 import json
 
@@ -78,6 +80,7 @@ def requests_json(request):
 
 
 @login_required
+@ensure_csrf_cookie
 def chat_room(request, response_id):
     donor_response = get_object_or_404(DonorResponse, id=response_id)
     seeker = donor_response.blood_request.requester

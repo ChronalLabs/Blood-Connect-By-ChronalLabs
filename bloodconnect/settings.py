@@ -170,6 +170,16 @@ if not DEBUG:
     # SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     # SECURE_HSTS_PRELOAD = True
 
+# CSRF hardening: required for AJAX POST (JS reads cookie, sends as X-CSRFToken header)
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    default='http://localhost:8000,http://127.0.0.1:8000',
+    cast=Csv(),
+)
+
 
 # Google Sheets API (for contact form)
 GOOGLE_SHEETS_CREDENTIALS = config('GOOGLE_SHEETS_CREDENTIALS', default='')
