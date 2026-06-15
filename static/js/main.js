@@ -111,6 +111,20 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // ── Back to top button ──
+    const backToTop = document.getElementById('backToTop');
+    if (backToTop) {
+        const toggleBackToTop = () => {
+            backToTop.classList.toggle('visible', window.scrollY > 300);
+        };
+        window.addEventListener('scroll', toggleBackToTop, { passive: true });
+        toggleBackToTop();
+
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+
     console.log('BloodConnect initialized ✓');
 });
 

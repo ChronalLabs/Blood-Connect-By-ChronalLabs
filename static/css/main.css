@@ -15,6 +15,7 @@
     --dark-2: #1a1d27;
     --dark-3: #252836;
     --dark-4: #2f3346;
+    --back-to-top-size: 44px;
     --gray: #6b7280;
     --gray-light: #9ca3af;
     --border: rgba(255,255,255,0.08);
@@ -1995,4 +1996,50 @@ select option { background: var(--dark-3); }
     .hero-actions { flex-direction: column; }
     .cta-buttons { flex-direction: column; align-items: center; }
     .blood-group-grid { justify-content: center; }
+}
+
+.back-to-top {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: var(--back-to-top-size);
+    height: var(--back-to-top-size);
+    border-radius: 50%;
+    background: var(--teal);
+    color: var(--white);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease, background 0.2s ease;
+    z-index: 9999;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.back-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.back-to-top:hover {
+    background: var(--teal-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.back-to-top:active {
+    transform: translateY(0);
+}
+
+@media (max-width: 480px) {
+    .back-to-top {
+        bottom: 16px;
+        right: 16px;
+    }
 }
