@@ -1,17 +1,29 @@
+import logging
+import threading
+
 from django.conf import settings
-from django.core.mail import send_mail
-from django.db import IntegrityError, transaction
+from django.core.mail import EmailMessage, get_connection
+from django.db import IntegrityError, close_old_connections, transaction
 from django.utils import timezone
 
 from .models import DonorNotification
 
+logger = logging.getLogger(__name__)
 
-def notify_compatible_donors(blood_request, radius_km=50):
+
+def notify_compatible_donors(blood_request, radius_km=50, deliver_in_background=False):
     """
     Notify compatible donors for a new blood request.
 
     Returns a list of DonorNotification objects created during this call.
     Existing notifications are left untouched to avoid duplicate emails.
+
+    By default the emails are sent before returning. With
+    ``deliver_in_background=True`` the notification rows are still created
+    right away (so duplicates are prevented), but the emails go out from a
+    worker thread over a single SMTP connection, so the caller (usually a web
+    request) is not held up by one SMTP round trip per donor. The returned
+    notifications are then still in their initial 'skipped' state.
     """
     if blood_request.status != 'open' or blood_request.units_remaining <= 0:
         return []
@@ -25,16 +37,57 @@ def notify_compatible_donors(blood_request, radius_km=50):
     )
 
     notifications = []
+    pending = []
     for item in ranked_donors:
         donor_profile = item['donor']
         notification = _create_notification_once(blood_request, donor_profile.user)
         if notification is None:
             continue
 
-        _send_email_notification(notification, blood_request, donor_profile)
+        pending.append((notification, donor_profile))
         notifications.append(notification)
 
+    if deliver_in_background:
+        _deliver_in_background(pending, blood_request)
+    else:
+        _deliver_notifications(pending, blood_request)
+
     return notifications
+
+
+def _deliver_notifications(pending, blood_request):
+    """Send every pending notification, reusing one SMTP connection."""
+    if not pending:
+        return
+    connection = get_connection(fail_silently=False)
+    try:
+        for notification, donor_profile in pending:
+            _send_email_notification(notification, blood_request, donor_profile, connection)
+    finally:
+        try:
+            connection.close()
+        except Exception:
+            logger.exception("Could not close the email connection")
+
+
+def _deliver_in_background(pending, blood_request):
+    if not pending:
+        return
+
+    def run():
+        try:
+            _deliver_notifications(pending, blood_request)
+        except Exception:
+            logger.exception("Background donor notification delivery failed")
+        finally:
+            close_old_connections()
+
+    def start():
+        threading.Thread(target=run, name="donor-notifications", daemon=True).start()
+
+    # Wait for the surrounding transaction (ATOMIC_REQUESTS) so the worker sees
+    # the committed request and notification rows.
+    transaction.on_commit(start)
 
 
 def _create_notification_once(blood_request, donor):
@@ -54,7 +107,7 @@ def _create_notification_once(blood_request, donor):
     return notification
 
 
-def _send_email_notification(notification, blood_request, donor_profile):
+def _send_email_notification(notification, blood_request, donor_profile, connection=None):
     donor = donor_profile.user
     if not donor.email:
         notification.status = 'skipped'
@@ -66,13 +119,14 @@ def _send_email_notification(notification, blood_request, donor_profile):
     message = _build_email_message(blood_request, donor_profile)
 
     try:
-        sent_count = send_mail(
+        email = EmailMessage(
             subject,
             message,
             getattr(settings, 'DEFAULT_FROM_EMAIL', None),
             [donor.email],
-            fail_silently=False,
+            connection=connection,
         )
+        sent_count = email.send(fail_silently=False)
     except Exception as exc:
         notification.status = 'failed'
         notification.error_message = str(exc)
