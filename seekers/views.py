@@ -36,11 +36,10 @@ def create_request(request):
             blood_request = form.save(commit=False)
             blood_request.requester = request.user
             blood_request.save()
-            notifications = notify_compatible_donors(blood_request)
-            sent_count = sum(1 for notification in notifications if notification.status == "sent")
+            notifications = notify_compatible_donors(blood_request, deliver_in_background=True)
             messages.success(
                 request,
-                f"Blood request submitted! {sent_count} compatible donor(s) notified.",
+                f"Blood request submitted! Notifying {len(notifications)} compatible donor(s).",
             )
             return redirect("seeker_dashboard")
     else:

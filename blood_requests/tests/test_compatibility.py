@@ -14,6 +14,8 @@ from utils.blood_compatibility import (
 from unittest.mock import MagicMock
 from datetime import date, timedelta
 
+from unittest.mock import patch
+
 from django.core import mail
 from django.test import override_settings
 
@@ -288,6 +290,16 @@ class DonorRequestMatchingTests(TestCase):
         )
 
 
+class _InlineThread:
+    """Stand-in for threading.Thread that runs the target immediately."""
+
+    def __init__(self, target=None, **kwargs):
+        self._target = target
+
+    def start(self):
+        self._target()
+
+
 @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
 class DonorNotificationTests(TestCase):
 
@@ -399,20 +411,23 @@ class DonorNotificationTests(TestCase):
         donor_user, _ = self._create_donor('flow_o_neg', 'O', '-', email='flow@example.com')
         self.client.force_login(self.seeker)
 
-        response = self.client.post(reverse('create_request'), {
-            'patient_name': 'Flow Patient',
-            'patient_age': 35,
-            'blood_group': 'A',
-            'rh_factor': '+',
-            'units_required': 1,
-            'hospital_name': 'City Hospital',
-            'hospital_address': 'Main Road',
-            'hospital_contact': '9999999999',
-            'urgency_level': 'urgent',
-            'city': 'Mumbai',
-            'additional_notes': '',
-            'required_by': '',
-        })
+        # Emails are sent from a worker thread after the request commits; run
+        # that thread inline so the test can observe the result.
+        with patch('blood_requests.services.threading.Thread', _InlineThread),                 self.captureOnCommitCallbacks(execute=True):
+            response = self.client.post(reverse('create_request'), {
+                'patient_name': 'Flow Patient',
+                'patient_age': 35,
+                'blood_group': 'A',
+                'rh_factor': '+',
+                'units_required': 1,
+                'hospital_name': 'City Hospital',
+                'hospital_address': 'Main Road',
+                'hospital_contact': '9999999999',
+                'urgency_level': 'urgent',
+                'city': 'Mumbai',
+                'additional_notes': '',
+                'required_by': '',
+            })
 
         blood_request = BloodRequest.objects.get(patient_name='Flow Patient')
         self.assertRedirects(response, reverse('seeker_dashboard'))
@@ -422,5 +437,63 @@ class DonorNotificationTests(TestCase):
                 blood_request=blood_request,
                 status='sent',
             ).exists()
+        )
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_background_delivery_does_not_send_during_the_call(self):
+        self._create_donor('bg_o_neg', 'O', '-', email='bg@example.com')
+        blood_request = self._create_request()
+
+        with patch('blood_requests.services.threading.Thread', _InlineThread),                 self.captureOnCommitCallbacks(execute=False) as callbacks:
+            notifications = notify_compatible_donors(blood_request, deliver_in_background=True)
+
+        self.assertEqual(len(notifications), 1)
+        self.assertEqual(len(mail.outbox), 0)
+        self.assertEqual(len(callbacks), 1)
+
+    def test_background_delivery_sends_after_commit(self):
+        user, _ = self._create_donor('bg2_o_neg', 'O', '-', email='bg2@example.com')
+        blood_request = self._create_request()
+
+        with patch('blood_requests.services.threading.Thread', _InlineThread),                 self.captureOnCommitCallbacks(execute=True):
+            notify_compatible_donors(blood_request, deliver_in_background=True)
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(
+            DonorNotification.objects.get(donor=user, blood_request=blood_request).status,
+            'sent',
+        )
+
+    def test_one_connection_is_used_for_all_donors(self):
+        self._create_donor('c1_o_neg', 'O', '-', email='c1@example.com')
+        self._create_donor('c2_o_neg', 'O', '-', email='c2@example.com')
+        self._create_donor('c3_o_neg', 'O', '-', email='c3@example.com')
+        blood_request = self._create_request()
+
+        with patch('blood_requests.services.get_connection', wraps=__import__('django.core.mail', fromlist=['get_connection']).get_connection) as get_conn:
+            notify_compatible_donors(blood_request)
+
+        self.assertEqual(get_conn.call_count, 1)
+        self.assertEqual(len(mail.outbox), 3)
+
+    def test_failed_send_is_recorded_and_does_not_stop_others(self):
+        bad_user, _ = self._create_donor('f1_o_neg', 'O', '-', email='f1@example.com')
+        self._create_donor('f2_o_neg', 'O', '-', email='f2@example.com')
+        blood_request = self._create_request()
+
+        from django.core.mail import EmailMessage
+        real_send = EmailMessage.send
+
+        def flaky(self_, fail_silently=False):
+            if self_.to == ['f1@example.com']:
+                raise OSError('smtp down')
+            return real_send(self_, fail_silently=fail_silently)
+
+        with patch.object(EmailMessage, 'send', flaky):
+            notify_compatible_donors(blood_request)
+
+        self.assertEqual(
+            DonorNotification.objects.get(donor=bad_user, blood_request=blood_request).status,
+            'failed',
         )
         self.assertEqual(len(mail.outbox), 1)
